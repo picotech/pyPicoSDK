@@ -14,11 +14,11 @@ def open_unit():
    attr_function = self._get_attr_function('OpenUnit')
    return None
 ```
-5. Build the function (referencing the programmers guide):
+5. Build the function (referencing the programmers guide) assign the result to a status variable:
 ```
 def open_unit():
    attr_function = self._get_attr_function('OpenUnit')
-   attr_function(
+   status = attr_function(
     handle,
     serial,
     resolution
@@ -34,14 +34,14 @@ def open_unit():
 def open_unit():
    handle = ctypes.c_short()
    attr_function = self._get_attr_function('OpenUnit')
-   attr_function(
+   status = attr_function(
     ctypes.byref(handle),
     serial.encode(),
     resolution
    )
    return handle
 ```
-7. Add docstring for your new function along with function inputs, declarations and default values.
+7. Add error handling via `self._error_handler(status=?)` - This produces an error if the status is non-zero
 ```
 def open_unit(serial:str=None, resolution:int=0) -> ctypes.c_short:
    """Open PicoScope Unit
@@ -51,10 +51,30 @@ def open_unit(serial:str=None, resolution:int=0) -> ctypes.c_short:
    """
    handle = ctypes.c_short()
    attr_function = self._get_attr_function('OpenUnit')
-   attr_function(
+   status = attr_function(
     ctypes.byref(handle),
     serial,
     resolution
    )
+   self._error_handler(status)
+   return handle
+```
+
+8. Add docstring for your new function along with function inputs, declarations and default values.
+```
+def open_unit(serial:str=None, resolution:int=0) -> ctypes.c_short:
+   """Open PicoScope Unit
+   :param str serial: Serial number of device
+   :param int resolution: Resolution of device
+   :return ctypes.c_short: Returned handle of device
+   """
+   handle = ctypes.c_short()
+   attr_function = self._get_attr_function('OpenUnit')
+   status = attr_function(
+    ctypes.byref(handle),
+    serial,
+    resolution
+   )
+   self._error_handler(status)
    return handle
 ```
