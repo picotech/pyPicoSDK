@@ -162,6 +162,7 @@ timebase_calc.py
 unpack_picostatus.py
 main_6000a.py
 *.csv
+*test*.py
 
 # PicoSDK specific folders
 inc/
