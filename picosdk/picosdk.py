@@ -200,9 +200,7 @@ class PicoScopeBase:
         :return int: Return 0 if OK
         """
         attr_function = self._get_attr_function('CloseUnit')
-        status = attr_function(self.handle)
-        self._error_handler(status)
-        return 0
+        return attr_function(self.handle)
 
     def is_ready(self) -> int:
         """Waits for PicoScope ready before continuing
