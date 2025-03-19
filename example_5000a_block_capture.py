@@ -1,4 +1,4 @@
-from picosdk import *
+from picosdk.picosdk import *
 from matplotlib import pyplot as plt
 
 ps5000 = ps5000a()
