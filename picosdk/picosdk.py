@@ -1,5 +1,5 @@
 import ctypes
-from picosdk.picosdk_error_list import ERROR_STRING
+from .picosdk_error_list import ERROR_STRING
 import os
 
 
@@ -43,6 +43,22 @@ class TRIGGER_DIR:
     RISING = 2
     FALLING = 3
     RISING_OR_FALLING = 4
+
+class WAVEFORM:
+    SINE = 0x00000011
+    SQUARE = 0x00000012
+    TRIANGLE = 0x00000013
+    RAMP_UP = 0x00000014
+    RAMP_DOWN = 0x00000015
+    SINC = 0x00000016
+    GAUSSIAN = 0x00000017
+    HALF_SINE = 0x00000018
+    DC_VOLTAGE = 0x00000400
+    PWM = 0x00001000
+    WHITENOISE = 0x00002001
+    PRBS = 0x00002002
+    ARBITRARY = 0x10000000
+
 
 CHANNEL_A = 0
 CHANNEL_B = 1
@@ -119,11 +135,20 @@ class PicoSDKException(Exception):
 
 # General Functions
 def _get_lib_path() -> str:
-    """Checks for and returns the PicoSDK lib location from Program Files. If not found, it will raise an error
-
-    :raises PicoSDKNotFoundException: 
-    :return str: File path to PicoSDK folder
     """
+    Checks for and returns the PicoSDK lib location from Program Files.
+
+    Returns
+    -------
+    str
+        File path to PicoSDK folder.
+
+    Raises
+    ------
+    PicoSDKNotFoundException
+        If the PicoSDK library is not found.
+    """
+
     program_files = os.environ.get("ProgramFiles")
     lib_location = os.path.join(program_files, "Pico Technology/SDK/lib")
     if not os.path.exists(lib_location):
@@ -149,21 +174,43 @@ class PicoScopeBase:
 
     # General Functions
     def _get_attr_function(self, function_name: str) -> ctypes.CDLL:
-        """Returns ctypes function based on sub-class prefix name
-        i.e. a _get_attr_function("OpenUnit") will return self.dll.ps####aOpenUnit()
+        """
+        Returns ctypes function based on sub-class prefix name.
 
-        :param str function_name: PicoSDK function name i.e. "OpenUnit"
-        :return ctypes.CDLL: CDLL function for specified name
+        For example, `_get_attr_function("OpenUnit")` will return `self.dll.ps####aOpenUnit()`.
+
+        Parameters
+        ----------
+        function_name : str
+            PicoSDK function name, e.g., "OpenUnit".
+
+        Returns
+        -------
+        ctypes.CDLL
+            CDLL function for the specified name.
         """
         return getattr(self.dll, self._unit_prefix_n + function_name)
     
     def _error_handler(self, status: int) -> 0:
-        """Checks status code against error list, if not 0 it will raise an exception
-        Error such as SUPPLY_NOT_CONNECTED are returned as warnings
+        """
+        Checks status code against error list; raises an exception if not 0.
 
-        :param int status: Returned status value from PicoSDK
-        :raises PicoSDKException: Pythonic exception based on status value
-        :return 0: No Errors
+        Errors such as `SUPPLY_NOT_CONNECTED` are returned as warnings.
+
+        Parameters
+        ----------
+        status : int
+            Returned status value from PicoSDK.
+
+        Returns
+        -------
+        int
+            0 if there are no errors.
+
+        Raises
+        ------
+        PicoSDKException
+            Pythonic exception based on status value.
         """
         error_code = ERROR_STRING[status]
         if status != 0:
@@ -173,39 +220,67 @@ class PicoScopeBase:
             self.close_unit()
             raise PicoSDKException(error_code)
         return 0
+    
+    def _call_attr_function(self, function_name:str, *args):
+        """
+        Calls a specific attribute function with the provided arguments.
+
+        Parameters
+        ----------
+        function_name : str
+            PicoSDK function suffix.
+
+        Returns
+        -------
+        int
+            Return 0 if OK.
+        """
+        attr_function = self._get_attr_function(function_name)
+        status = attr_function(*args)
+        self._error_handler(status)
+        return status
 
     # General PicoSDK functions    
     def open_unit(self, serial_number:int=None, resolution:RESOLUTION=0) -> int:
-        """Opens PicoScope unit
+        """
+        Opens PicoScope unit.
 
-        :param int serial_number: Serial number of specific unit i.e. JR628/0017, defaults to None
-        :param RESOLUTION resolution: Resolution of device, defaults to lowest available resolution i.e. 8-bit
-        :return int: Return 0 if OK
+        Parameters
+        ----------
+        serial_number : int, optional
+            Serial number of specific unit, e.g., JR628/0017. Defaults to None.
+        resolution : RESOLUTION, optional
+            Resolution of device. Defaults to the lowest available resolution, e.g., 8-bit.
+
+        Returns
+        -------
+        int
+            Return 0 if OK.
         """
         if serial_number is not None:
             serial_number = serial_number.encode()
-        attr_function = self._get_attr_function('OpenUnit')
-        status = attr_function(
+        self._call_attr_function(
+            'OpenUnit',
             ctypes.byref(self.handle),
             serial_number, 
             resolution
         )
         self.resolution = resolution
-        self._error_handler(status)
         return 0
     
     def close_unit(self) -> int:
-        """Closes PicoScope unit
 
-        :return int: Return 0 if OK
-        """
         attr_function = self._get_attr_function('CloseUnit')
         return attr_function(self.handle)
 
     def is_ready(self) -> int:
-        """Waits for PicoScope ready before continuing
+        """
+        Closes PicoScope unit.
 
-        :return int: Return 0 if OK
+        Returns
+        -------
+        int
+            Return 0 if OK.
         """
         ready = ctypes.c_int16()
         attr_function = getattr(self.dll, self._unit_prefix_n + "IsReady")
@@ -221,40 +296,61 @@ class PicoScopeBase:
     
     # Get information from PicoScope
     def get_unit_info(self, unit_info: UNIT_INFO) -> str:
-        """Get specified information from unit. Use UNIT_INFO.XXXX or integer
+        """
+        Get specified information from unit. Use UNIT_INFO.XXXX or integer.
 
-        :param UNIT_INFO unit_info: i.e. UNIT_INFO.PICO_BATCH_AND_SERIAL
-        :return str: Returns data from device
+        Parameters
+        ----------
+        unit_info : UNIT_INFO
+            For example, UNIT_INFO.PICO_BATCH_AND_SERIAL
+
+        Returns
+        -------
+        str
+            Returns data from device.
         """
         string = ctypes.create_string_buffer(16)
         string_length = ctypes.c_int16(32)
         required_size = ctypes.c_int16(32)
-        attr_function = getattr(self.dll, self._unit_prefix_n + 'GetUnitInfo')
-        status = attr_function(
+        status = self._call_attr_function(
+            'GetUnitInfo',
             self.handle,
             string,
             string_length,
             ctypes.byref(required_size),
             ctypes.c_uint32(unit_info)
         )
-        self._error_handler(status)
         return string.value.decode()
     
     def get_unit_serial(self) -> str:
-        """Get and return batch and serial of unit
+        """
+        Get and return batch and serial of unit.
 
-        :return str: Returns serial i.e. "JR628/0017"
+        Returns
+        -------
+        str
+            Returns serial, e.g., "JR628/0017".
         """
         return self.get_unit_info(UNIT_INFO.PICO_BATCH_AND_SERIAL)
     
     def _get_timebase(self, timebase: int, samples: int, segment:int=0) -> dict:
-        """This function calculates the sampling rate and maximum number of 
-        samples for a given timebase under the specified conditions
+        """
+        This function calculates the sampling rate and maximum number of 
+        samples for a given timebase under the specified conditions.
 
-        :param int timebase: Selected timebase multiplier (Refer to programmers guide)
-        :param int samples: Number of samples
-        :param int segment: the index of the memory segment to use, defaults to 0
-        :return dict: Returns interval(ns) and max samples as a dictionary
+        Parameters
+        ----------
+        timebase : int
+            Selected timebase multiplier (refer to programmer's guide).
+        samples : int
+            Number of samples.
+        segment : int, optional
+            The index of the memory segment to use. Defaults to 0.
+
+        Returns
+        -------
+        dict
+            Returns interval (ns) and max samples as a dictionary.
         """
         time_interval_ns = ctypes.c_double()
         max_samples = ctypes.c_uint64()
@@ -272,14 +368,27 @@ class PicoScopeBase:
                 "Samples":          max_samples.value}
     
     def _get_timebase_2(self, timebase: int, samples: int, segment:int=0):
-        """This function calculates the sampling rate and maximum number of 
-        samples for a given timebase under the specified conditions
-
-        :param int timebase: Selected timebase multiplier (Refer to programmers guide)
-        :param int samples: Number of samples
-        :param int segment: the index of the memory segment to use, defaults to 0
-        :return dict: Returns interval(ns) and max samples as a dictionary
         """
+        Calculates the sampling rate and maximum number of samples for a given
+        timebase under the specified conditions.
+
+        Parameters
+        ----------
+        timebase : int
+            Selected timebase multiplier (refer to programmer's guide).
+        samples : int
+            Number of samples.
+        segment : int, optional
+            Index of the memory segment to use. Defaults to 0.
+
+        Returns
+        -------
+        dict
+            Dictionary containing:
+            - 'interval' (ns): Time interval between samples.
+            - 'max_samples': Maximum number of samples.
+        """
+
         time_interval_ns = ctypes.c_float()
         max_samples = ctypes.c_int32()
         attr_function = getattr(self.dll, self._unit_prefix_n + 'GetTimeBase2')
@@ -296,11 +405,20 @@ class PicoScopeBase:
                 "Samples":          max_samples.value}
     
     def _get_adc_limits(self) -> tuple:
-        """Gets the ADC limits for specified devices
-        (Currently tested: 6000a)
+        """
+        Gets the ADC limits for specified devices.
 
-        :raises PicoSDKException: If device hasn't been initialized
-        :return tuple: Returns (minimum value, maximum value)
+        Currently tested on: 6000a.
+
+        Returns
+        -------
+        tuple
+            (minimum value, maximum value)
+
+        Raises
+        ------
+        PicoSDKException
+            If device hasn't been initialized.
         """
         if self.resolution is None:
             raise PicoSDKException("Device has not been initialized, use open_unit()")
@@ -317,10 +435,15 @@ class PicoScopeBase:
         return min_value.value, max_value.value
     
     def _get_maximum_adc_value(self) -> int:
-        """Gets the ADC limits for specified devices
-        (Currently tested: 5000a)
+        """
+        Gets the ADC limits for specified devices.
 
-        :return int: Returns maximum value
+        Currently tested on: 5000a.
+
+        Returns
+        -------
+        int
+            Maximum ADC value.
         """
         max_value = ctypes.c_int16()
         attr_function = self._get_attr_function('MaximumValue')
@@ -333,12 +456,42 @@ class PicoScopeBase:
     
     # Data conversion ADC/mV & ctypes/int 
     def mv_to_adc(self, mv, channel_range):
-        """Converts mV value to ADC value - based on maximum ADC value"""
+        """
+        Converts a millivolt (mV) value to an ADC value based on the device's
+        maximum ADC range.
+
+        Parameters
+        ----------
+        mv : float
+            Voltage in millivolts to be converted.
+        channel_range : int
+            Index or key representing the selected channel voltage range.
+
+        Returns
+        -------
+        int
+            ADC value corresponding to the input millivolt value.
+        """
+
         channel_range_mv = RANGE_LIST[channel_range]
         return int((mv / channel_range_mv) * self.max_adc_value)
     
     def adc_to_mv(self, adc: list, channel_range: int):
-        """Converts ADC value to mV - based on maximum ADC value"""
+        """
+        Converts an ADC value to mV - based on maximum ADC value
+
+        Parameters
+        ----------
+        adc
+            _description_
+        channel_range
+            _description_
+
+        Returns
+        -------
+            _description_
+        """
+        "Converts ADC value to mV - based on maximum ADC value"
         channel_range_mv = float(RANGE_LIST[channel_range])
         return (float(adc) / float(self.max_adc_value)) * channel_range_mv
     
@@ -504,8 +657,8 @@ class PicoScopeBase:
         self.is_ready()
         total_samples = ctypes.c_uint32(samples)
         overflow = ctypes.c_int16()
-        attr_function = self._get_attr_function('GetValues')
-        status = attr_function(
+        self._call_attr_function(
+            'GetValues',
             self.handle, 
             start_index,
             ctypes.byref(total_samples),
@@ -514,7 +667,6 @@ class PicoScopeBase:
             segment,
             ctypes.byref(overflow)
         )
-        self._error_handler(status)
         return total_samples.value
     
     def run_block(self, timebase, samples) -> dict:
@@ -532,12 +684,93 @@ class PicoScopeBase:
         channels_buffer = self.channels_buffer_ctype_to_list(channels_buffer)
 
         return channels_buffer
+    
+    # Siggen Functions
+    def _siggen_apply(self, enabled=1, sweep_enabled=0, trigger_enabled=0, 
+                     auto_clock_optimise_enabled=0, override_auto_clock_prescale=0) -> dict:
+        """Sets the signal generator running using parameters previously configured.
+
+        :param int enabled: SigGen Enabled, defaults to 1
+        :param int sweep_enabled: Sweep Enabled, defaults to 0
+        :param int trigger_enabled: SigGen trigger enabled, defaults to 0
+        :param int auto_clock_optimise_enabled: Auto Clock Optimisation, defaults to 0
+        :param int override_auto_clock_prescale: Override Clock Prescale, defaults to 0
+        :return dict: Returns dictionary of the actual achieved values
+        """
+        freq = ctypes.c_double()
+        stop_freq = ctypes.c_double()
+        freq_incr = ctypes.c_double()
+        dwell_time = ctypes.c_double()
+        self._call_attr_function(
+            'SigGenApply',
+            self.handle,
+            enabled,
+            sweep_enabled,
+            trigger_enabled,
+            auto_clock_optimise_enabled,
+            override_auto_clock_prescale,
+            ctypes.byref(freq),
+            ctypes.byref(stop_freq),
+            ctypes.byref(freq_incr),
+            ctypes.byref(dwell_time)
+        )
+        return {'Freq': freq.value,
+                'StopFreq': stop_freq.value,
+                'FreqInc': freq_incr.value,
+                'dwelltime': dwell_time.value}
+    
+    def _siggen_set_frequency(self, frequency:int) -> 0:
+        """Set the frequency of the SigGen
+
+        :param int frequency: Specified frequency of SigGen
+        :return 0: Return 0 if OK
+        """
+        self._call_attr_function(
+            'SigGenFrequency',
+            self.handle,
+            frequency
+        )
+        return 0
+    
+    def _siggen_set_range(self, pk2pk, offset=0):
+        self._call_attr_function(
+            'SigGenRange',
+            self.handle,
+            pk2pk,
+            offset
+        )
+        return 0
+    
+    def _siggen_set_waveform(self, wavetype=WAVEFORM.SINE):
+        self._call_attr_function(
+            'SigGenRange',
+            self.handle,
+            wavetype,
+            0,
+            0
+        )
+        return 0
+
 
 class ps6000a(PicoScopeBase):
     dll = ctypes.CDLL(os.path.join(_get_lib_path(), "ps6000a.dll"))
     _unit_prefix_n = "ps6000a"
 
-    def open_unit(self, serial_number=None, resolution=RESOLUTION.RES_6000A_8BIT):
+    def open_unit(self, serial_number:str=None, resolution=RESOLUTION.RES_6000A_8BIT):
+        """Opens the PicoScope unit
+
+        Parameters
+        ----------
+        serial_number : str, optional
+            _description_, by default None
+        resolution : _type_, optional
+            _description_, by default RESOLUTION.RES_6000A_8BIT
+
+        Returns
+        -------
+        _type_
+            _description_
+        """
         status = super().open_unit(serial_number, resolution)
         self.min_adc_value, self.max_adc_value =super()._get_adc_limits()
         return status
@@ -575,11 +808,16 @@ class ps5000a(PicoScopeBase):
 
 
 """Timebase calculation for external use WIP"""
-# def timebase_calc_6000a(timebase: int):
-#     if timebase <= 4:
-#         return to_engineering_notation((pow(2, timebase))/5_000_000_000)
-#     else:
-#         return to_engineering_notation((timebase - 4) / 156_250_000)
+def timebase_calc_6000a(timebase: int):
+    """Hello World
+
+    :param int timebase: _description_
+    :return _type_: _description_
+    """
+    if timebase <= 4:
+        return print((pow(2, timebase))/5_000_000_000)
+    else:
+        return print((timebase - 4) / 156_250_000)
 
 # def timebase_calc_6428E_D(timebase: int):
 #     if timebase <= 5:

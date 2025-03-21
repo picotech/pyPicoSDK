@@ -164,6 +164,9 @@ main_6000a.py
 *.csv
 *test*.py
 
+# Docs folder
+docs/
+
 # PicoSDK specific folders
 inc/
 
