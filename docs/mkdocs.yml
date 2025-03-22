@@ -1,0 +1,21 @@
+site_name: My Docs
+
+theme:
+  name: readthedocs
+
+nav:
+  - Home: index.md
+  - Reference:
+    - PicoScope Common Functions: ref-common.md
+    - PicoScope 5000 (A) Specific Functions: ref-ps5000a.md
+
+
+plugins:
+- mkdocstrings:
+    handlers:
+      python:
+        paths: [..]
+        options:
+          allow_inspection: true
+          docstring_style: numpy
+          show_bases: true

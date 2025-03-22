@@ -156,6 +156,7 @@ cython_debug/
 *.png
 *.jpg
 *.jpeg
+drawings/
 
 # Testing files
 timebase_calc.py
@@ -165,7 +166,7 @@ main_6000a.py
 *test*.py
 
 # Docs folder
-docs/
+# docs/
 
 # PicoSDK specific folders
 inc/
