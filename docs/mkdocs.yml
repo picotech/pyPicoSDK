@@ -6,8 +6,13 @@ theme:
 nav:
   - Home: index.md
   - Reference:
-    - PicoScope Common Functions: ref-common.md
-    - PicoScope 5000 (A) Specific Functions: ref-ps5000a.md
+    - Introduction: ref/introduction.md
+    - PicoScope Common Functions: ref/common.md
+    - PicoScope 6000 (A) Specific Functions: ref/ps6000a.md
+    - PicoScope 5000 (A) Specific Functions: ref/ps5000a.md
+  - Development: 
+    - Current: dev/current.md
+    - Roadmap: dev/roadmap.md
 
 
 plugins:
