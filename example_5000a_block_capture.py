@@ -10,7 +10,7 @@ samples = 5000
 
 # raise PicoSDKNotFoundException('test', 'test')
 
-ps5000.open_unit(resolution=FLEXRES_5000A_8BIT)
+ps5000.open_unit()
 ps5000.change_power_source(POWER_SOURCE.SUPPLY_NOT_CONNECTED)
 
 ps5000.get_unit_serial()
