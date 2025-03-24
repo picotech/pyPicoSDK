@@ -27,16 +27,6 @@ class RESOLUTION:
     RES_6000A_10BIT = 10
     RES_6000A_12BIT = 1
 
-FLEXRES_5000A_8BIT = 0
-FLEXRES_5000A_12BIT = 1
-FLEXRES_5000A_14BIT = 2
-FLEXRES_5000A_15BIT = 3
-FLEXRES_5000A_16BIT = 4
-
-FLEXRES_6000A_8BIT = 0
-FLEXRES_6000A_10BIT = 10
-FLEXRES_6000A_12BIT = 1
-
 class TRIGGER_DIR:
     ABOVE = 0
     BELOW = 1
@@ -59,6 +49,15 @@ class WAVEFORM:
     PRBS = 0x00002002
     ARBITRARY = 0x10000000
 
+class CHANNEL:
+    A = 0
+    B = 1
+    C = 2 
+    D = 3
+    E = 4
+    F = 5
+    G = 6 
+    H = 7
 
 CHANNEL_A = 0
 CHANNEL_B = 1
@@ -69,9 +68,30 @@ CHANNEL_F = 5
 CHANNEL_G = 6 
 CHANNEL_H = 7
 
+
+class COUPLING:
+    AC = 0
+    DC = 1
+    DC_50OHM = 2
+
 AC_COUPLING = 0
 DC_COUPLING = 1
 DC_50OHM_COUPLING = 2
+
+class RANGE:
+    _10MV = 0
+    _20MV = 1
+    _50MV = 2
+    _100MV = 3
+    _200MV = 4
+    _500MV = 5
+    _1V = 6
+    _2V = 7
+    _5V = 8
+    _10V = 9
+    _20V = 10
+    _50V = 11
+
 
 RANGE_10MV = 0
 RANGE_20MV = 1
@@ -191,7 +211,7 @@ class PicoScopeBase:
         """
         return getattr(self.dll, self._unit_prefix_n + function_name)
     
-    def _error_handler(self, status: int) -> 0:
+    def _error_handler(self, status: int) -> None:
         """
         Checks status code against error list; raises an exception if not 0.
 
@@ -202,11 +222,6 @@ class PicoScopeBase:
         status : int
             Returned status value from PicoSDK.
 
-        Returns
-        -------
-        int
-            0 if there are no errors.
-
         Raises
         ------
         PicoSDKException
@@ -216,12 +231,12 @@ class PicoScopeBase:
         if status != 0:
             if status in [POWER_SOURCE.SUPPLY_NOT_CONNECTED]:
                 print('WARNING: Power supply not connected')
-                return 0
+                return
             self.close_unit()
             raise PicoSDKException(error_code)
-        return 0
+        return
     
-    def _call_attr_function(self, function_name:str, *args):
+    def _call_attr_function(self, function_name:str, *args) -> int:
         """
         Calls a specific attribute function with the provided arguments.
 
@@ -233,7 +248,7 @@ class PicoScopeBase:
         Returns
         -------
         int
-            Return 0 if OK.
+            Returns status integer of PicoSDK dll
         """
         attr_function = self._get_attr_function(function_name)
         status = attr_function(*args)
@@ -241,7 +256,7 @@ class PicoScopeBase:
         return status
 
     # General PicoSDK functions    
-    def open_unit(self, serial_number:int=None, resolution:RESOLUTION=0) -> int:
+    def _open_unit(self, serial_number:int=None, resolution:RESOLUTION=0) -> None:
         """
         Opens PicoScope unit.
 
@@ -251,11 +266,6 @@ class PicoScopeBase:
             Serial number of specific unit, e.g., JR628/0017. Defaults to None.
         resolution : RESOLUTION, optional
             Resolution of device. Defaults to the lowest available resolution, e.g., 8-bit.
-
-        Returns
-        -------
-        int
-            Return 0 if OK.
         """
         if serial_number is not None:
             serial_number = serial_number.encode()
@@ -266,21 +276,15 @@ class PicoScopeBase:
             resolution
         )
         self.resolution = resolution
-        return 0
     
     def close_unit(self) -> int:
 
         attr_function = self._get_attr_function('CloseUnit')
         return attr_function(self.handle)
 
-    def is_ready(self) -> int:
+    def is_ready(self) -> None:
         """
         Closes PicoScope unit.
-
-        Returns
-        -------
-        int
-            Return 0 if OK.
         """
         ready = ctypes.c_int16()
         attr_function = getattr(self.dll, self._unit_prefix_n + "IsReady")
@@ -292,7 +296,6 @@ class PicoScopeBase:
             self._error_handler(status)
             if ready.value != 0:
                 break
-        return status
     
     # Get information from PicoScope
     def get_unit_info(self, unit_info: UNIT_INFO) -> str:
@@ -455,7 +458,7 @@ class PicoScopeBase:
         return max_value.value
     
     # Data conversion ADC/mV & ctypes/int 
-    def mv_to_adc(self, mv, channel_range):
+    def mv_to_adc(self, mv:float, channel_range:int) -> int:
         """
         Converts a millivolt (mV) value to an ADC value based on the device's
         maximum ADC range.
@@ -465,7 +468,7 @@ class PicoScopeBase:
         mv : float
             Voltage in millivolts to be converted.
         channel_range : int
-            Index or key representing the selected channel voltage range.
+            Range of channel in millivolts i.e. 500 mV
 
         Returns
         -------
@@ -476,21 +479,7 @@ class PicoScopeBase:
         channel_range_mv = RANGE_LIST[channel_range]
         return int((mv / channel_range_mv) * self.max_adc_value)
     
-    def adc_to_mv(self, adc: list, channel_range: int):
-        """
-        Converts an ADC value to mV - based on maximum ADC value
-
-        Parameters
-        ----------
-        adc
-            _description_
-        channel_range
-            _description_
-
-        Returns
-        -------
-            _description_
-        """
+    def adc_to_mv(self, adc: int, channel_range: int):
         "Converts ADC value to mV - based on maximum ADC value"
         channel_range_mv = float(RANGE_LIST[channel_range])
         return (float(adc) / float(self.max_adc_value)) * channel_range_mv
@@ -519,12 +508,14 @@ class PicoScopeBase:
         return channels_buffer
 
     # Set methods for PicoScope configuration    
-    def change_power_source(self, state: POWER_SOURCE) -> 0:
-        """Change power source of device 
-        i.e. POWER_SOURCE.SUPPLY_NOT_CONNECTED on 5000D device
+    def _change_power_source(self, state: POWER_SOURCE) -> 0:
+        """
+        Change the power source of a device to/from USB only or DC + USB
 
-        :param POWER_SOURCE state: Select power source for device
-        :return 0: Return 0 if OK
+        Parameters
+        ----------
+        state : POWER_SOURCE
+            Power source variable (i.e. POWER_SOURCE.SUPPLY_NOT_CONNECTED)
         """
         attr_func = self._get_attr_function('ChangePowerSource')
         status = attr_func(
@@ -532,7 +523,6 @@ class PicoScopeBase:
             state
         )
         self._error_handler(status)
-        return 0
 
     def _set_channel_on(self, channel, range, coupling=DC_COUPLING, offset=0.0, bandwidth=PICO_BW.FULL):
         """Sets a channel to ON at a specified range (6000E)"""
@@ -719,29 +709,45 @@ class PicoScopeBase:
                 'FreqInc': freq_incr.value,
                 'dwelltime': dwell_time.value}
     
-    def _siggen_set_frequency(self, frequency:int) -> 0:
-        """Set the frequency of the SigGen
+    def _siggen_set_frequency(self, frequency:int) -> None:
+        """Set frequency of SigGen in Hz
 
-        :param int frequency: Specified frequency of SigGen
-        :return 0: Return 0 if OK
-        """
+        Parameters
+        ----------
+        frequency : int
+            Frequency in Hz
+        """        
         self._call_attr_function(
             'SigGenFrequency',
             self.handle,
             frequency
         )
-        return 0
     
-    def _siggen_set_range(self, pk2pk, offset=0):
+    def _siggen_set_range(self, pk2pk:int, offset=0):
+        """Set mV range of SigGen (6000A)
+
+        Parameters
+        ----------
+        pk2pk : int
+            Peak to peak of signal in mV
+        offset : int, optional
+            Offset of signal in mV, by default 0
+        """        
         self._call_attr_function(
             'SigGenRange',
             self.handle,
             pk2pk,
             offset
         )
-        return 0
     
-    def _siggen_set_waveform(self, wavetype=WAVEFORM.SINE):
+    def _siggen_set_waveform(self, wavetype: WAVEFORM):
+        """Set waveform type for SigGen (6000A)
+
+        Parameters
+        ----------
+        wavetype : WAVEFORM
+            Waveform type i.e. WAVEFORM.SINE
+        """
         self._call_attr_function(
             'SigGenRange',
             self.handle,
@@ -749,42 +755,35 @@ class PicoScopeBase:
             0,
             0
         )
-        return 0
 
 
 class ps6000a(PicoScopeBase):
     dll = ctypes.CDLL(os.path.join(_get_lib_path(), "ps6000a.dll"))
     _unit_prefix_n = "ps6000a"
 
-    def open_unit(self, serial_number:str=None, resolution=RESOLUTION.RES_6000A_8BIT):
-        """Opens the PicoScope unit
+    def open_unit(self, serial_number:str=None, resolution:RESOLUTION = 0) -> None:
+        """Open PicoScope unit
 
         Parameters
         ----------
         serial_number : str, optional
-            _description_, by default None
-        resolution : _type_, optional
-            _description_, by default RESOLUTION.RES_6000A_8BIT
-
-        Returns
-        -------
-        _type_
-            _description_
+            Serial number of device i.e. , by default None
+        resolution : RESOLUTION, optional
+            Resolution of device, by default RESOLUTION.RES_6000A_8BIT
         """
-        status = super().open_unit(serial_number, resolution)
+        super()._open_unit(serial_number, resolution)
         self.min_adc_value, self.max_adc_value =super()._get_adc_limits()
-        return status
-
-    def set_channel_on(self, channel, range, coupling=DC_COUPLING, offset=0, bandwidth=PICO_BW.FULL):
+    
+    def set_channel_on(self, channel:CHANNEL, range:RANGE, coupling=DC_COUPLING, offset=0, bandwidth=PICO_BW.FULL) -> None:
         return super()._set_channel_on(channel, range, coupling, offset, bandwidth)
 
-    def set_channel_off(self, channel):
+    def set_channel_off(self, channel:CHANNEL) -> None:
         return super()._set_channel_off(channel)
     
-    def get_timebase(self, timebase, samples, segment=0):
+    def get_timebase(self, timebase:int, samples:int, segment:int=0) -> None:
         return super()._get_timebase(timebase, samples, segment)
     
-    def set_data_buffer(self, channel, samples, segment=0, datatype=DATA_TYPE.INT16_T, ratio_mode=RATIO_MODE.RAW, action=ACTION.CLEAR_ALL | ACTION.ADD):
+    def set_data_buffer(self, channel:CHANNEL, samples:int, segment:int=0, datatype=DATA_TYPE.INT16_T, ratio_mode=RATIO_MODE.RAW, action=ACTION.CLEAR_ALL | ACTION.ADD):
         return super()._set_data_buffer_ps6000a(channel, samples, segment, datatype, ratio_mode, action)
     
 class ps5000a(PicoScopeBase):
@@ -792,7 +791,7 @@ class ps5000a(PicoScopeBase):
     _unit_prefix_n = "ps5000a"
 
     def open_unit(self, serial_number=None, resolution=RESOLUTION):
-        status = super().open_unit(serial_number, resolution)
+        status = super()._open_unit(serial_number, resolution)
         self.max_adc_value = super()._get_maximum_adc_value()
         return status
 
@@ -804,6 +803,9 @@ class ps5000a(PicoScopeBase):
     
     def set_data_buffer(self, channel, samples, segment=0, ratio_mode=0):
         return super()._set_data_buffer_ps5000a(channel, samples, segment, ratio_mode)
+    
+    def change_power_source(self, state):
+        return super()._change_power_source(state)
 
 
 
