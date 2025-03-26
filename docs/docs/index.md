@@ -1,5 +1,11 @@
 # Welcome to pyPicoSDK Documentation
 ## Installation
+### Via Pip
+1. Install the package via pip `pip install -i https://test.pypi.org/simple/ pypicosdk`
+
+2. In your `main.py` add `from picosdk import picosdk`
+
+### Via GitHub (Inc examples)
 1. Install github repository to folder `git clone https://github.com/JamesPicoTech/pyPicoSDK.git`
 2. In your `main.py` add `from picosdk import picosdk`
 
@@ -17,4 +23,14 @@ scope.close_unit()
 The output should be similar to:
 `JR001/001`
 
-Once tested, try an example script to get started.
+Once tested, try an [example script from github](https://github.com/JamesPicoTech/pyPicoSDK) to get started.
+
+## Useful links and references
+- [Documentation & Reference](https://jamespicotech.github.io/pyPicoSDK/)
+- [GitHub Repo (with examples)](https://github.com/JamesPicoTech/pyPicoSDK)
+- [pypi (src repo)](https://test.pypi.org/project/pypicosdk/)
+
+## Version Control
+pyPicoSDK: v0.1.1
+Docs: 
+::: picosdk.version.VERSION
