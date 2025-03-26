@@ -14,7 +14,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/
 lib64/
 parts/
 sdist/
@@ -114,6 +114,7 @@ celerybeat.pid
 # Environments
 .env
 .venv
+*venv*/
 env/
 venv/
 ENV/
@@ -165,8 +166,9 @@ main_6000a.py
 *.csv
 *test*.py
 
-# Docs folder
+# mkdocs folder
 # docs/
+docs/site/
 
 # PicoSDK specific folders
 inc/
