@@ -31,6 +31,5 @@ Once tested, try an [example script from github](https://github.com/JamesPicoTec
 - [pypi (src repo)](https://test.pypi.org/project/pypicosdk/)
 
 ## Version Control
-pyPicoSDK: v0.1.1
-Docs: 
-::: picosdk.version.VERSION
+pyPicoSDK: 0.1.2
+Docs: 0.1.0
