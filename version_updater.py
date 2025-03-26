@@ -1,4 +1,4 @@
-from .version import docs_version, package_version
+from version import docs_version, package_version
 
 
 def update_lines(file_path, start_with, replacement_string):
@@ -8,7 +8,6 @@ def update_lines(file_path, start_with, replacement_string):
     with open(file_path, "w") as f:
         for line in lines:
             if line.strip().startswith(start_with):
-                print(f'replacing {line}\nwith {replacement_string}')
                 f.write(f'{replacement_string}\n')
             else:
                 f.write(line)
