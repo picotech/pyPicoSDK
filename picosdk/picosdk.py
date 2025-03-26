@@ -1,7 +1,9 @@
 import ctypes
+import os
+
 from .error_list import ERROR_STRING
 from .constants import *
-import os
+from .version import VERSION
 
 # Exceptions
 class PicoSDKNotFoundException(Exception):
