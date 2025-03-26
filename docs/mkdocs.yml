@@ -5,14 +5,14 @@ theme:
 
 nav:
   - Home: index.md
-  - Reference:
+  - Reference: 
     - Introduction: ref/introduction.md
     - PicoScope 6000 (A) Specific Functions: ref/ps6000a.md
     - PicoScope 5000 (A) Specific Functions: ref/ps5000a.md
-    - pyPicoSDK Constants: ref/constants.md
+    - General Constants: ref/constants.md
   - Development: 
-    - Current: dev/current.md
-    - Roadmap: dev/roadmap.md
+    - Current Support: dev/current.md
+    - Upcoming Roadmap: dev/roadmap.md
 
 
 plugins:
