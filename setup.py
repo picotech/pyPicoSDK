@@ -13,8 +13,8 @@ def package_files(directory):
 extra_files = package_files('picosdk/lib')
 
 setup(
-    name="picosdk",
-    version="0.1.0",
+    name="pypicosdk",
+    version="0.1.2",
     packages=find_packages(),
     include_package_data=True,
     has_ext_modules=lambda : True,
@@ -23,12 +23,16 @@ setup(
     },
     author="Your Name",
     author_email="you@example.com",
-    description="Python wrapper for PicoSDK",
+    description="Modern Python wrapper for PicoSDK",
     long_description=open("README.md").read() if os.path.exists("README.md") else "",
     long_description_content_type="text/markdown",
+    license_file="MIT",
     classifiers=[
         "Programming Language :: Python :: 3",
-        "Operating System :: OS Independent",
+        "Operating System :: Microsoft :: Windows",
+        "Operating System :: Microsoft :: Windows :: Windows 10",
+        "Operating System :: Microsoft :: Windows :: Windows 11",
+        "Development Status :: 1 - Planning",
     ],
     python_requires='>=3.6',
 )
