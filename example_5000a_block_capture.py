@@ -1,39 +1,35 @@
-from picosdk.picosdk import *
+from picosdk import picosdk
 from matplotlib import pyplot as plt
 
-ps5000 = ps5000a()
+ps5000 = picosdk.ps5000a()
 
-range = RANGE_10V
-threshold_mv = 2000
-timebase = 32
-samples = 5000
+range = picosdk.RANGE._1V
+timebase = 2
+samples = 10000
+channel_a = picosdk.CHANNEL.A
+channel_b = picosdk.CHANNEL.B
 
-# raise PicoSDKNotFoundException('test', 'test')
+range = picosdk.RANGE._1V
 
 ps5000.open_unit()
-ps5000.change_power_source(POWER_SOURCE.SUPPLY_NOT_CONNECTED)
 
-ps5000.get_unit_serial()
+ps5000.open_unit(resolution=picosdk.RESOLUTION._16BIT)
+ps5000.change_power_source(picosdk.POWER_SOURCE.SUPPLY_NOT_CONNECTED)
 
-print("Serial:", ps5000.get_unit_serial())
-ps5000.set_channel(CHANNEL_A, range, coupling=AC_COUPLING)
-ps5000.set_channel(CHANNEL_B, range, coupling=AC_COUPLING)
-# print("Timebase:", ps5000.get_timebase(timebase, samples))
-ps5000.set_simple_trigger(CHANNEL_B, 
-                          threshold_mv=threshold_mv, 
+print(ps5000.get_unit_serial())
+ps5000.set_channel(channel_a, range, coupling=picosdk.DC_COUPLING)
+ps5000.set_channel(channel_b, range, coupling=picosdk.AC_COUPLING)
+ps5000.set_simple_trigger(channel_b, 
+                          threshold_mv=0, 
                           auto_trigger_ms=5000)
 
 # Easy Block Capture
-buffer = ps5000.run_block(timebase, samples)
+buffer = ps5000.run_simple_block_capture(timebase, samples)
 
 ps5000.close_unit()
 
-# df = pd.DataFrame.from_dict(buffer)
-# df.to_csv('data.csv')
-
 
 # print(buffer)
-# buffer = ps5000.channels_buffer_adc_to_mv(buffer)
-plt.plot(buffer[CHANNEL_A])
-plt.plot(buffer[CHANNEL_B])
+plt.plot(buffer[channel_a])
+plt.plot(buffer[channel_b])
 plt.savefig('graph.png')
