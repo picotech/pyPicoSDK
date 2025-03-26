@@ -1,5 +1,4 @@
-docs_version = "0.1.0"
-package_version = "0.1.2"
+from .version import docs_version, package_version
 
 
 def update_lines(file_path, start_with, replacement_string):
