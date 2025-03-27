@@ -21,8 +21,8 @@ setup(
     package_data={
         "picosdk": extra_files,
     },
-    author="Your Name",
-    author_email="you@example.com",
+    author="Pico Technology",
+    author_email="support@picotech.com",
     description="Modern Python wrapper for PicoSDK",
     long_description=open("README.md").read() if os.path.exists("README.md") else "",
     long_description_content_type="text/markdown",
