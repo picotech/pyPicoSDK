@@ -17,14 +17,14 @@ def update_lines(file_path, start_with, replacement_string):
                 f.write(line)
 
 def update_docs():
-    update_lines('./docs/docs/index.md', 'pyPicoSDK:', f'pyPicoSDK: {package_version}')
-    update_lines('./docs/docs/index.md', 'Docs:', f'Docs: {docs_version}')
+    update_lines('../docs/docs/index.md', 'pyPicoSDK:', f'pyPicoSDK: {package_version}')
+    update_lines('../docs/docs/index.md', 'Docs:', f'Docs: {docs_version}')
 
 def update_setup():
-    update_lines('./setup.py', 'version=', (' '*4) + f'version="{package_version}",')
+    update_lines('../setup.py', 'version=', (' '*4) + f'version="{package_version}",')
 
 def update_src():
-    update_lines('./picosdk/version.py', 'VERSION', f'VERSION = "{package_version}"')
+    update_lines('../picosdk/version.py', 'VERSION', f'VERSION = "{package_version}"')
 
 def update_versions():
     update_docs()
