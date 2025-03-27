@@ -132,11 +132,36 @@ class CHANNEL(IntEnum):
     H = 7
 
 class COUPLING(IntEnum):
+    """
+    Enum class representing different types of coupling used in signal processing.
+
+    Attributes:
+        AC: Represents AC coupling.
+        DC: Represents DC coupling.
+        DC_50OHM: Represents 50 Ohm DC coupling.
+    """
     AC = 0
     DC = 1
     DC_50OHM = 2
 
 class RANGE(IntEnum):
+    """
+    Enum class representing different voltage ranges used in signal processing.
+
+    Attributes:
+        mV10: Voltage range of ±10 mV.
+        mV20: Voltage range of ±20 mV.
+        mV50: Voltage range of ±50 mV.
+        mV100: Voltage range of ±100 mV.
+        mV200: Voltage range of ±200 mV.
+        mV500: Voltage range of ±500 mV.
+        V1: Voltage range of ±1 V.
+        V2: Voltage range of ±2 V.
+        V5: Voltage range of ±5 V.
+        V10: Voltage range of ±10 V.
+        V20: Voltage range of ±20 V.
+        V50: Voltage range of ±50 V.
+    """
     mV10 = 0
     mV20 = 1
     mV50 = 2
@@ -153,11 +178,29 @@ class RANGE(IntEnum):
 RANGE_LIST = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000]
 
 class BANDWIDTH_CH:
+    """
+    Class for different bandwidth configurations.
+
+    Attributes:
+        FULL: Full bandwidth configuration.
+        BW_20MHZ: Bandwidth of 20 MHz.
+        BW_200MHZ: Bandwidth of 200 MHz.
+    """
     FULL = 0
     BW_20MHZ = 1
     BW_200MHZ = 2
 
 class DATA_TYPE:
+    """
+    Class for different data types.
+
+    Attributes:
+        INT8_T: 8-bit signed integer.
+        INT16_T: 16-bit signed integer.
+        INT32_T: 32-bit signed integer.
+        UINT32_T: 32-bit unsigned integer.
+        INT64_T: 64-bit signed integer.
+    """
     INT8_T = 0
     INT16_T = 1
     INT32_T = 2
@@ -165,6 +208,19 @@ class DATA_TYPE:
     INT64_T = 4
 
 class ACTION:
+    """
+    Action codes used to manage and clear data buffers.
+
+    These action codes are used with functions like `setDataBuffer` to specify
+    the type of operation to perform on data buffers.
+
+    Attributes:
+        CLEAR_ALL: Clears all data buffers.
+        ADD: Adds data to the buffer.
+        CLEAR_THIS_DATA_BUFFER: Clears the current data buffer.
+        CLEAR_WAVEFORM_DATA_BUFFERS: Clears all waveform data buffers.
+        CLEAR_WAVEFORM_READ_DATA_BUFFERS: Clears the waveform read data buffers.
+    """
     CLEAR_ALL = 0x00000001
     ADD = 0x00000002
     CLEAR_THIS_DATA_BUFFER = 0x00001000
@@ -172,6 +228,20 @@ class ACTION:
     CLEAR_WAVEFORM_READ_DATA_BUFFERS = 0x00004000
 
 class RATIO_MODE:
+    """
+    Defines various ratio modes for signal processing.
+
+    Attributes:
+        AGGREGATE: Aggregate mode for data processing.
+        DECIMATE: Decimation mode for reducing data resolution.
+        AVERAGE: Averaging mode for smoothing data.
+        DISTRIBUTION: Mode for calculating distribution statistics.
+        SUM: Mode for summing data.
+        TRIGGER_DATA_FOR_TIME_CALCULATION: Mode for calculating trigger data for time-based calculations.
+        SEGMENT_HEADER: Mode for segment header data processing.
+        TRIGGER: Trigger mode for event-based data.
+        RAW: Raw data mode, without any processing.
+    """
     AGGREGATE = 1
     DECIMATE = 2
     AVERAGE = 4
@@ -183,6 +253,16 @@ class RATIO_MODE:
     RAW = 0x80000000
 
 class POWER_SOURCE:
+    """
+    Defines different power source connection statuses.
+
+    These values represent the connection status of a power supply or USB device.
+
+    Attributes:
+        SUPPLY_CONNECTED: Power supply is connected.
+        SUPPLY_NOT_CONNECTED: Power supply is not connected.
+        USB3_0_DEVICE_NON_USB3_0_PORT: USB 3.0 device is connected to a non-USB 3.0 port.
+    """
     SUPPLY_CONNECTED = 0x00000119
     SUPPLY_NOT_CONNECTED = 0x0000011A
     USB3_0_DEVICE_NON_USB3_0_PORT= 0x0000011E
