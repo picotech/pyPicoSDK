@@ -2,19 +2,18 @@
 ## Installation
 ### Via Pip
 1. Install the package via pip `pip install -i https://test.pypi.org/simple/ pypicosdk`
-
-2. In your `main.py` add `from picosdk import picosdk`
+2. In your `main.py` add `import pypicosdk` or `import pypicosdk as psdk`
 
 ### Via GitHub (Inc examples)
 1. Install github repository to folder `git clone https://github.com/JamesPicoTech/pyPicoSDK.git`
-2. In your `main.py` add `from picosdk import picosdk`
+2. In your `main.py` add `import pypicosdk` or `import pypicosdk as psdk`
 
 ## Quickstart
 To test functionality of this library, copy and run the following python script:
 ```
-from picosdk import picosdk
+import pypicosdk as psdk
 
-scope = picosdk.ps6000a()
+scope = psdk.ps6000a()
 
 scope.open_unit()
 print(scope.get_unit_serial())
@@ -31,6 +30,6 @@ Once tested, try an [example script from github](https://github.com/JamesPicoTec
 - [pypi (src repo)](https://test.pypi.org/project/pypicosdk/)
 
 ## Version Control
-pyPicoSDK: 0.1.2
+pyPicoSDK: 0.1.3
 
-Docs: 0.1.1
+Docs: 0.1.2

@@ -24,7 +24,7 @@ def update_setup():
     update_lines('../setup.py', 'version=', (' '*4) + f'version="{package_version}",')
 
 def update_src():
-    update_lines('../picosdk/version.py', 'VERSION', f'VERSION = "{package_version}"')
+    update_lines('../pypicosdk/version.py', 'VERSION', f'VERSION = "{package_version}"')
 
 def update_versions():
     update_docs()

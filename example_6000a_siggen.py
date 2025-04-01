@@ -1,6 +1,6 @@
-from picosdk.picosdk import *
+import pypicosdk as psdk
 
-ps = ps6000a()
+ps = psdk.ps6000a()
 
 ps.open_unit()
 

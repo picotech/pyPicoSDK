@@ -7,19 +7,19 @@ def package_files(directory):
     for (path, _, filenames) in os.walk(directory):
         for filename in filenames:
             full_path = os.path.join(path, filename)
-            paths.append(os.path.relpath(full_path, "picosdk"))
+            paths.append(os.path.relpath(full_path, "pypicosdk"))
     return paths
 
-extra_files = package_files('picosdk/lib')
+extra_files = package_files('pypicosdk/lib')
 
 setup(
     name="pypicosdk",
-    version="0.1.2",
+    version="0.1.3",
     packages=find_packages(),
     include_package_data=True,
     has_ext_modules=lambda : True,
     package_data={
-        "picosdk": extra_files,
+        "pypicosdk": extra_files,
     },
     author="Pico Technology",
     author_email="support@picotech.com",

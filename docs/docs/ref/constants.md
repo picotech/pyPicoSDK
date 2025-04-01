@@ -1,4 +1,4 @@
-::: picosdk.constants
+::: pypicosdk.constants
     options:
         show_bases: false
         show_symbol_type_toc: true

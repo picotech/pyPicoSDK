@@ -1,9 +1,12 @@
 import ctypes
 import os
+import numpy as np
+import pandas as pd
 
 from .error_list import ERROR_STRING
 from .constants import *
 from .version import VERSION
+from . import convert
 
 # Exceptions
 class PicoSDKNotFoundException(Exception):
@@ -190,6 +193,38 @@ class PicoScopeBase:
         """
         return self.get_unit_info(UNIT_INFO.PICO_BATCH_AND_SERIAL)
     
+    def _get_enabled_channel_flags(self) -> int:
+        """
+        Returns integer of enabled channels as a binary code.
+        Where channel A is LSB.
+        I.e. Channel A and channel C would be '0101' -> 5
+
+        Returns:
+            int: Decimal of enabled channels
+        """
+        enabled_channel_byte = 0
+        for channel in self.range:
+            enabled_channel_byte += 2**channel
+        return enabled_channel_byte
+    
+    def get_nearest_sampling_interval(self, sample_rate:float) -> dict:
+        timebase = ctypes.c_uint32()
+        time_interval = ctypes.c_double()
+        self._call_attr_function(
+            'NearestSampleIntervalStateless',
+            self.handle,
+            self._get_enabled_channel_flags(),
+            ctypes.c_double(sample_rate),
+            self.resolution,
+            ctypes.byref(timebase),
+            ctypes.byref(time_interval),
+        )
+        return {"timebase": timebase.value, "actual_sample_rate": time_interval.value}
+    
+    def get_timebase(timebase, samples):
+        # Override for PicoScopeBase
+        raise NotImplemented("Method not yet available for this oscilloscope")
+    
     def _get_timebase(self, timebase: int, samples: int, segment:int=0) -> dict:
         """
         This function calculates the sampling rate and maximum number of 
@@ -290,6 +325,22 @@ class PicoScopeBase:
         )
         return max_value.value
     
+    def get_time_axis(self, timebase:int, samples:int) -> np.array:
+        """
+        Return an array of time values based on the timebase and number
+        of samples
+
+        Args:
+            timebase (int): PicoScope timebase 
+            samples (int): Number of samples captured
+
+        Returns:
+            np.array: Array of time values in nano-seconds
+        """
+        np_parameters = self.get_timebase(timebase, samples)
+        return np.arange(samples) * np_parameters['Interval(ns)']
+
+    
     # Data conversion ADC/mV & ctypes/int 
     def mv_to_adc(self, mv:float, channel_range:int) -> int:
         """
@@ -315,7 +366,7 @@ class PicoScopeBase:
         """Converts an ADC buffer list to mV list"""
         return [self.adc_to_mv(sample, self.range[channel]) for sample in buffer]
     
-    def buffer_adc_to_mv_multiple_channels(self, channels_buffer: dict) -> dict:
+    def channels_buffer_adc_to_mv(self, channels_buffer: dict) -> dict:
         "Converts dict of multiple channels adc values to millivolts (mV)"
         for channel in channels_buffer:
             channels_buffer[channel] = self.buffer_adc_to_mv(channels_buffer[channel], channel)
@@ -325,11 +376,33 @@ class PicoScopeBase:
         "Converts a ctype dataset into a python list of samples"
         return [sample for sample in ctypes_list]
     
-    def buffer_ctype_to_list_for_multiple_channels(self, channels_buffer):
+    def channels_buffer_ctype_to_list(self, channels_buffer):
         "Takes a ctypes channel dictionary buffer and converts into a integer array."
         for channel in channels_buffer:
             channels_buffer[channel] = self.buffer_ctypes_to_list(channels_buffer[channel])
         return channels_buffer
+    
+    def channels_buffer_np_array_adc_to_mv(self, channels_buffer:dict[np.array]) -> dict[np.array]:
+        temp_channels_buffer = {}
+        for channel in channels_buffer:
+            range_mv = RANGE_LIST[self.range[channel]]
+            array = channels_buffer[channel]
+            max_adc = self.max_adc_value
+            print((array/max_adc)*range_mv)
+        exit()
+    
+    def channels_buffer_ctype_to_np_array(self, channels_buffer:dict[ctypes.Array]) -> dict[np.array]:
+        """
+        Converts ctype multiple channel buffer dict to numpy array dict
+
+        Args:
+            channels_buffer (dict): Multiple channel buffer dict 
+
+        Returns:
+            dict: Multiple channel numpy array dict
+        """
+        return {channel: np.ctypeslib.as_array(ctype_buffer) for channel, ctype_buffer in channels_buffer.items()}
+
 
     # Set methods for PicoScope configuration    
     def _change_power_source(self, state: POWER_SOURCE) -> 0:
@@ -442,6 +515,24 @@ class PicoScopeBase:
         else: raise PicoSDKException("Invalid datatype selected for buffer")
 
         buffer = buffer()
+        # if datatype == DATA_TYPE.INT8_T:     
+        #     buffer = np.zeros(samples, dtype=np.int8)
+        #     ctype_buffer = buffer.ctypes.data_as(ctypes.POINTER(ctypes.c_int8))
+        # elif datatype == DATA_TYPE.INT16_T:  
+        #     buffer = np.zeros(samples, dtype=np.int16)
+        #     ctype_buffer = buffer.ctypes.data_as(ctypes.POINTER(ctypes.c_int16))
+        # elif datatype == DATA_TYPE.INT32_T:  
+        #     buffer = np.zeros(samples, dtype=np.int32)
+        #     ctype_buffer = buffer.ctypes.data_as(ctypes.POINTER(ctypes.c_int32))
+        # elif datatype == DATA_TYPE.INT64_T:  
+        #     buffer = np.zeros(samples, dtype=np.int64)
+        #     ctype_buffer = buffer.ctypes.data_as(ctypes.POINTER(ctypes.c_int64))
+        # elif datatype == DATA_TYPE.UINT32_T: 
+        #     buffer = np.zeros(samples, dtype=np.uint32)
+        #     ctype_buffer = buffer.ctypes.data_as(ctypes.POINTER(ctypes.c_uint32))
+        # else: 
+        #     raise PicoSDKException("Invalid datatype selected for buffer")
+        
         self._call_attr_function(
             'SetDataBuffer',
             self.handle,
@@ -522,7 +613,7 @@ class PicoScopeBase:
         )
         return total_samples.value
     
-    def run_simple_block_capture(self, timebase, samples) -> dict:
+    def run_simple_block_capture(self) -> dict:
         raise NotImplementedError("This method is not yet implimented in this PicoScope")
     
     # Siggen Functions
@@ -697,7 +788,7 @@ class ps6000a(PicoScopeBase):
         return channels_buffer
     
     def run_simple_block_capture(self, timebase:int, samples:int, segment=0, start_index=0, datatype=DATA_TYPE.INT16_T, ratio=0, 
-                         ratio_mode=RATIO_MODE.RAW, action=ACTION.CLEAR_ALL|ACTION.ADD, pre_trig_percent=50) -> dict:
+                         ratio_mode=RATIO_MODE.RAW, action=ACTION.CLEAR_ALL|ACTION.ADD, pre_trig_percent=50) -> pd.DataFrame:
         """
         Performs a complete single block capture using current channel and trigger configuration.
 
@@ -724,10 +815,31 @@ class ps6000a(PicoScopeBase):
             >>> scope.set_simple_trigger(CHANNEL.A, threshold_mv=500)
             >>> buffers = scope.run_simple_block_capture(timebase=3, samples=1000)
         """
+        # Setup data buffer for enabled channels
         channels_buffer = self.set_data_buffer_for_enabled_channels(samples, segment, datatype, ratio_mode, action)
+
+        # Start block capture
         self.run_block_capture(timebase, samples, pre_trig_percent, segment)
-        self.get_values(samples, start_index, segment, ratio, ratio_mode)
-        return channels_buffer
+
+        # Get values from PicoScope (returning actual samples for time_axis)
+        actual_samples = self.get_values(samples, start_index, segment, ratio, ratio_mode)
+        
+        # Convert channels buffer from ctypes into numpy
+        channels_buffer = self.channels_buffer_ctype_to_np_array(channels_buffer)
+
+        # Convert channels buffer numpy from adc values to mV
+        channels_buffer = self.channels_buffer_np_array_adc_to_mv(channels_buffer)
+
+
+        # Generate the time axis based on actual samples and timebase
+        time_axis = self.get_time_axis(timebase, actual_samples)
+
+        dataframe = pd.DataFrame(
+            channels_buffer,
+            index=time_axis
+        )
+
+        return dataframe
     
 class ps5000a(PicoScopeBase):
     dll = ctypes.CDLL(os.path.join(_get_lib_path(), "ps5000a.dll"))
@@ -755,47 +867,3 @@ class ps5000a(PicoScopeBase):
     
     def change_power_source(self, state):
         return super()._change_power_source(state)
-
-
-
-# """Timebase calculation for external use WIP"""
-# def timebase_calc_6000a(timebase: int):
-#     """Hello World
-
-#     :param int timebase: _description_
-#     :return _type_: _description_
-#     """
-#     if timebase <= 4:
-#         return print((pow(2, timebase))/5_000_000_000)
-#     else:
-#         return print((timebase - 4) / 156_250_000)
-
-# def timebase_calc_6428E_D(timebase: int):
-#     if timebase <= 5:
-#         return to_engineering_notation((pow(2, timebase)) / 10_000_000_000)
-#     else:
-#         return to_engineering_notation((timebase - 5) / 156_250_000)
-    
-# def to_engineering_notation(value):
-#     prefixes = {
-#         -12: 'p',  # pico
-#         -9: 'n',   # nano
-#         -6: 'u',   # micro
-#         -3: 'm',   # milli
-#          0: '',    # unit
-#          3: 'k',   # kilo
-#          6: 'M',   # mega
-#          9: 'G',   # giga
-#         12: 'T',   # tera
-#     }
-    
-#     if value == 0:
-#         return "0"
-    
-#     exponent = 0
-#     scaled_value = 0
-#     exponent = value/10
-#     print(exponent)
-    
-#     return 0
-#     # return f"{scaled_value:.3f}{prefixes[exponent]}"

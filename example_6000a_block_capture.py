@@ -1,13 +1,12 @@
-from picosdk import picosdk
+import pypicosdk as psdk
 from matplotlib import pyplot as plt
-
 
 timebase = 2
 samples = 100000
-channel = picosdk.CHANNEL.A
-range = picosdk.RANGE.V1
+channel = psdk.CHANNEL.A
+range = psdk.RANGE.V1
 
-ps6000 = picosdk.ps6000a()
+ps6000 = psdk.ps6000a()
 
 ps6000.open_unit()
 
@@ -19,7 +18,7 @@ channels_buffer = ps6000.set_data_buffer_for_enabled_channels(samples=samples)
 ps6000.run_block_capture(timebase=timebase, samples=samples)
 ps6000.get_values(samples)
 
-channels_buffer = ps6000.buffer_adc_to_mv_multiple_channels(channels_buffer)
+# No ADC conversion or time-axis yet
 
 ps6000.close_unit()
 
