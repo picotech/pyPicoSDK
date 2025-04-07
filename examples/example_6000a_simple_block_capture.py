@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 
 # Setup variables
 timebase = 2
-samples = 100000
+samples = 50_000
 channel_a = psdk.CHANNEL.A
 channel_b = psdk.CHANNEL.B
 range = psdk.RANGE.V1
@@ -31,5 +31,6 @@ plt.plot(time_axis, channel_buffer[channel_b], label='Channel B')
 plt.xlabel("Time (ns)")     
 plt.ylabel("Amplitude (mV)")
 plt.ylim(-500, 500)
+plt.legend()
 plt.grid(True)
 plt.show()
