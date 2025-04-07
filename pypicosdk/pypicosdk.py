@@ -491,23 +491,6 @@ class PicoScopeBase:
         else: raise PicoSDKException("Invalid datatype selected for buffer")
 
         buffer = buffer()
-        # if datatype == DATA_TYPE.INT8_T:     
-        #     buffer = np.zeros(samples, dtype=np.int8)
-        #     ctype_buffer = buffer.ctypes.data_as(ctypes.POINTER(ctypes.c_int8))
-        # elif datatype == DATA_TYPE.INT16_T:  
-        #     buffer = np.zeros(samples, dtype=np.int16)
-        #     ctype_buffer = buffer.ctypes.data_as(ctypes.POINTER(ctypes.c_int16))
-        # elif datatype == DATA_TYPE.INT32_T:  
-        #     buffer = np.zeros(samples, dtype=np.int32)
-        #     ctype_buffer = buffer.ctypes.data_as(ctypes.POINTER(ctypes.c_int32))
-        # elif datatype == DATA_TYPE.INT64_T:  
-        #     buffer = np.zeros(samples, dtype=np.int64)
-        #     ctype_buffer = buffer.ctypes.data_as(ctypes.POINTER(ctypes.c_int64))
-        # elif datatype == DATA_TYPE.UINT32_T: 
-        #     buffer = np.zeros(samples, dtype=np.uint32)
-        #     ctype_buffer = buffer.ctypes.data_as(ctypes.POINTER(ctypes.c_uint32))
-        # else: 
-        #     raise PicoSDKException("Invalid datatype selected for buffer")
         
         self._call_attr_function(
             'SetDataBuffer',
@@ -608,10 +591,10 @@ class PicoScopeBase:
         Returns:
                 dict: Returns dictionary of the actual achieved values.
         """
-        freq = ctypes.c_double()
-        stop_freq = ctypes.c_double()
-        freq_incr = ctypes.c_double()
-        dwell_time = ctypes.c_double()
+        c_frequency = ctypes.c_double()
+        c_stop_freq = ctypes.c_double()
+        c_freq_incr = ctypes.c_double()
+        c_dwell_time = ctypes.c_double()
         self._call_attr_function(
             'SigGenApply',
             self.handle,
@@ -620,17 +603,17 @@ class PicoScopeBase:
             trigger_enabled,
             auto_clock_optimise_enabled,
             override_auto_clock_prescale,
-            ctypes.byref(freq),
-            ctypes.byref(stop_freq),
-            ctypes.byref(freq_incr),
-            ctypes.byref(dwell_time)
+            ctypes.byref(c_frequency),
+            ctypes.byref(c_stop_freq),
+            ctypes.byref(c_freq_incr),
+            ctypes.byref(c_dwell_time)
         )
-        return {'Freq': freq.value,
-                'StopFreq': stop_freq.value,
-                'FreqInc': freq_incr.value,
-                'dwelltime': dwell_time.value}
+        return {'Freq': c_frequency.value,
+                'StopFreq': c_stop_freq.value,
+                'FreqInc': c_freq_incr.value,
+                'dwelltime': c_dwell_time.value}
     
-    def _siggen_set_frequency(self, frequency:int) -> None:
+    def _siggen_set_frequency(self, frequency:float) -> None:
         """
         Set frequency of SigGen in Hz.
 
@@ -640,38 +623,55 @@ class PicoScopeBase:
         self._call_attr_function(
             'SigGenFrequency',
             self.handle,
-            frequency
+            ctypes.c_double(frequency)
+        )
+
+    def _siggen_set_duty_cycle(self, duty:float) -> None:
+        """
+        Set duty cycle of SigGen in percentage
+
+        Args:
+                Duty cycle (int): Duty cycle in %.
+        """   
+        self._call_attr_function(
+            'SigGenWaveformDutyCycle',
+            self.handle,
+            ctypes.c_double(duty)
         )
     
-    def _siggen_set_range(self, pk2pk:int, offset=0):
+    def _siggen_set_range(self, pk2pk:float, offset:float=0.0):
         """
         Set mV range of SigGen (6000A).
 
         Args:
-                pk2pk (int): Peak to peak of signal in mV.
-                offset (int, optional): Offset of signal in mV.
+                pk2pk (int): Peak to peak of signal in volts (V).
+                offset (int, optional): Offset of signal in volts (V).
         """      
         self._call_attr_function(
             'SigGenRange',
             self.handle,
-            pk2pk,
-            offset
+            ctypes.c_double(pk2pk),
+            ctypes.c_double(offset)
         )
     
-    def _siggen_set_waveform(self, wavetype: WAVEFORM):
+    def _siggen_set_waveform(self, wave_type: WAVEFORM):
         """
         Set waveform type for SigGen (6000A).
 
         Args:
-                wavetype (WAVEFORM): Waveform type i.e. WAVEFORM.SINE.
+                wave_type (WAVEFORM): Waveform type i.e. WAVEFORM.SINE.
         """
         self._call_attr_function(
-            'SigGenRange',
+            'SigGenWaveform',
             self.handle,
-            wavetype,
-            0,
-            0
+            wave_type,
+            None,
+            None
         )
+
+    def set_siggen(self, *args):
+        raise NotImplementedError("Method not yet available for this oscilloscope")
+
 
 
 class ps6000a(PicoScopeBase):
@@ -690,6 +690,22 @@ class ps6000a(PicoScopeBase):
         super()._open_unit(serial_number, resolution)
         self.min_adc_value, self.max_adc_value =super()._get_adc_limits()
     
+    def get_timebase(self, timebase:int, samples:int, segment:int=0) -> None:
+        """
+        This function calculates the sampling rate and maximum number of 
+        samples for a given timebase under the specified conditions.
+
+        Args:
+                timebase (int): Selected timebase multiplier (refer to programmer's guide).
+                samples (int): Number of samples.
+                segment (int, optional): The index of the memory segment to use.
+
+        Returns:
+                dict: Returns interval (ns) and max samples as a dictionary.
+        """
+
+        return super()._get_timebase(timebase, samples, segment)
+    
     def set_channel(self, channel:CHANNEL, range:RANGE, enabled=True, coupling:COUPLING=COUPLING.DC, 
                     offset:float=0.0, bandwidth=BANDWIDTH_CH.FULL) -> None:
         """
@@ -707,22 +723,6 @@ class ps6000a(PicoScopeBase):
             super()._set_channel_on(channel, range, coupling, offset, bandwidth)
         else:
             super()._set_channel_off(channel)
-    
-    def get_timebase(self, timebase:int, samples:int, segment:int=0) -> None:
-        """
-        This function calculates the sampling rate and maximum number of 
-        samples for a given timebase under the specified conditions.
-
-        Args:
-                timebase (int): Selected timebase multiplier (refer to programmer's guide).
-                samples (int): Number of samples.
-                segment (int, optional): The index of the memory segment to use.
-
-        Returns:
-                dict: Returns interval (ns) and max samples as a dictionary.
-        """
-
-        return super()._get_timebase(timebase, samples, segment)
     
     def set_data_buffer(self, channel:CHANNEL, samples:int, segment:int=0, datatype:DATA_TYPE=DATA_TYPE.INT16_T, 
                         ratio_mode:RATIO_MODE=RATIO_MODE.RAW, action:ACTION=ACTION.CLEAR_ALL | ACTION.ADD) -> ctypes.Array:
@@ -744,7 +744,7 @@ class ps6000a(PicoScopeBase):
         return super()._set_data_buffer_ps6000a(channel, samples, segment, datatype, ratio_mode, action)
     
     def set_data_buffer_for_enabled_channels(self, samples:int, segment:int=0, datatype=DATA_TYPE.INT16_T, 
-                                             ratio_mode=RATIO_MODE.RAW, action=ACTION.CLEAR_ALL | ACTION.ADD) -> dict:
+                                             ratio_mode=RATIO_MODE.RAW) -> dict:
         """
         Sets data buffers for enabled channels set by picosdk.set_channel()
 
@@ -753,18 +753,41 @@ class ps6000a(PicoScopeBase):
             segment (int): The memory segment index.
             datatype (DATA_TYPE): The data type used for the buffer.
             ratio_mode (RATIO_MODE): The ratio mode (e.g., RAW, AVERAGE).
-            action (ACTION): The action to perform (e.g., CLEAR_ALL | ADD).
 
         Returns:
             dict: A dictionary mapping each channel to its associated data buffer.
         """
+        # Clear the buffer
+        super()._set_data_buffer_ps6000a(0, 0, 0, 0, 0, ACTION.CLEAR_ALL)
         channels_buffer = {}
         for channel in self.range:
-            channels_buffer[channel] = super()._set_data_buffer_ps6000a(channel, samples, segment, datatype, ratio_mode, action)
+            channels_buffer[channel] = super()._set_data_buffer_ps6000a(channel, samples, segment, datatype, ratio_mode, action=ACTION.ADD)
         return channels_buffer
     
+    def set_siggen(self, frequency:float, pk2pk:float, wave_type:WAVEFORM, offset:float=0.0, duty:float=50) -> dict:
+        """Configures and applies the signal generator settings.
+
+        Sets up the signal generator with the specified waveform type, frequency,
+        amplitude (peak-to-peak), offset, and duty cycle.
+
+        Args:
+            frequency (float): Signal frequency in hertz (Hz).
+            pk2pk (float): Peak-to-peak voltage in volts (V).
+            wave_type (WAVEFORM): Waveform type (e.g., WAVEFORM.SINE, WAVEFORM.SQUARE).
+            offset (float, optional): Voltage offset in volts (V). Defaults to 0.0.
+            duty (int or float, optional): Duty cycle as a percentage (0–100). Defaults to 50.
+
+        Returns:
+            dict: Returns dictionary of the actual achieved values.
+        """
+        self._siggen_set_waveform(wave_type)
+        self._siggen_set_range(pk2pk, offset)
+        self._siggen_set_frequency(frequency)
+        self._siggen_set_duty_cycle(duty)
+        return self._siggen_apply()
+    
     def run_simple_block_capture(self, timebase:int, samples:int, segment=0, start_index=0, datatype=DATA_TYPE.INT16_T, ratio=0, 
-                         ratio_mode=RATIO_MODE.RAW, action=ACTION.CLEAR_ALL|ACTION.ADD, pre_trig_percent=50) -> dict:
+                         ratio_mode=RATIO_MODE.RAW, pre_trig_percent=50) -> tuple[dict, list]:
         """
         Performs a complete single block capture using current channel and trigger configuration.
 
@@ -780,11 +803,11 @@ class ps6000a(PicoScopeBase):
             datatype (DATA_TYPE, optional): Data type to use for the capture buffer.
             ratio (int, optional): Downsampling ratio.
             ratio_mode (RATIO_MODE, optional): Downsampling mode.
-            action (ACTION, optional): Action to take on the data buffer.
             pre_trig_percent (int, optional): Percentage of samples to capture before the trigger.
 
         Returns:
             dict: A dictionary mapping each enabled channel to its corresponding data buffer.
+            list: Time axis (x-axis) list of timestamps for the sample data
 
         Examples:
             >>> scope.set_channel(CHANNEL.A, RANGE.V1)
@@ -792,7 +815,7 @@ class ps6000a(PicoScopeBase):
             >>> buffers = scope.run_simple_block_capture(timebase=3, samples=1000)
         """
         # Setup data buffer for enabled channels
-        channels_buffer = self.set_data_buffer_for_enabled_channels(samples, segment, datatype, ratio_mode, action)
+        channels_buffer = self.set_data_buffer_for_enabled_channels(samples, segment, datatype, ratio_mode)
 
         # Start block capture
         self.run_block_capture(timebase, samples, pre_trig_percent, segment)
