@@ -431,10 +431,20 @@ class PicoScopeBase:
         return self._error_handler(status)
     
     def set_simple_trigger(self, channel, threshold_mv, enable=True, direction=TRIGGER_DIR.RISING, delay=0, auto_trigger_ms=3000):
-        """Sets up a simple trigger from a specified channel and threshold in mV"""
+        """
+        Sets up a simple trigger from a specified channel and threshold in mV
+
+        Args:
+            channel (int): The input channel to apply the trigger to.
+            threshold_mv (float): Trigger threshold level in millivolts.
+            enable (bool, optional): Enables or disables the trigger. 
+            direction (TRIGGER_DIR, optional): Trigger direction (e.g., TRIGGER_DIR.RISING, TRIGGER_DIR.FALLING). 
+            delay (int, optional): Delay in samples after the trigger condition is met before starting capture. 
+            auto_trigger_ms (int, optional): Timeout in milliseconds after which data capture proceeds even if no trigger occurs. 
+        """
         threshold_adc = self.mv_to_adc(threshold_mv, self.range[channel])
-        attr_function = getattr(self.dll, self._unit_prefix_n + 'SetSimpleTrigger')
-        status = attr_function(
+        self._call_attr_function(
+            'SetSimpleTrigger',
             self.handle,
             enable,
             channel,
@@ -443,7 +453,6 @@ class PicoScopeBase:
             delay,
             auto_trigger_ms
         )
-        return self._error_handler(status)
     
     def set_data_buffer_for_enabled_channels():
         raise NotImplemented("Method not yet available for this oscilloscope")
@@ -774,8 +783,8 @@ class ps6000a(PicoScopeBase):
             frequency (float): Signal frequency in hertz (Hz).
             pk2pk (float): Peak-to-peak voltage in volts (V).
             wave_type (WAVEFORM): Waveform type (e.g., WAVEFORM.SINE, WAVEFORM.SQUARE).
-            offset (float, optional): Voltage offset in volts (V). Defaults to 0.0.
-            duty (int or float, optional): Duty cycle as a percentage (0–100). Defaults to 50.
+            offset (float, optional): Voltage offset in volts (V).
+            duty (int or float, optional): Duty cycle as a percentage (0–100).
 
         Returns:
             dict: Returns dictionary of the actual achieved values.
