@@ -2,11 +2,13 @@ import pypicosdk as psdk
 
 ps = psdk.ps6000a()
 
+frequency_hz = 1000
+voltage_pk2pk = 2
+wave_type = psdk.WAVEFORM.SINE
+
 ps.open_unit()
 
-ps.get_unit_serial()
-ps._siggen_set_range(1, 0)
-ps._siggen_set_frequency(50000)
-ps._siggen_set_waveform()
-print(ps._siggen_apply())
+ps.set_siggen(frequency_hz, voltage_pk2pk, wave_type)
+input("Return to continue... ")
+
 ps.close_unit()
