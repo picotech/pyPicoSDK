@@ -30,6 +30,6 @@ Once tested, try an [example script from github](https://github.com/JamesPicoTec
 - [pypi (src repo)](https://test.pypi.org/project/pypicosdk/)
 
 ## Version Control
-pyPicoSDK: 0.1.3
+pyPicoSDK: 0.1.5
 
 Docs: 0.1.2
