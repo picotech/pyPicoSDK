@@ -6,7 +6,8 @@
 
 ### Via GitHub (Inc examples)
 1. Install github repository to folder `git clone https://github.com/JamesPicoTech/pyPicoSDK.git`
-2. In your `main.py` add `import pypicosdk` or `import pypicosdk as psdk`
+2. In the root directory (where setup.py is) run `pip install .`
+3. In your `main.py` add `import pypicosdk` or `import pypicosdk as psdk`
 
 ## Quickstart
 To test functionality of this library, copy and run the following python script:
@@ -30,6 +31,6 @@ Once tested, try an [example script from github](https://github.com/JamesPicoTec
 - [pypi (src repo)](https://test.pypi.org/project/pypicosdk/)
 
 ## Version Control
-pyPicoSDK: 0.1.3
+pyPicoSDK: 0.1.5
 
 Docs: 0.1.2
