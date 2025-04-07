@@ -1,4 +1,12 @@
 ## Development
+
+### Live install pyPicoSDK for development
+Run the following command in root dir (where setup.py is):
+
+`pip install -e .`
+
+This will install pyPicoSDK as an editable package, any changes made to pypicosdk will be reflected in the example code or any code ran in the current environnment. 
+
 ### Adding a new general function
 This section of the guide shows how to add a new function into a class directly from the PicoSDK DLLs.
 1. Create a function within the PicoScopeBase class or the psX000a class:
