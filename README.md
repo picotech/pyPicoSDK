@@ -29,8 +29,9 @@ Once tested, try an [example script from github](https://github.com/JamesPicoTec
 - [Documentation & Reference](https://jamespicotech.github.io/pyPicoSDK/)
 - [GitHub Repo (with examples)](https://github.com/JamesPicoTech/pyPicoSDK)
 - [pypi (src repo)](https://test.pypi.org/project/pypicosdk/)
+- [**PicoScope Support (Compatibility)**](/dev/current/)
 
 ## Version Control
-pyPicoSDK: 0.2.0
+pyPicoSDK: 0.2.1
 
 Docs: 0.1.2
