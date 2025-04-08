@@ -20,13 +20,12 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-        cache: 'pip'
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         python -m pip install .
-        python -m pip install pytest
+        python -m pip install pytest build
         # pip install -r requirements.txt  # Install your dependencies
 
     - name: Test with pytest
@@ -36,6 +35,10 @@ jobs:
     - name: Build package
       run: |
         python -m build
+
+    - name: Check directory
+      run: |
+        dir
 
     # - name: Upload build artifacts
     #   uses: actions/upload-artifact@v3
