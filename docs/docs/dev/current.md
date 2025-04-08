@@ -2,7 +2,7 @@
 ## 6000 (A) API
 - Capture Modes 
     - Block Mode (Single Captures)
-- Signal Generator (*WIP*)
+- Signal Generator
 
 
 ## 5000 (A) API
