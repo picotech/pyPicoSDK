@@ -7,3 +7,7 @@ div.doc-contents:not(.first) {
   .doc-contents code {
     font-size: 0.9rem;
   }
+
+div.wy-side-nav-search {
+  background-color: #0d63a0;
+}
