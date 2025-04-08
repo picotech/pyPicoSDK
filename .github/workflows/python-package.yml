@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "pypy3.9", "pypy3.10", "pypy3.11"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
     - uses: actions/checkout@v4
@@ -41,9 +41,5 @@ jobs:
 
     - name: Show created files in dist/
       run: |
-        if exist dist (
-          dir dist /s
-        ) else (
-          echo dist directory does not exist
-        )
+        ls
       shell: cmd
