@@ -26,10 +26,15 @@ def update_setup():
 def update_src():
     update_lines('../pypicosdk/version.py', 'VERSION', f'VERSION = "{package_version}"')
 
+def update_project_toml():
+    update_lines('../pyproject.toml', 'version = ', f'version = "{package_version}"')
+
+
 def update_versions():
     update_docs()
     update_setup()
     update_src()
+    update_project_toml()
 
 if __name__ == "__main__":
     update_versions()
