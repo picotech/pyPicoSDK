@@ -4,7 +4,6 @@ import os
 from .error_list import ERROR_STRING
 from .constants import *
 from .version import VERSION
-from . import convert
 
 # Exceptions
 class PicoSDKNotFoundException(Exception):
@@ -206,6 +205,19 @@ class PicoScopeBase:
         return enabled_channel_byte
     
     def get_nearest_sampling_interval(self, sample_rate:float) -> dict:
+        """
+        This function returns the nearest possible sample interval to the requested 
+        sample interval. It does not change the configuration of the oscilloscope.
+
+        Channels need to be setup first before calculating as more channels may 
+        increase sample interval.
+
+        Args:
+            sample_rate (float): Time value in seconds (s) you would like to obtain.
+
+        Returns:
+            dict: Dictionary of suggested timebase and actual sample interval.
+        """
         timebase = ctypes.c_uint32()
         time_interval = ctypes.c_double()
         self._call_attr_function(
@@ -217,7 +229,7 @@ class PicoScopeBase:
             ctypes.byref(timebase),
             ctypes.byref(time_interval),
         )
-        return {"timebase": timebase.value, "actual_sample_rate": time_interval.value}
+        return {"timebase": timebase.value, "actual_sample_interval": time_interval.value}
     
     def get_timebase(timebase, samples):
         # Override for PicoScopeBase
