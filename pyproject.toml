@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pypicosdk"
+version = "0.2.0"
+description = "Modern Python wrapper for PicoSDK"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "MIT" }
+authors = [
+    { name = "Pico Technology", email = "support@picotech.com" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: Microsoft :: Windows :: Windows 10",
+    "Operating System :: Microsoft :: Windows :: Windows 11",
+    "Development Status :: 1 - Planning"
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.setuptools]
+packages = ["pypicosdk"]
+
+[tool.setuptools.package-data]
+pypicosdk = ["lib/**/*.dll"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

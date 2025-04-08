@@ -160,11 +160,9 @@ cython_debug/
 drawings/
 
 # Testing files
-timebase_calc.py
 unpack_picostatus.py
-main_6000a.py
 *.csv
-*test*.py
+*example_test*.py
 
 # mkdocs folder
 # docs/
