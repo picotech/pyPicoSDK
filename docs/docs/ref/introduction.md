@@ -3,15 +3,11 @@
 Each picoSDK class is built from a common class (PicoScopeBase) and a specific sub-class (ps####a).
 This allows each PicoScope to have shared, common functions i.e opening the unit, and specific functions i.e. changing power source on 5000 series PicoScopes.
 
-:ADD DIAGRAM TO SHOW WORKINGS:
-
 ## C PicoSDK (ctypes)
 This wrapper is built over the C DLL drivers from Pico Technology. 
 Therefore most basic python functions (such as `run_block()`) have a counterpart in the C library (e.g. `ps6000aRunBlockMode()`). 
 These python functions parse the variables through the DLL's using the `ctypes` package to talk directly to the unit. 
 For reference on these DLL's and their C implementation, go to [https://www.picotech.com/downloads/documentation](https://www.picotech.com/downloads/documentation) and look for your PicoScope Programmer's Guide.
-
-:RUN BLOCK DIAGRAM EXAMPLE:
 
 ## FAQ's
 ### Does my PicoScope use ps6000a() or ps6000()?
