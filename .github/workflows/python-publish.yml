@@ -1,0 +1,37 @@
+name: Build Windows Python Package
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        python-version: [3.9, 3.10, 3.11, 3.12, 3.13]  # Matrix of Python versions to test
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt  # Install your dependencies
+
+    - name: Build package
+      run: |
+        python setup.py sdist bdist_wheel  # Assuming your package uses setuptools
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: python-package-${{ matrix.python-version }}
+        path: dist/*  # Assuming your wheel and source distributions are stored in the 'dist' directory
