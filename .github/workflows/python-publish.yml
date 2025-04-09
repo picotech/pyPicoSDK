@@ -9,22 +9,17 @@ jobs:
 
     strategy:
       fail-fast: false
-      # matrix:
-      #   python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    # - name: Set up Python ${{ matrix.python-version }}
-    #   uses: actions/setup-python@v4
-    #   with:
-    #     python-version: ${{ matrix.python-version }}
-
-    - name: Setup python
-      uses: actions/setup-python@v5.5.0
-        with:
-          python-version: 3.12
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies
       run: |
@@ -48,15 +43,14 @@ jobs:
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4.6.2
       with:
-        # name: python-package-${{ matrix.python-version }}
-        name: python-package
-        path: dist/  # Assuming your wheel and source distributions are stored in the 'dist' directory
+        name: python-package-${{ matrix.python-version }}
+        path: dist/*  # Assuming your wheel and source distributions are stored in the 'dist' directory
 
   pypi-publish:
     runs-on: ubuntu-latest
     strategy:
-      # matrix:
-      #   python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     needs:
       - build
     permissions:
@@ -78,8 +72,7 @@ jobs:
       - name: Retrieve release distributions
         uses: actions/download-artifact@v4
         with:
-          # name: python-package-${{ matrix.python-version }}
-          name: python-package
+          name: python-package-${{ matrix.python-version }}
           path: dist/
 
       - name: Publish release distributions to PyPI
