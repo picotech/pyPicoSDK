@@ -36,7 +36,7 @@ jobs:
     - name: Deploy mkdocs
       run: |
         cd docs
-        mkdocs gh-deploy
+        mkdocs gh-deploy --force
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
