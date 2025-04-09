@@ -1,14 +1,15 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "pypicosdk"
-version = "0.2.2"
+version = "0.2.21"
 description = "Modern Python wrapper for PicoSDK"
 readme = "README.md"
 requires-python = ">=3.9"
-license = { file = "MIT" }
+# license = { file = "MIT" }
+license = { file = "LICENSE" }
 authors = [
     { name = "Pico Technology", email = "support@picotech.com" }
 ]
