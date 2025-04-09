@@ -41,7 +41,7 @@ jobs:
         ls dist
     
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4.6.2
       with:
         name: python-package-${{ matrix.python-version }}
         path: dist/*  # Assuming your wheel and source distributions are stored in the 'dist' directory
