@@ -142,7 +142,7 @@ class COUPLING(IntEnum):
     """
     AC = 0
     DC = 1
-    DC_50OHM = 2
+    DC_50OHM = 50
 
 class RANGE(IntEnum):
     """
