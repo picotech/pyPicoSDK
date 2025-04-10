@@ -1,0 +1,45 @@
+# This is a basic workflow that is manually triggered
+
+name: mkdocs deploy
+
+# Controls when the action will run. Workflow runs when manually triggered using the UI
+# or API.
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - v*
+  
+
+jobs:
+  mkdocs-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4.2.2
+
+    - name: Install python and mkdocs
+      uses: actions/setup-python@v5.5.0
+      with:
+        python-version: "3.12"
+
+    - name: Install dependancies
+      run: |
+        pip install mkdocs mkdocstrings-python
+
+    - name: Setup git
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Deploy mkdocs
+      run: |
+        cd docs
+        mkdocs gh-deploy --force
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+
+    
+    
