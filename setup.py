@@ -14,7 +14,7 @@ extra_files = package_files('pypicosdk/lib')
 
 setup(
     name="pypicosdk",
-    version="0.2.1",
+    version="0.2.21",
     packages=find_packages(),
     include_package_data=True,
     has_ext_modules=lambda : True,
