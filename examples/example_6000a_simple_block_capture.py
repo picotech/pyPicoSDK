@@ -9,19 +9,19 @@ channel_b = psdk.CHANNEL.B
 range = psdk.RANGE.V1
 
 # Initialise PicoScope 6000
-ps6000 = psdk.ps6000a()
-ps6000.open_unit()
+scope = psdk.ps6000a()
+scope.open_unit()
 
 # Setup channels and trigger
-ps6000.set_channel(channel=channel_a, range=range)
-ps6000.set_channel(channel=channel_b, range=range)
-ps6000.set_simple_trigger(channel=channel_a, threshold_mv=0)
+scope.set_channel(channel=channel_a, range=range)
+scope.set_channel(channel=channel_b, range=range)
+scope.set_simple_trigger(channel=channel_a, threshold_mv=0)
 
 # Run the block capture
-channel_buffer, time_axis = ps6000.run_simple_block_capture(timebase, samples)
+channel_buffer, time_axis = scope.run_simple_block_capture(timebase, samples)
 
 # Finish with PicoScope
-ps6000.close_unit()
+scope.close_unit()
 
 # Plot data to pyplot
 plt.plot(time_axis, channel_buffer[channel_a], label='Channel A')
