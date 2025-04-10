@@ -731,6 +731,9 @@ class ps6000a(PicoScopeBase):
                     offset:float=0.0, bandwidth=BANDWIDTH_CH.FULL) -> None:
         """
         Enable/disable a channel and specify certain variables i.e. range, coupling, offset, etc.
+        
+        For the ps6000a drivers, this combines _set_channel_on/off to a single function. 
+        Set channel on/off by adding enabled=True/False
 
         Args:
                 channel (CHANNEL): Channel to setup.
