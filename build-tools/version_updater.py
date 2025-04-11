@@ -1,5 +1,6 @@
 import sys
 import os
+import shutil
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(parent_dir)
 from version import docs_version, package_version
@@ -17,17 +18,20 @@ def update_lines(file_path, start_with, replacement_string):
                 f.write(line)
 
 def update_docs():
-    update_lines('../docs/docs/index.md', 'pyPicoSDK:', f'pyPicoSDK: {package_version}')
-    update_lines('../docs/docs/index.md', 'Docs:', f'Docs: {docs_version}')
+    update_lines('./docs/docs/index.md', 'pyPicoSDK:', f'pyPicoSDK: {package_version}')
+    update_lines('./docs/docs/index.md', 'Docs:', f'Docs: {docs_version}')
 
 def update_setup():
-    update_lines('../setup.py', 'version=', (' '*4) + f'version="{package_version}",')
+    update_lines('./setup.py', 'version=', (' '*4) + f'version="{package_version}",')
 
 def update_src():
-    update_lines('../pypicosdk/version.py', 'VERSION', f'VERSION = "{package_version}"')
+    update_lines('./pypicosdk/version.py', 'VERSION', f'VERSION = "{package_version}"')
 
 def update_project_toml():
-    update_lines('../pyproject.toml', 'version = ', f'version = "{package_version}"')
+    update_lines('./pyproject.toml', 'version = ', f'version = "{package_version}"')
+
+def overwrite_readme():
+    shutil.copyfile('./docs/docs/index.md', './README.md')
 
 
 def update_versions():
@@ -35,6 +39,7 @@ def update_versions():
     update_setup()
     update_src()
     update_project_toml()
+    overwrite_readme()
 
 if __name__ == "__main__":
     update_versions()
