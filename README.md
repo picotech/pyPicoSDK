@@ -28,10 +28,11 @@ Once tested, try an [example script from github](https://github.com/JamesPicoTec
 ## Useful links and references
 - [Documentation & Reference](https://jamespicotech.github.io/pyPicoSDK/)
 - [GitHub Repo (with examples)](https://github.com/JamesPicoTech/pyPicoSDK)
-- [pypi (src repo)](https://test.pypi.org/project/pypicosdk/)
-- [**PicoScope Support (Compatibility)**](/dev/current/)
+- [pypi (src repo)](https://pypi.org/project/pypicosdk/)
+- [pypi-nightly (dev repo)](https://pypi.org/project/pypicosdk-nightly/)
+- [PicoScope Support (Compatibility)](https://jamespicotech.github.io/pyPicoSDK/dev/current)
 
 ## Version Control
-pyPicoSDK: 0.2.1
+pyPicoSDK: 0.2.3
 
-Docs: 0.1.2
+Docs: 0.1.21
