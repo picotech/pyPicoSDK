@@ -135,6 +135,16 @@ class PicoScopeBase:
 
         self._get_attr_function('CloseUnit')(self.handle)
 
+    def stop(self) -> None: 
+        """
+        This function stops the scope device from sampling data
+        """
+        self._call_attr_function(
+            'Stop',
+            self.handle
+        )
+
+
     def is_ready(self) -> None:
         """
         Blocks execution until the PicoScope device is ready.
