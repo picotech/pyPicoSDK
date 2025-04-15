@@ -123,7 +123,7 @@ class PicoScopeBase:
         )
         self.resolution = resolution
     
-    def close_unit(self) -> int:
+    def close_unit(self) -> None:
         """
         Closes the PicoScope device and releases the hardware handle.
 
@@ -143,7 +143,6 @@ class PicoScopeBase:
             'Stop',
             self.handle
         )
-
 
     def is_ready(self) -> None:
         """
