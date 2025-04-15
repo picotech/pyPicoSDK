@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pypicosdk"
-version = "0.2.22"
+version = "0.2.23"
 description = "Modern Python wrapper for PicoSDK"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -31,3 +31,6 @@ pypicosdk = ["lib/**/*.dll"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["pypicosdk"]

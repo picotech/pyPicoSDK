@@ -123,7 +123,7 @@ class PicoScopeBase:
         )
         self.resolution = resolution
     
-    def close_unit(self) -> int:
+    def close_unit(self) -> None:
         """
         Closes the PicoScope device and releases the hardware handle.
 
@@ -134,6 +134,15 @@ class PicoScopeBase:
         """
 
         self._get_attr_function('CloseUnit')(self.handle)
+
+    def stop(self) -> None: 
+        """
+        This function stops the scope device from sampling data
+        """
+        self._call_attr_function(
+            'Stop',
+            self.handle
+        )
 
     def is_ready(self) -> None:
         """
@@ -204,7 +213,7 @@ class PicoScopeBase:
             enabled_channel_byte += 2**channel
         return enabled_channel_byte
     
-    def get_nearest_sampling_interval(self, sample_rate:float) -> dict:
+    def get_nearest_sampling_interval(self, interval_s:float) -> dict:
         """
         This function returns the nearest possible sample interval to the requested 
         sample interval. It does not change the configuration of the oscilloscope.
@@ -213,10 +222,10 @@ class PicoScopeBase:
         increase sample interval.
 
         Args:
-            sample_rate (float): Time value in seconds (s) you would like to obtain.
+            interval_s (float): Time value in seconds (s) you would like to obtain.
 
         Returns:
-            dict: Dictionary of suggested timebase and actual sample interval.
+            dict: Dictionary of suggested timebase and actual sample interval in seconds (s).
         """
         timebase = ctypes.c_uint32()
         time_interval = ctypes.c_double()
@@ -224,7 +233,7 @@ class PicoScopeBase:
             'NearestSampleIntervalStateless',
             self.handle,
             self._get_enabled_channel_flags(),
-            ctypes.c_double(sample_rate),
+            ctypes.c_double(interval_s),
             self.resolution,
             ctypes.byref(timebase),
             ctypes.byref(time_interval),
@@ -292,6 +301,39 @@ class PicoScopeBase:
         self._error_handler(status)
         return {"Interval(ns)": time_interval_ns.value, 
                 "Samples":          max_samples.value}
+    
+    def sample_rate_to_timebase(self, sample_rate:float, unit=SAMPLE_RATE.MSPS):
+        """
+        Converts sample rate to a PicoScope timebase value based on the 
+        attached PicoScope.
+
+        This function will return the closest possible timebase.
+        Use `get_nearest_sample_interval(interval_s)` to get the full timebase and 
+        actual interval achieved.
+
+        Args:
+            sample_rate (int): Desired sample rate 
+            unit (SAMPLE_RATE): unit of sample rate.
+        """
+        interval_s = 1 / (sample_rate * unit)
+        
+        return self.get_nearest_sampling_interval(interval_s)["timebase"]
+    
+    def interval_to_timebase(self, interval:float, unit=TIME_UNIT.S):
+        """
+        Converts a time interval (between samples) into a PicoScope timebase 
+        value based on the attached PicoScope.
+
+        This function will return the closest possible timebase.
+        Use `get_nearest_sample_interval(interval_s)` to get the full timebase and 
+        actual interval achieved.
+
+        Args:
+            interval (float): Desired time interval between samples
+            unit (TIME_UNIT, optional): Time unit of interval.
+        """
+        interval_s = interval / unit
+        return self.get_nearest_sampling_interval(interval_s)["timebase"]
     
     def _get_adc_limits(self) -> tuple:
         """
@@ -442,7 +484,7 @@ class PicoScopeBase:
         )
         return self._error_handler(status)
     
-    def set_simple_trigger(self, channel, threshold_mv, enable=True, direction=TRIGGER_DIR.RISING, delay=0, auto_trigger_ms=3000):
+    def set_simple_trigger(self, channel, threshold_mv, enable=True, direction=TRIGGER_DIR.RISING, delay=0, auto_trigger=0):
         """
         Sets up a simple trigger from a specified channel and threshold in mV
 
@@ -452,7 +494,7 @@ class PicoScopeBase:
             enable (bool, optional): Enables or disables the trigger. 
             direction (TRIGGER_DIR, optional): Trigger direction (e.g., TRIGGER_DIR.RISING, TRIGGER_DIR.FALLING). 
             delay (int, optional): Delay in samples after the trigger condition is met before starting capture. 
-            auto_trigger_ms (int, optional): Timeout in milliseconds after which data capture proceeds even if no trigger occurs. 
+            auto_trigger (int, optional): Timeout after which data capture proceeds even if no trigger occurs. 
         """
         threshold_adc = self.mv_to_adc(threshold_mv, self.range[channel])
         self._call_attr_function(
@@ -463,7 +505,7 @@ class PicoScopeBase:
             threshold_adc,
             direction,
             delay,
-            auto_trigger_ms
+            auto_trigger
         )
     
     def set_data_buffer_for_enabled_channels():
@@ -747,6 +789,21 @@ class ps6000a(PicoScopeBase):
             super()._set_channel_on(channel, range, coupling, offset, bandwidth)
         else:
             super()._set_channel_off(channel)
+
+    def set_simple_trigger(self, channel, threshold_mv, enable=True, direction=TRIGGER_DIR.RISING, delay=0, auto_trigger_ms=5_000):
+        """
+        Sets up a simple trigger from a specified channel and threshold in mV
+
+        Args:
+            channel (int): The input channel to apply the trigger to.
+            threshold_mv (float): Trigger threshold level in millivolts.
+            enable (bool, optional): Enables or disables the trigger. 
+            direction (TRIGGER_DIR, optional): Trigger direction (e.g., TRIGGER_DIR.RISING, TRIGGER_DIR.FALLING). 
+            delay (int, optional): Delay in samples after the trigger condition is met before starting capture. 
+            auto_trigger_ms (int, optional): Timeout in milliseconds after which data capture proceeds even if no trigger occurs. 
+        """
+        auto_trigger_us = auto_trigger_ms * 1000
+        return super().set_simple_trigger(channel, threshold_mv, enable, direction, delay, auto_trigger_us)
     
     def set_data_buffer(self, channel:CHANNEL, samples:int, segment:int=0, datatype:DATA_TYPE=DATA_TYPE.INT16_T, 
                         ratio_mode:RATIO_MODE=RATIO_MODE.RAW, action:ACTION=ACTION.CLEAR_ALL | ACTION.ADD) -> ctypes.Array:
@@ -869,6 +926,20 @@ class ps5000a(PicoScopeBase):
     
     def get_timebase(self, timebase, samples, segment=0):
         return super()._get_timebase_2(timebase, samples, segment)
+    
+    def set_simple_trigger(self, channel, threshold_mv, enable=True, direction=TRIGGER_DIR.RISING, delay=0, auto_trigger_ms=5000):
+        """
+        Sets up a simple trigger from a specified channel and threshold in mV
+
+        Args:
+            channel (int): The input channel to apply the trigger to.
+            threshold_mv (float): Trigger threshold level in millivolts.
+            enable (bool, optional): Enables or disables the trigger. 
+            direction (TRIGGER_DIR, optional): Trigger direction (e.g., TRIGGER_DIR.RISING, TRIGGER_DIR.FALLING). 
+            delay (int, optional): Delay in samples after the trigger condition is met before starting capture. 
+            auto_trigger_ms (int, optional): Timeout in milliseconds after which data capture proceeds even if no trigger occurs. 
+        """
+        return super().set_simple_trigger(channel, threshold_mv, enable, direction, delay, auto_trigger_ms)
     
     def set_data_buffer(self, channel, samples, segment=0, ratio_mode=0):
         return super()._set_data_buffer_ps5000a(channel, samples, segment, ratio_mode)

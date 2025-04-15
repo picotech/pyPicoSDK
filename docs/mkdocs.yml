@@ -9,6 +9,7 @@ nav:
     - Introduction: ref/introduction.md
     - PicoScope 6000 (A) Specific Functions: ref/ps6000a.md
     - PicoScope 5000 (A) Specific Functions: ref/ps5000a.md
+    - General Conversions: ref/conversions.md
     - General Constants: ref/constants.md
   - Development: 
     - Changelog: dev/changelog.md
