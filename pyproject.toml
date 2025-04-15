@@ -34,3 +34,6 @@ testpaths = ["tests"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["pypicosdk"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["pypicosdk"]
