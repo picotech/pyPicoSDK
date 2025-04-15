@@ -1,7 +1,7 @@
 # Welcome to pyPicoSDK Documentation
 ## Installation
 ### Via Pip
-1. Install the package via pip `pip install -i https://test.pypi.org/simple/ pypicosdk`
+1. Install the package via pip `pip install pypicosdk`
 2. In your `main.py` add `import pypicosdk` or `import pypicosdk as psdk`
 
 ### Via GitHub (Inc examples)
