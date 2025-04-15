@@ -213,7 +213,7 @@ class PicoScopeBase:
             enabled_channel_byte += 2**channel
         return enabled_channel_byte
     
-    def get_nearest_sampling_interval(self, sample_rate:float) -> dict:
+    def get_nearest_sampling_interval(self, interval_s:float) -> dict:
         """
         This function returns the nearest possible sample interval to the requested 
         sample interval. It does not change the configuration of the oscilloscope.
@@ -222,10 +222,10 @@ class PicoScopeBase:
         increase sample interval.
 
         Args:
-            sample_rate (float): Time value in seconds (s) you would like to obtain.
+            interval_s (float): Time value in seconds (s) you would like to obtain.
 
         Returns:
-            dict: Dictionary of suggested timebase and actual sample interval.
+            dict: Dictionary of suggested timebase and actual sample interval in seconds (s).
         """
         timebase = ctypes.c_uint32()
         time_interval = ctypes.c_double()
@@ -233,7 +233,7 @@ class PicoScopeBase:
             'NearestSampleIntervalStateless',
             self.handle,
             self._get_enabled_channel_flags(),
-            ctypes.c_double(sample_rate),
+            ctypes.c_double(interval_s),
             self.resolution,
             ctypes.byref(timebase),
             ctypes.byref(time_interval),
@@ -301,6 +301,39 @@ class PicoScopeBase:
         self._error_handler(status)
         return {"Interval(ns)": time_interval_ns.value, 
                 "Samples":          max_samples.value}
+    
+    def sample_rate_to_timebase(self, sample_rate:float, unit=SAMPLE_RATE.MSPS):
+        """
+        Converts sample rate to a PicoScope timebase value based on the 
+        attached PicoScope.
+
+        This function will return the closest possible timebase.
+        Use `get_nearest_sample_interval(interval_s)` to get the full timebase and 
+        actual interval achieved.
+
+        Args:
+            sample_rate (int): Desired sample rate 
+            unit (SAMPLE_RATE): unit of sample rate.
+        """
+        interval_s = 1 / (sample_rate * unit)
+        
+        return self.get_nearest_sampling_interval(interval_s)["timebase"]
+    
+    def interval_to_timebase(self, interval:float, unit=TIME_UNIT.S):
+        """
+        Converts a time interval (between samples) into a PicoScope timebase 
+        value based on the attached PicoScope.
+
+        This function will return the closest possible timebase.
+        Use `get_nearest_sample_interval(interval_s)` to get the full timebase and 
+        actual interval achieved.
+
+        Args:
+            interval (float): Desired time interval between samples
+            unit (TIME_UNIT, optional): Time unit of interval.
+        """
+        interval_s = interval / unit
+        return self.get_nearest_sampling_interval(interval_s)["timebase"]
     
     def _get_adc_limits(self) -> tuple:
         """
