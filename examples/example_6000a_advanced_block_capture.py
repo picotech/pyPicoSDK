@@ -1,3 +1,9 @@
+#########################################################################
+# This example is an advanced PicoScope example with minimal abstraction.
+# This will return the raw ctypes ADC data as samples. 
+#
+#########################################################################
+
 import pypicosdk as psdk
 from matplotlib import pyplot as plt
 
