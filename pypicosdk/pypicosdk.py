@@ -1,5 +1,6 @@
 import ctypes
 import os
+import warnings
 
 from .error_list import ERROR_STRING
 from .constants import *
@@ -10,6 +11,12 @@ class PicoSDKNotFoundException(Exception):
     pass
 
 class PicoSDKException(Exception):
+    pass
+
+class OverrangeWarning(UserWarning):
+    pass
+
+class PowerSupplyWarning(UserWarning):
     pass
 
 
@@ -82,7 +89,8 @@ class PicoScopeBase:
         error_code = ERROR_STRING[status]
         if status != 0:
             if status in [POWER_SOURCE.SUPPLY_NOT_CONNECTED]:
-                print('WARNING: Power supply not connected')
+                warnings.warn('Power supply not connected.', 
+                              PowerSupplyWarning)
                 return
             self.close_unit()
             raise PicoSDKException(error_code)
