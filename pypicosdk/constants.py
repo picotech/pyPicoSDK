@@ -131,6 +131,9 @@ class CHANNEL(IntEnum):
     G = 6 
     H = 7
 
+
+CHANNEL_NAMES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+
 class COUPLING(IntEnum):
     """
     Enum class representing different types of coupling used in signal processing.

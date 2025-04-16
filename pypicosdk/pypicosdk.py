@@ -52,6 +52,7 @@ class PicoScopeBase:
         self.resolution = None
         self.max_adc_value = None
         self.min_adc_value = None
+        self.over_range = 0
     
     def __exit__(self):
         self.close_unit()
@@ -613,6 +614,7 @@ class PicoScopeBase:
     def get_values(self, samples, start_index=0, segment=0, ratio=0, ratio_mode=RATIO_MODE.RAW) -> int:
         """
         Retrieves a block of captured samples from the device once it's ready.
+        If a channel goes over-range a warning will appear.
 
         This function should be called after confirming the device is ready using `is_ready()`.
         It invokes the underlying PicoSDK `GetValues` function to read the data into memory.
@@ -630,7 +632,7 @@ class PicoScopeBase:
 
         self.is_ready()
         total_samples = ctypes.c_uint32(samples)
-        overflow = ctypes.c_int16()
+        over_range = ctypes.c_int16()
         self._call_attr_function(
             'GetValues',
             self.handle, 
@@ -639,9 +641,29 @@ class PicoScopeBase:
             ratio,
             ratio_mode,
             segment,
-            ctypes.byref(overflow)
+            ctypes.byref(over_range)
         )
+        self.over_range = over_range.value
+        self.is_over_range()
         return total_samples.value
+    
+    def is_over_range(self) -> list:
+        """
+        Logs and prints a warning if any channel has been over range.
+
+        Returns:
+            list: List of channels that have been over range
+        """
+
+        over_range_channels = [CHANNEL_NAMES[i] for i in range(8) if self.over_range & (1 << i)]
+    
+        if over_range_channels:
+            warnings.warn(
+                f"Overrange detected on channels: {', '.join(over_range_channels)}.",
+                OverrangeWarning
+            )
+        return over_range_channels
+        
     
     def run_simple_block_capture(self) -> dict:
         raise NotImplementedError("This method is not yet implimented in this PicoScope")
