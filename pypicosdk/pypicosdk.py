@@ -41,6 +41,22 @@ def _get_lib_path() -> str:
     package_dir = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(package_dir, "lib")
 
+def get_all_enumerated_units() -> tuple[int, list[str]]:
+    """
+    Enumerates all PicoScope units supported by this wrapper
+    returns the number of units and serial of each unit
+
+    Returns:
+        tuple[int, list[str]]: int of units and list of unit serials
+    """
+    n_units = 0
+    unit_serial = []
+    for scope in [ps6000a()]:
+        units = scope.get_enumerated_units()
+        n_units += units[0]
+        unit_serial += units[1].split(',')
+    return n_units, unit_serial
+
 
 # PicoScope Classes
 class PicoScopeBase:
@@ -610,6 +626,19 @@ class PicoScopeBase:
             None
         )
         return time_indisposed_ms.value
+    
+    def get_enumerated_units(self):
+        string_buffer_length = 256
+        count = ctypes.c_int16()
+        serials = ctypes.create_string_buffer(string_buffer_length)
+        serial_length = ctypes.c_int16(string_buffer_length)
+        self._call_attr_function(
+            'EnumerateUnits',
+            ctypes.byref(count),
+            ctypes.byref(serials),
+            ctypes.byref(serial_length)
+        )
+        return count.value, serials.value.decode(), serial_length.value
     
     def get_values(self, samples, start_index=0, segment=0, ratio=0, ratio_mode=RATIO_MODE.RAW) -> int:
         """
