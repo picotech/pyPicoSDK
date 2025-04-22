@@ -4,7 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pypicosdk"
-version = "0.2.25"
+dynamic = ["version"]
+keywords = [
+    "test",
+    "measurement",
+    "hardware",
+    "electronic"
+]
 description = "Modern Python wrapper for PicoSDK"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -20,17 +26,25 @@ classifiers = [
     "Development Status :: 1 - Planning"
 ]
 
+[project.urls]
+Documentation = "https://jamespicotech.github.io/pyPicoSDK/"
+github = "https://github.com/JamesPicoTech/pyPicoSDK"
+
 [project.optional-dependencies]
 test = ["pytest"]
-
-[tool.setuptools]
-packages = ["pypicosdk"]
-
-[tool.setuptools.package-data]
-pypicosdk = ["lib/**/*.dll"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["pypicosdk"]
+include = ["pypicosdk/*"]
+
+exclude = [
+    "pypicosdk/lib/"
+]
+
+[tool.hatch.version]
+path = "pypicosdk/version.py"
+
+[tool.hatch.build.hooks.custom]
+path = "build-tools/build_hook.py"
