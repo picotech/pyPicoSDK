@@ -33,6 +33,6 @@ Once tested, try an [example script from github](https://github.com/JamesPicoTec
 - [PicoScope Support (Compatibility)](https://jamespicotech.github.io/pyPicoSDK/dev/current)
 
 ## Version Control
-pyPicoSDK: 0.2.26
+pyPicoSDK: 0.2.27
 
 Docs: 0.1.4
