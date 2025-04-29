@@ -3,7 +3,7 @@
 #
 # Description:
 #   This will convert the voltage data to the frequency domain and
-#   display it in pyplot
+#   display it in pyplot, also calculating the peak frequency.
 #
 # Requirements: 
 # - PicoScope 6000E
@@ -19,7 +19,7 @@
 import pypicosdk as psdk
 from matplotlib import pyplot as plt
 import numpy as np
-from scipy.fft import fft, fftfreq
+from scipy.fft import rfft, rfftfreq
 from scipy.signal import windows
 
 # Setup variables
@@ -30,7 +30,7 @@ range = psdk.RANGE.V1
 threshold = 0
 
 # SigGen variables
-frequency = 1_000_000
+frequency = 10_000_000
 pk2pk = 0.8
 wave_type = psdk.WAVEFORM.SQUARE
 
@@ -63,18 +63,24 @@ window = windows.hann(samples)
 v_windowed = v * window
 
 # Create fft from data
-V_f = fft(v_windowed)
-freqs = fftfreq(samples, dt)
+positive_amplitudes = np.abs(rfft(v_windowed))
+positive_freqs = rfftfreq(samples, dt)
 
-# Remove negative frequency data
-positive_freqs = freqs[:samples//2]
-amplitudes = np.abs(V_f[:samples//2])
+# # Convert mV to dB
+positive_dbs = np.abs(20 * np.log10(positive_amplitudes / 1e3))
+
+# # Calculate peak frequency
+peak_index = np.argmax(positive_dbs)
+print(f'Peak frequency: {positive_freqs[peak_index]/1e6:.2f} MHz, ' +
+      f'{positive_dbs[peak_index]:.2F} dB')
 
 # Plot data to pyplot
 plt.figure(figsize=(10, 4))
-plt.plot(positive_freqs / 1e6, amplitudes)  # Convert Hz to MHz
+plt.plot(positive_freqs / 1e6, positive_dbs)
+plt.xlim(0, positive_freqs.max()/1e6)
+plt.ylim(0)
 plt.xlabel("Frequency (MHz)")
-plt.ylabel("Amplitude (mV)")
+plt.ylabel("Amplitude (dB)")
 plt.title("FFT of Voltage Signal")
 plt.grid(True)
 plt.tight_layout()
