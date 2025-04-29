@@ -23,7 +23,7 @@ import numpy as np
 
 # Scope setup
 scope = psdk.ps6000a()
-scope.open_unit(resolution=psdk.RESOLUTION._8BIT)
+scope.open_unit(resolution=psdk.RESOLUTION._12BIT)
 
 # Set channels
 channel = psdk.CHANNEL.A
