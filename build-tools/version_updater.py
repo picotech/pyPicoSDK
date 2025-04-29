@@ -38,7 +38,6 @@ def update_versions():
     update_docs()
     update_setup()
     update_src()
-    update_project_toml()
     overwrite_readme()
 
 if __name__ == "__main__":
