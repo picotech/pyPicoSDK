@@ -39,12 +39,5 @@ testpaths = ["tests"]
 [tool.hatch.build.targets.wheel]
 include = ["pypicosdk/*"]
 
-exclude = [
-    "pypicosdk/lib/"
-]
-
 [tool.hatch.version]
 path = "pypicosdk/version.py"
-
-[tool.hatch.build.hooks.custom]
-path = "build-tools/build_hook.py"
