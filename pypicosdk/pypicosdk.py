@@ -631,12 +631,14 @@ class PicoScopeBase:
         )
         return time_indisposed_ms.value
     
-    def get_enumerated_units(self):
+    def get_enumerated_units(self) -> tuple[int, str, int]:
         """
         Returns count, serials and serial string length of a specific PicoScope unit.
 
         Returns:
-                Tuple[int, str, int]: Number of devices and their serial number as a tuple
+            Number of devices of this type
+            Comma separated string of all serials
+            Length of string
         """
         string_buffer_length = 256
         count = ctypes.c_int16()
