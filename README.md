@@ -1,5 +1,9 @@
 # Welcome to pyPicoSDK Documentation
 ## Installation
+### Prerequisites 
+1. Go to PicoTech downloads [picotech.com/downloads](https://www.picotech.com/downloads)
+2. Find your PicoScope in the list and click through
+3. Download and install PicoSDK for your operating system
 ### Via Pip
 1. Install the package via pip `pip install pypicosdk`
 2. In your `main.py` add `import pypicosdk` or `import pypicosdk as psdk`
@@ -33,6 +37,6 @@ Once tested, try an [example script from github](https://github.com/JamesPicoTec
 - [PicoScope Support (Compatibility)](https://jamespicotech.github.io/pyPicoSDK/dev/current)
 
 ## Version Control
-pyPicoSDK: 0.2.27
+pyPicoSDK: 0.2.28
 
-Docs: 0.1.4
+Docs: 0.1.5

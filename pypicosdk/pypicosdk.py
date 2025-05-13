@@ -1,6 +1,7 @@
 import ctypes
 import os
 import warnings
+import platform
 
 from .error_list import ERROR_STRING
 from .constants import *
@@ -21,25 +22,28 @@ class PowerSupplyWarning(UserWarning):
 
 
 # General Functions
-def _legacy_get_lib_path() -> str:    
-    """
-    Checks for and returns the PicoSDK lib location from Program Files.
-
-    Returns:
-        str: File path to PicoSDK folder.
-
-    Raises:
-        PicoSDKNotFoundException: If the PicoSDK library is not found.
-    """
-    program_files = os.environ.get("ProgramFiles")
-    lib_location = os.path.join(program_files, "Pico Technology/SDK/lib")
-    if not os.path.exists(lib_location):
-        raise PicoSDKNotFoundException("PicoSDK is not found at 'Program Files/Pico Technology/SDK/lib'")
-    return lib_location
+def _check_path(location, folders):
+    for folder in folders:
+        path = os.path.join(location, folder)
+        if os.path.exists(path):
+            return path
+    raise PicoSDKException("No PicoSDK or PicoScope 7 drivers installed, get them from http://picotech.com/downloads")
 
 def _get_lib_path() -> str:
-    package_dir = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(package_dir, "lib")
+    system = platform.system()
+    if system == "Windows":
+        program_files = os.environ.get("PROGRAMFILES")
+        checklist = [
+            'Pico Technology\\SDK\\lib', 
+            'Pico Technology\\PicoScope 7 T&M Stable',
+            'Pico Technology\\PicoScope 7 T&M Early Access']
+        return _check_path(program_files, checklist)
+    elif system == "Linux":
+        return _check_path('opt', 'picoscope')
+    elif system == "Darwin":
+        raise PicoSDKException("macOS is not yet tested and supported")
+    else:
+        raise PicoSDKException("Unsupported OS")
 
 def get_all_enumerated_units() -> tuple[int, list[str]]:
     """
@@ -627,12 +631,14 @@ class PicoScopeBase:
         )
         return time_indisposed_ms.value
     
-    def get_enumerated_units(self):
+    def get_enumerated_units(self) -> tuple[int, str, int]:
         """
         Returns count, serials and serial string length of a specific PicoScope unit.
 
         Returns:
-                Tuple[int, str, int]: Number of devices and their serial number as a tuple
+            Number of devices of this type
+            Comma separated string of all serials
+            Length of string
         """
         string_buffer_length = 256
         count = ctypes.c_int16()
