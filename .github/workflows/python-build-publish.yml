@@ -29,10 +29,10 @@ jobs:
         python -m pip install pytest build
         # pip install -r requirements.txt  # Install your dependencies
 
-    - name: Create pseudoSDK file
-      shell: cmd
+    - name: Create SDK directory
+      shell: pwsh
       run: |
-        mkdir "%ProgramFiles%\Pico Technology\SDK\lib"
+        New-Item -Path "$env:ProgramFiles\Pico Technology\SDK\lib" -ItemType Directory -Force
 
     - name: Test with pytest
       run: |
