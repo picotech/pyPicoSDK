@@ -66,7 +66,19 @@ def get_all_enumerated_units() -> tuple[int, list[str]]:
 class PicoScopeBase:
     """PicoScope base class including common SDK and python modules and functions"""
     # Class Functions
-    def __init__(self):
+    def __init__(self, dll_name, *args, **kwargs):
+        # Pytest override
+        self._pytest = "pytest" in args
+        print(self._pytest)
+            
+        # Setup DLL location per device
+        if self._pytest:
+            self.dll = None
+        else:
+            self.dll = ctypes.CDLL(os.path.join(_get_lib_path(), dll_name + ".dll"))
+        self._unit_prefix_n = dll_name
+
+        # Setup class variables
         self.handle = ctypes.c_short()
         self.range = {}
         self.resolution = None
@@ -161,8 +173,10 @@ class PicoScopeBase:
         Returns:
                 None
         """
-
-        self._get_attr_function('CloseUnit')(self.handle)
+        if self._pytest:
+            return
+        else:
+            self._get_attr_function('CloseUnit')(self.handle)
 
     def stop(self) -> None: 
         """
@@ -810,8 +824,9 @@ class PicoScopeBase:
 
 class ps6000a(PicoScopeBase):
     """PicoScope 6000 (A) API specific functions"""
-    dll = ctypes.CDLL(os.path.join(_get_lib_path(), "ps6000a.dll"))
-    _unit_prefix_n = "ps6000a"
+    def __init__(self, *args, **kwargs):
+        super().__init__("ps6000a", *args, **kwargs)
+
 
     def open_unit(self, serial_number:str=None, resolution:RESOLUTION = 0) -> None:
         """
@@ -984,8 +999,8 @@ class ps6000a(PicoScopeBase):
         return channels_buffer, time_axis
     
 class ps5000a(PicoScopeBase):
-    dll = ctypes.CDLL(os.path.join(_get_lib_path(), "ps5000a.dll"))
-    _unit_prefix_n = "ps5000a"
+    def __init__(self, *args, **kwargs):
+        super().__init__("ps5000a", *args, **kwargs)
 
     def open_unit(self, serial_number=None, resolution=RESOLUTION):
         status = super()._open_unit(serial_number, resolution)
