@@ -69,7 +69,6 @@ class PicoScopeBase:
     def __init__(self, dll_name, *args, **kwargs):
         # Pytest override
         self._pytest = "pytest" in args
-        print(self._pytest)
             
         # Setup DLL location per device
         if self._pytest:
