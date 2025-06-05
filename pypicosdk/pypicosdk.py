@@ -433,6 +433,31 @@ class PicoScopeBase:
         """
         interval = self.get_timebase(timebase, samples)['Interval(ns)']
         return [round(x*interval, 4) for x in range(samples)]
+    
+    def get_trigger_time_offset(self, time_unit: TIME_UNIT, segment_index: int = 0) -> int:
+        """
+        Get the trigger time offset for jitter correction in waveforms.
+
+        Args:
+            time_unit (TIME_UNITS): Unit in which the trigger time offset will be returned.
+            segment_index (int, optional): The memory segment to query. Default is 0.
+
+        Returns:
+            int: Trigger time offset in specified units.
+
+        Raises:
+            PicoSDKException: If the function call fails or preconditions are not met.
+        """
+        time = ctypes.c_int64()
+        self._call_attr_function(
+            'GetTriggerTimeOffset',
+            self.handle,
+            ctypes.byref(time),
+            PICO_TIME_UNIT[time_unit.name],
+            segment_index
+        )
+        return time.value
+
 
     
     # Data conversion ADC/mV & ctypes/int 
