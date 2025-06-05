@@ -277,8 +277,17 @@ class SAMPLE_RATE(IntEnum):
     GSPS = 1_000_000_000
 
 class TIME_UNIT(IntEnum):
+    FS = 1_000_000_000_000_000
     PS = 1_000_000_000_000
     NS = 1_000_000_000
     US = 1_000_000
     MS = 1_000
     S = 1
+
+class PICO_TIME_UNIT(IntEnum):
+    FS = 0
+    PS = 1
+    NS = 2
+    US = 3
+    MS = 4
+    S = 5
