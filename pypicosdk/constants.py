@@ -291,3 +291,15 @@ class PICO_TIME_UNIT(IntEnum):
     US = 3
     MS = 4
     S = 5
+
+class DIGITAL_PORT(IntEnum):
+    """Digital port identifiers for the 6000A series."""
+    PORT0 = 128
+    PORT1 = 129
+
+class DIGITAL_PORT_HYSTERESIS(IntEnum):
+    """Hysteresis options for digital ports."""
+    VERY_HIGH_400MV = 0
+    HIGH_200MV = 1
+    NORMAL_100MV = 2
+    LOW_50MV = 3
