@@ -21,31 +21,6 @@ class PowerSupplyWarning(UserWarning):
     pass
 
 
-# Streaming data structures
-class PICO_STREAMING_DATA_INFO(ctypes.Structure):
-    """Structure used with ``GetStreamingLatestValues``."""
-
-    _fields_ = [
-        ("channel_", ctypes.c_int32),
-        ("mode_", ctypes.c_int32),
-        ("type_", ctypes.c_int32),
-        ("noOfSamples_", ctypes.c_int32),
-        ("bufferIndex_", ctypes.c_uint64),
-        ("startIndex_", ctypes.c_int32),
-        ("overflow_", ctypes.c_int16),
-    ]
-
-
-class PICO_STREAMING_DATA_TRIGGER_INFO(ctypes.Structure):
-    """Trigger status information returned by ``GetStreamingLatestValues``."""
-
-    _fields_ = [
-        ("triggerAt_", ctypes.c_uint64),
-        ("triggered_", ctypes.c_int16),
-        ("autoStop_", ctypes.c_int16),
-    ]
-
-
 # General Functions
 def _check_path(location, folders):
     for folder in folders:
@@ -715,63 +690,6 @@ class PicoScopeBase:
             None
         )
         return time_indisposed_ms.value
-
-    def run_streaming(
-        self,
-        sample_interval: float,
-        time_units: PICO_TIME_UNIT,
-        max_pre_trigger_samples: int,
-        max_post_trigger_samples: int,
-        auto_stop: bool = True,
-        down_sample_ratio: int = 1,
-        ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
-    ) -> float:
-        """Start streaming mode acquisition and return the actual sample interval."""
-
-        c_interval = ctypes.c_double(sample_interval)
-        self._call_attr_function(
-            "RunStreaming",
-            self.handle,
-            ctypes.byref(c_interval),
-            time_units,
-            ctypes.c_uint64(max_pre_trigger_samples),
-            ctypes.c_uint64(max_post_trigger_samples),
-            int(auto_stop),
-            ctypes.c_uint64(down_sample_ratio),
-            ratio_mode,
-        )
-        return c_interval.value
-
-    def get_streaming_latest_values(
-        self,
-        streaming_data_info: list,
-        trigger_info: PICO_STREAMING_DATA_TRIGGER_INFO | None = None,
-    ) -> tuple[list, PICO_STREAMING_DATA_TRIGGER_INFO | None]:
-        """Retrieve the latest streaming data values."""
-
-        array_type = PICO_STREAMING_DATA_INFO * len(streaming_data_info)
-        info_array = array_type(*streaming_data_info)
-        trigger_ptr = ctypes.byref(trigger_info) if trigger_info is not None else None
-
-        self._call_attr_function(
-            "GetStreamingLatestValues",
-            self.handle,
-            info_array,
-            ctypes.c_uint64(len(streaming_data_info)),
-            trigger_ptr,
-        )
-        return list(info_array), trigger_info
-
-    def no_of_streaming_values(self) -> int:
-        """Return the number of values currently available while streaming."""
-
-        count = ctypes.c_uint64()
-        self._call_attr_function(
-            "NoOfStreamingValues",
-            self.handle,
-            ctypes.byref(count),
-        )
-        return count.value
     
     def get_enumerated_units(self) -> tuple[int, str, int]:
         """
@@ -1160,73 +1078,6 @@ class ps6000a(PicoScopeBase):
 
         # Generate the time axis based on actual samples and timebase
         time_axis = self.get_time_axis(timebase, actual_samples)
-
-        return channels_buffer, time_axis
-
-    def run_simple_streaming_capture(
-        self,
-        sample_interval: float,
-        time_units: PICO_TIME_UNIT,
-        samples: int,
-        pre_trig_percent: int = 0,
-        auto_stop: bool = True,
-        down_sample_ratio: int = 1,
-        ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
-        datatype: DATA_TYPE = DATA_TYPE.INT16_T,
-    ) -> tuple[dict, list]:
-        """Convenience helper to perform a streaming capture."""
-
-        channels_buffer = self.set_data_buffer_for_enabled_channels(
-            samples, datatype=datatype, ratio_mode=ratio_mode
-        )
-
-        streaming_info = []
-        for ch in channels_buffer:
-            info = PICO_STREAMING_DATA_INFO()
-            info.channel_ = ch
-            info.mode_ = ratio_mode
-            info.type_ = datatype
-            streaming_info.append(info)
-
-        pre = int(samples * pre_trig_percent / 100)
-        post = samples - pre
-
-        actual_interval = self.run_streaming(
-            sample_interval,
-            time_units,
-            pre,
-            post,
-            auto_stop,
-            down_sample_ratio,
-            ratio_mode,
-        )
-
-        trigger_info = PICO_STREAMING_DATA_TRIGGER_INFO()
-        collected = 0
-        while True:
-            infos, trigger_info = self.get_streaming_latest_values(
-                streaming_info, trigger_info
-            )
-            collected = max(
-                [i.startIndex_ + i.noOfSamples_ for i in infos] + [collected]
-            )
-            if trigger_info and trigger_info.autoStop_:
-                break
-            if collected >= samples:
-                break
-
-        channels_buffer = self.channels_buffer_adc_to_mv(channels_buffer)
-
-        unit_to_ns = {
-            PICO_TIME_UNIT.FS: 1e-6,
-            PICO_TIME_UNIT.PS: 1e-3,
-            PICO_TIME_UNIT.NS: 1,
-            PICO_TIME_UNIT.US: 1e3,
-            PICO_TIME_UNIT.MS: 1e6,
-            PICO_TIME_UNIT.S: 1e9,
-        }
-        interval_ns = actual_interval * unit_to_ns[time_units]
-        time_axis = [round(i * interval_ns, 4) for i in range(collected)]
 
         return channels_buffer, time_axis
     
