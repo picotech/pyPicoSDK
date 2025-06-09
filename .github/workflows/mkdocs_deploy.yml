@@ -4,11 +4,11 @@ name: mkdocs deploy
 
 # Controls when the action will run. Workflow runs when manually triggered using the UI
 # or API.
-on:
+"on":
   workflow_dispatch:
   push:
     tags:
-      - v*
+      - "v*"
 
 permissions:
   contents: write
