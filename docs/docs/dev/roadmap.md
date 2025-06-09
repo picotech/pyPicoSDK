@@ -1,7 +1,6 @@
 # Roadmap for pyPicoSDK
 ## WIP
 - 6000 (A) API Signal Generator
-- 6000 (A) streaming support
 - Documentation
     - Complete docStrings for pypicoSDK
         - Adding constants docstrings
@@ -11,6 +10,7 @@
     - Current in [test pypi](https://test.pypi.org/project/pypicosdk/)
 
 ## To-Do
+- 6000 (A) streaming support
 - Add `run_simple_block_capture()` for 5000 (A)
 - Add support for 3000 (A) drivers
 - Test & add support for macOS & linux

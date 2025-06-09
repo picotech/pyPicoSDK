@@ -28,7 +28,6 @@ The output should be similar to:
 `JR001/001`
 
 Once tested, try an [example script from github](https://github.com/StuLawPico/pyPicoSDK_Playground) to get started.
-For continuous acquisition see `examples/example_6000a_simple_streaming.py`.
 
 ## Useful links and references
 - [Documentation & Reference](https://stulawpico.github.io/pyPicoSDK_Playground)
