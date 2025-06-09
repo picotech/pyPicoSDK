@@ -61,7 +61,7 @@ trigger_info = psdk.PICO_STREAMING_DATA_TRIGGER_INFO()
 try:
     while True:
         data_array = (psdk.PICO_STREAMING_DATA_INFO * 1)()
-        data_array[0].channel_ = channels_buffer[channel_a]
+        data_array[0].channel_ = channel_a
         data_array[0].mode_ = psdk.RATIO_MODE.RAW
         data_array[0].type_ = psdk.DATA_TYPE.INT16_T
         data_array[0].noOfSamples_ = chunk_samples
