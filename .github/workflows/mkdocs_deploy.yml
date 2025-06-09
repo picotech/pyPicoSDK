@@ -28,7 +28,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install mkdocs mkdocstrings mkdocstrings-python
+          pip install mkdocs mkdocstrings-python
 
       - name: Setup git
         run: |
