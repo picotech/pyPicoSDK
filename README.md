@@ -29,6 +29,19 @@ The output should be similar to:
 
 Once tested, try an [example script from github](https://github.com/StuLawPico/pyPicoSDK_Playground) to get started.
 
+### Streaming Quickstart
+The following snippet performs a basic streaming capture using `run_simple_streaming_capture`:
+```python
+import pypicosdk as psdk
+
+scope = psdk.ps6000a()
+scope.open_unit()
+scope.set_channel(psdk.CHANNEL.A, psdk.RANGE.V1)
+scope.set_simple_trigger(psdk.CHANNEL.A, threshold_mv=0)
+data, times = scope.run_simple_streaming_capture(1, psdk.PICO_TIME_UNIT.US, 1000)
+scope.close_unit()
+```
+
 ## Useful links and references
 - [Documentation & Reference](https://stulawpico.github.io/pyPicoSDK_Playground)
 - [GitHub Repo (with examples)](https://github.com/StuLawPico/pyPicoSDK_Playground)

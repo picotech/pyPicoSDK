@@ -1,4 +1,5 @@
 from enum import IntEnum
+import ctypes
 
 class UNIT_INFO:
     """
@@ -303,3 +304,27 @@ class DIGITAL_PORT_HYSTERESIS(IntEnum):
     HIGH_200MV = 1
     NORMAL_100MV = 2
     LOW_50MV = 3
+
+
+class PICO_STREAMING_DATA_INFO(ctypes.Structure):
+    """Structure describing streaming data buffer information."""
+
+    _fields_ = [
+        ("channel_", ctypes.c_int32),
+        ("mode_", ctypes.c_int32),
+        ("type_", ctypes.c_int32),
+        ("noOfSamples_", ctypes.c_int32),
+        ("bufferIndex_", ctypes.c_uint64),
+        ("startIndex_", ctypes.c_int32),
+        ("overflow_", ctypes.c_int16),
+    ]
+
+
+class PICO_STREAMING_DATA_TRIGGER_INFO(ctypes.Structure):
+    """Structure describing trigger information for streaming."""
+
+    _fields_ = [
+        ("triggerAt_", ctypes.c_uint64),
+        ("triggered_", ctypes.c_int16),
+        ("autoStop_", ctypes.c_int16),
+    ]

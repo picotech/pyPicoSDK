@@ -37,6 +37,6 @@ Once tested, try an [example script from github](https://github.com/StuLawPico/p
 - [PicoScope Support (Compatibility)](https://stulawpico.github.io/pyPicoSDK_Playground/dev/current)
 
 ## Version Control
-pyPicoSDK: 0.2.30
+pyPicoSDK: 0.2.31
 
-Docs: 0.1.6
+Docs: 0.1.7
