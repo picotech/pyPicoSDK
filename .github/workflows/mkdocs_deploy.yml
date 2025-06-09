@@ -26,9 +26,9 @@ jobs:
       with:
         python-version: "3.12"
 
-    - name: Install dependancies
+  - name: Install dependencies
       run: |
-        pip install mkdocs mkdocstrings-python
+        pip install mkdocs mkdocstrings mkdocstrings-python
 
     - name: Setup git
       run: |
