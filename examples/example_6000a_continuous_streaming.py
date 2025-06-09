@@ -9,14 +9,14 @@ sample_units = psdk.PICO_TIME_UNIT.US
 plot_samples = 5000  # samples shown on screen
 chunk_samples = 1000  # number of samples to read per iteration
 channel_a = psdk.CHANNEL.A
-range = psdk.RANGE.V1
+voltage_range = psdk.RANGE.V1
 
 # Initialise PicoScope 6000
 scope = psdk.ps6000a()
 scope.open_unit()
 
 # Setup channels and trigger
-scope.set_channel(channel=channel_a, range=range)
+scope.set_channel(channel=channel_a, range=voltage_range)
 scope.set_simple_trigger(channel=channel_a, threshold_mv=0)
 
 # Allocate buffers for streaming
@@ -75,7 +75,7 @@ try:
             time.sleep(0.01)
             continue
 
-        data = [scope.adc_to_mv(sample, range) for sample in channels_buffer[channel_a][:num]]
+        data = [scope.adc_to_mv(sample, voltage_range) for sample in channels_buffer[channel_a][:num]]
         for i in range(num):
             time_axis.append((collected + i) * seconds_per_sample)
             values.append(data[i])
