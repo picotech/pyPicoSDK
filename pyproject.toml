@@ -27,8 +27,8 @@ classifiers = [
 ]
 
 [project.urls]
-Documentation = "https://jamespicotech.github.io/pyPicoSDK/"
-github = "https://github.com/JamesPicoTech/pyPicoSDK"
+Documentation = "https://stulawpico.github.io/pyPicoSDK_Playground"
+github = "https://github.com/StuLawPico/pyPicoSDK_Playground"
 
 [project.optional-dependencies]
 test = ["pytest"]
