@@ -895,10 +895,47 @@ class ps6000a(PicoScopeBase):
                 offset (int, optional): Analog offset in volts (V) of selected channel.
                 bandwidth (BANDWIDTH_CH, optional): Bandwidth of channel (selected models).
         """
+
         if enabled:
             super()._set_channel_on(channel, range, coupling, offset, bandwidth)
         else:
             super()._set_channel_off(channel)
+
+    def set_digital_port_on(
+        self,
+        port: DIGITAL_PORT,
+        logic_threshold_level: list[int],
+        hysteresis: DIGITAL_PORT_HYSTERESIS,
+    ) -> None:
+        """Enable a digital port using ``ps6000aSetDigitalPortOn``.
+
+        Args:
+            port: Digital port to enable.
+            logic_threshold_level: Threshold level for each pin in millivolts.
+            hysteresis: Hysteresis level applied to all pins.
+        """
+
+        level_array = (ctypes.c_int16 * len(logic_threshold_level))(
+            *logic_threshold_level
+        )
+
+        self._call_attr_function(
+            "SetDigitalPortOn",
+            self.handle,
+            port,
+            level_array,
+            len(logic_threshold_level),
+            hysteresis,
+        )
+
+    def set_digital_port_off(self, port: DIGITAL_PORT) -> None:
+        """Disable a digital port using ``ps6000aSetDigitalPortOff``."""
+
+        self._call_attr_function(
+            "SetDigitalPortOff",
+            self.handle,
+            port,
+        )
 
     def set_simple_trigger(self, channel, threshold_mv, enable=True, direction=TRIGGER_DIR.RISING, delay=0, auto_trigger_ms=5_000):
         """
