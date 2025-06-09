@@ -9,7 +9,7 @@
 2. In your `main.py` add `import pypicosdk` or `import pypicosdk as psdk`
 
 ### Via GitHub (Inc examples)
-1. Install github repository to folder `git clone https://github.com/JamesPicoTech/pyPicoSDK.git`
+1. Install github repository to folder `git clone https://github.com/StuLawPico/pyPicoSDK_Playground.git`
 2. In the root directory (where setup.py is) run `pip install .`
 3. In your `main.py` add `import pypicosdk` or `import pypicosdk as psdk`
 
@@ -27,14 +27,27 @@ scope.close_unit()
 The output should be similar to:
 `JR001/001`
 
-Once tested, try an [example script from github](https://github.com/JamesPicoTech/pyPicoSDK) to get started.
+Once tested, try an [example script from github](https://github.com/StuLawPico/pyPicoSDK_Playground) to get started.
+
+### Streaming Quickstart
+The following snippet performs a basic streaming capture using `run_simple_streaming_capture`:
+```python
+import pypicosdk as psdk
+
+scope = psdk.ps6000a()
+scope.open_unit()
+scope.set_channel(psdk.CHANNEL.A, psdk.RANGE.V1)
+scope.set_simple_trigger(psdk.CHANNEL.A, threshold_mv=0)
+data, times = scope.run_simple_streaming_capture(1, psdk.PICO_TIME_UNIT.US, 1000)
+scope.close_unit()
+```
 
 ## Useful links and references
-- [Documentation & Reference](https://jamespicotech.github.io/pyPicoSDK/)
-- [GitHub Repo (with examples)](https://github.com/JamesPicoTech/pyPicoSDK)
+- [Documentation & Reference](https://stulawpico.github.io/pyPicoSDK_Playground)
+- [GitHub Repo (with examples)](https://github.com/StuLawPico/pyPicoSDK_Playground)
 - [pypi (src repo)](https://pypi.org/project/pypicosdk/)
 - [pypi-nightly (dev repo)](https://pypi.org/project/pypicosdk-nightly/)
-- [PicoScope Support (Compatibility)](https://jamespicotech.github.io/pyPicoSDK/dev/current)
+- [PicoScope Support (Compatibility)](https://stulawpico.github.io/pyPicoSDK_Playground/dev/current)
 
 ## Version Control
 pyPicoSDK: 0.2.30

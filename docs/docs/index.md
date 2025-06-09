@@ -9,7 +9,7 @@
 2. In your `main.py` add `import pypicosdk` or `import pypicosdk as psdk`
 
 ### Via GitHub (Inc examples)
-1. Install github repository to folder `git clone https://github.com/JamesPicoTech/pyPicoSDK.git`
+1. Install github repository to folder `git clone https://github.com/StuLawPico/pyPicoSDK_Playground.git`
 2. In the root directory (where setup.py is) run `pip install .`
 3. In your `main.py` add `import pypicosdk` or `import pypicosdk as psdk`
 
@@ -27,16 +27,16 @@ scope.close_unit()
 The output should be similar to:
 `JR001/001`
 
-Once tested, try an [example script from github](https://github.com/JamesPicoTech/pyPicoSDK) to get started.
+Once tested, try an [example script from github](https://github.com/StuLawPico/pyPicoSDK_Playground) to get started.
 
 ## Useful links and references
-- [Documentation & Reference](https://jamespicotech.github.io/pyPicoSDK/)
-- [GitHub Repo (with examples)](https://github.com/JamesPicoTech/pyPicoSDK)
+- [Documentation & Reference](https://stulawpico.github.io/pyPicoSDK_Playground)
+- [GitHub Repo (with examples)](https://github.com/StuLawPico/pyPicoSDK_Playground)
 - [pypi (src repo)](https://pypi.org/project/pypicosdk/)
 - [pypi-nightly (dev repo)](https://pypi.org/project/pypicosdk-nightly/)
-- [PicoScope Support (Compatibility)](https://jamespicotech.github.io/pyPicoSDK/dev/current)
+- [PicoScope Support (Compatibility)](https://stulawpico.github.io/pyPicoSDK_Playground/dev/current)
 
 ## Version Control
-pyPicoSDK: 0.2.30
+pyPicoSDK: 0.2.31
 
-Docs: 0.1.6
+Docs: 0.1.7
