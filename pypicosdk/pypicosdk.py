@@ -459,6 +459,28 @@ class PicoScopeBase:
         return time.value
 
 
+    def get_trigger_info(self, segment_index: int = 0) -> int:
+        """Retrieve trigger timing information.
+
+        Args:
+            segment_index (int, optional): The memory segment to query. Defaults to 0.
+
+        Returns:
+            int: Raw trigger information returned by the driver.
+
+        Raises:
+            PicoSDKException: If the function call fails or preconditions are not met.
+        """
+        info = ctypes.c_uint64()
+        self._call_attr_function(
+            'GetTriggerInfo',
+            self.handle,
+            ctypes.byref(info),
+            segment_index
+        )
+        return info.value
+
+
     
     # Data conversion ADC/mV & ctypes/int 
     def mv_to_adc(self, mv:float, channel_range:int) -> int:
