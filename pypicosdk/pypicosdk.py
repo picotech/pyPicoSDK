@@ -1161,12 +1161,7 @@ class ps6000a(PicoScopeBase):
         trigger_info = PICO_STREAMING_DATA_TRIGGER_INFO()
 
         while collected < samples:
-            available = self.no_of_streaming_values()
-            if available <= collected:
-                time.sleep(0.01)
-                continue
-
-            to_read = available - collected
+            to_read = samples - collected
             data_array = (PICO_STREAMING_DATA_INFO * len(channels_buffer))()
             for idx, ch in enumerate(channels_buffer):
                 data_array[idx].channel_ = ch
@@ -1179,6 +1174,9 @@ class ps6000a(PicoScopeBase):
 
             self.get_streaming_latest_values(data_array, trigger_info)
             collected += data_array[0].noOfSamples_
+
+            if collected == 0:
+                time.sleep(0.01)
 
             if auto_stop and trigger_info.autoStop_:
                 break
