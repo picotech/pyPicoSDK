@@ -2,7 +2,6 @@ import ctypes
 import os
 import warnings
 import platform
-import time
 
 from .error_list import ERROR_STRING
 from .constants import *
@@ -460,28 +459,6 @@ class PicoScopeBase:
         return time.value
 
 
-    def get_trigger_info(self, segment_index: int = 0) -> int:
-        """Retrieve trigger timing information.
-
-        Args:
-            segment_index (int, optional): The memory segment to query. Defaults to 0.
-
-        Returns:
-            int: Raw trigger information returned by the driver.
-
-        Raises:
-            PicoSDKException: If the function call fails or preconditions are not met.
-        """
-        info = ctypes.c_uint64()
-        self._call_attr_function(
-            'GetTriggerInfo',
-            self.handle,
-            ctypes.byref(info),
-            segment_index
-        )
-        return info.value
-
-
     
     # Data conversion ADC/mV & ctypes/int 
     def mv_to_adc(self, mv:float, channel_range:int) -> int:
@@ -748,58 +725,6 @@ class PicoScopeBase:
         self.over_range = over_range.value
         self.is_over_range()
         return total_samples.value
-
-    def run_streaming(
-        self,
-        sample_interval: float,
-        sample_interval_time_units: PICO_TIME_UNIT,
-        max_pre_trigger_samples: int,
-        max_post_trigger_samples: int,
-        auto_stop: int = 1,
-        down_sample_ratio: int = 1,
-        down_sample_ratio_mode: int = RATIO_MODE.RAW,
-    ) -> float:
-        """Start streaming mode and return the actual sample interval."""
-
-        c_sample_interval = ctypes.c_double(sample_interval)
-        self._call_attr_function(
-            "RunStreaming",
-            self.handle,
-            ctypes.byref(c_sample_interval),
-            sample_interval_time_units,
-            ctypes.c_uint64(max_pre_trigger_samples),
-            ctypes.c_uint64(max_post_trigger_samples),
-            ctypes.c_int16(auto_stop),
-            ctypes.c_uint64(down_sample_ratio),
-            down_sample_ratio_mode,
-        )
-        return c_sample_interval.value
-
-    def get_streaming_latest_values(
-        self,
-        streaming_data_info,
-        trigger_info: PICO_STREAMING_DATA_TRIGGER_INFO,
-    ) -> None:
-        """Retrieve latest streaming values into provided buffers."""
-
-        self._call_attr_function(
-            "GetStreamingLatestValues",
-            self.handle,
-            streaming_data_info,
-            ctypes.c_uint64(len(streaming_data_info)),
-            ctypes.byref(trigger_info),
-        )
-
-    def no_of_streaming_values(self) -> int:
-        """Return number of samples available when streaming."""
-
-        values = ctypes.c_uint64()
-        self._call_attr_function(
-            "NoOfStreamingValues",
-            self.handle,
-            ctypes.byref(values),
-        )
-        return values.value
     
     def is_over_range(self) -> list:
         """
@@ -970,47 +895,10 @@ class ps6000a(PicoScopeBase):
                 offset (int, optional): Analog offset in volts (V) of selected channel.
                 bandwidth (BANDWIDTH_CH, optional): Bandwidth of channel (selected models).
         """
-
         if enabled:
             super()._set_channel_on(channel, range, coupling, offset, bandwidth)
         else:
             super()._set_channel_off(channel)
-
-    def set_digital_port_on(
-        self,
-        port: DIGITAL_PORT,
-        logic_threshold_level: list[int],
-        hysteresis: DIGITAL_PORT_HYSTERESIS,
-    ) -> None:
-        """Enable a digital port using ``ps6000aSetDigitalPortOn``.
-
-        Args:
-            port: Digital port to enable.
-            logic_threshold_level: Threshold level for each pin in millivolts.
-            hysteresis: Hysteresis level applied to all pins.
-        """
-
-        level_array = (ctypes.c_int16 * len(logic_threshold_level))(
-            *logic_threshold_level
-        )
-
-        self._call_attr_function(
-            "SetDigitalPortOn",
-            self.handle,
-            port,
-            level_array,
-            len(logic_threshold_level),
-            hysteresis,
-        )
-
-    def set_digital_port_off(self, port: DIGITAL_PORT) -> None:
-        """Disable a digital port using ``ps6000aSetDigitalPortOff``."""
-
-        self._call_attr_function(
-            "SetDigitalPortOff",
-            self.handle,
-            port,
-        )
 
     def set_simple_trigger(self, channel, threshold_mv, enable=True, direction=TRIGGER_DIR.RISING, delay=0, auto_trigger_ms=5_000):
         """
@@ -1089,7 +977,7 @@ class ps6000a(PicoScopeBase):
         self._siggen_set_duty_cycle(duty)
         return self._siggen_apply()
     
-    def run_simple_block_capture(self, timebase:int, samples:int, segment=0, start_index=0, datatype=DATA_TYPE.INT16_T, ratio=0,
+    def run_simple_block_capture(self, timebase:int, samples:int, segment=0, start_index=0, datatype=DATA_TYPE.INT16_T, ratio=0, 
                          ratio_mode=RATIO_MODE.RAW, pre_trig_percent=50) -> tuple[dict, list]:
         """
         Performs a complete single block capture using current channel and trigger configuration.
@@ -1131,70 +1019,6 @@ class ps6000a(PicoScopeBase):
 
         # Generate the time axis based on actual samples and timebase
         time_axis = self.get_time_axis(timebase, actual_samples)
-
-        return channels_buffer, time_axis
-
-    def run_simple_streaming_capture(
-        self,
-        sample_interval: float,
-        sample_interval_time_units: PICO_TIME_UNIT,
-        samples: int,
-        auto_stop: bool = True,
-        datatype: DATA_TYPE = DATA_TYPE.INT16_T,
-        ratio_mode: int = RATIO_MODE.RAW,
-    ) -> tuple[dict, list]:
-        """Perform a simple streaming capture and return buffers and time axis."""
-
-        channels_buffer = self.set_data_buffer_for_enabled_channels(samples, 0, datatype, ratio_mode)
-
-        actual_interval = self.run_streaming(
-            sample_interval,
-            sample_interval_time_units,
-            0,
-            samples,
-            int(auto_stop),
-            1,
-            ratio_mode,
-        )
-
-        collected = 0
-        trigger_info = PICO_STREAMING_DATA_TRIGGER_INFO()
-
-        while collected < samples:
-            available = self.no_of_streaming_values()
-            if available <= collected:
-                time.sleep(0.01)
-                continue
-
-            to_read = available - collected
-            data_array = (PICO_STREAMING_DATA_INFO * len(channels_buffer))()
-            for idx, ch in enumerate(channels_buffer):
-                data_array[idx].channel_ = ch
-                data_array[idx].mode_ = ratio_mode
-                data_array[idx].type_ = datatype
-                data_array[idx].noOfSamples_ = to_read
-                data_array[idx].bufferIndex_ = collected
-                data_array[idx].startIndex_ = collected
-                data_array[idx].overflow_ = 0
-
-            self.get_streaming_latest_values(data_array, trigger_info)
-            collected += data_array[0].noOfSamples_
-
-            if auto_stop and trigger_info.autoStop_:
-                break
-
-        channels_buffer = self.channels_buffer_adc_to_mv(channels_buffer)
-
-        seconds_per_sample = {
-            PICO_TIME_UNIT.FS: 1e-15,
-            PICO_TIME_UNIT.PS: 1e-12,
-            PICO_TIME_UNIT.NS: 1e-9,
-            PICO_TIME_UNIT.US: 1e-6,
-            PICO_TIME_UNIT.MS: 1e-3,
-            PICO_TIME_UNIT.S: 1,
-        }[sample_interval_time_units] * actual_interval
-
-        time_axis = [n * seconds_per_sample for n in range(collected)]
 
         return channels_buffer, time_axis
     
