@@ -114,6 +114,7 @@ worker.start()
 plt.ion()
 fig, ax = plt.subplots()
 (line,) = ax.plot([], [])
+plt.show(block=False)
 ax.set_xlabel("Time (s)")
 ax.set_ylabel("Amplitude (mV)")
 ax.grid(True)
@@ -129,6 +130,7 @@ try:
         try:
             data_chunk = data_queue.get(timeout=0.1)
         except Empty:
+            plt.pause(0.001)
             continue
 
         for sample in data_chunk:
