@@ -1,11 +1,25 @@
-"""Continuous streaming example using threading to update a live plot."""
+"""Continuous streaming example using threading to update a live plot.
+
+This version adds various helpers to aid debugging of high CPU or memory
+usage when streaming large amounts of data.
+"""
+
+import logging
+import tracemalloc
 
 import pypicosdk as psdk
 from matplotlib import pyplot as plt
 from collections import deque
-from queue import Queue, Empty
+from queue import Queue, Empty, Full
 import threading
 import time
+import psutil
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
+tracemalloc.start()
+process = psutil.Process()
 
 # Setup variables
 sample_interval = 1
@@ -49,37 +63,48 @@ seconds_per_sample = {
 }[sample_units] * actual_interval
 
 # Thread-safe queue and stop event for asynchronous streaming
-data_queue: Queue[list] = Queue()
+# Bounded queue helps catch situations where data production outpaces consumption
+data_queue: Queue[list] = Queue(maxsize=100)
 stop_event = threading.Event()
 
 
 def streaming_worker() -> None:
     """Continuously read streaming data into a queue."""
     trig_info = psdk.PICO_STREAMING_DATA_TRIGGER_INFO()
-    while not stop_event.is_set():
-        available = scope.no_of_streaming_values()
-        if available == 0:
-            time.sleep(0.001)
-            continue
+    try:
+        while not stop_event.is_set():
+            available = scope.no_of_streaming_values()
+            if available == 0:
+                time.sleep(0.01)
+                continue
 
-        to_read = min(available, chunk_samples)
-        data_array = (psdk.PICO_STREAMING_DATA_INFO * 1)()
-        data_array[0].channel_ = channel_a
-        data_array[0].mode_ = psdk.RATIO_MODE.RAW
-        data_array[0].type_ = psdk.DATA_TYPE.INT16_T
-        data_array[0].noOfSamples_ = to_read
-        data_array[0].bufferIndex_ = 0
-        data_array[0].startIndex_ = 0
-        data_array[0].overflow_ = 0
+            to_read = min(available, chunk_samples)
+            data_array = (psdk.PICO_STREAMING_DATA_INFO * 1)()
+            data_array[0].channel_ = channel_a
+            data_array[0].mode_ = psdk.RATIO_MODE.RAW
+            data_array[0].type_ = psdk.DATA_TYPE.INT16_T
+            data_array[0].noOfSamples_ = to_read
+            data_array[0].bufferIndex_ = 0
+            data_array[0].startIndex_ = 0
+            data_array[0].overflow_ = 0
 
-        scope.get_streaming_latest_values(data_array, trig_info)
-        num = data_array[0].noOfSamples_
-        if num:
-            mv = [
-                scope.adc_to_mv(sample, voltage_range)
-                for sample in channels_buffer[channel_a][:num]
-            ]
-            data_queue.put(mv)
+            scope.get_streaming_latest_values(data_array, trig_info)
+            num = data_array[0].noOfSamples_
+            if num:
+                mv = [
+                    scope.adc_to_mv(sample, voltage_range)
+                    for sample in channels_buffer[channel_a][:num]
+                ]
+                try:
+                    data_queue.put(mv, timeout=0.1)
+                except Full:
+                    logging.warning("Data queue full - dropping samples")
+                else:
+                    logging.info(
+                        "read %d samples, queue size=%d", num, data_queue.qsize()
+                    )
+    except Exception:  # pragma: no cover - debug helper only
+        logging.exception("Error in streaming_worker")
 
 
 worker = threading.Thread(target=streaming_worker, daemon=True)
@@ -88,7 +113,7 @@ worker.start()
 # Setup matplotlib for interactive plotting
 plt.ion()
 fig, ax = plt.subplots()
-line, = ax.plot([], [])
+(line,) = ax.plot([], [])
 ax.set_xlabel("Time (s)")
 ax.set_ylabel("Amplitude (mV)")
 ax.grid(True)
@@ -114,6 +139,17 @@ try:
         line.set_data(list(time_axis), list(values))
         if time_axis:
             ax.set_xlim(time_axis[0], time_axis[-1])
+        if collected % 1000 == 0:
+            cpu = psutil.cpu_percent()
+            mem = process.memory_info().rss / (1024**2)
+            current, peak = tracemalloc.get_traced_memory()
+            logging.info(
+                "CPU %.1f%% RSS %.1f MiB (current %.1f MiB, peak %.1f MiB)",
+                cpu,
+                mem,
+                current / (1024**2),
+                peak / (1024**2),
+            )
         plt.pause(0.001)
 except KeyboardInterrupt:
     pass
