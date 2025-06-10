@@ -1,6 +1,8 @@
 import pypicosdk as psdk
 from matplotlib import pyplot as plt
 from collections import deque
+from queue import Queue, Empty
+import threading
 import time
 
 # Setup variables
@@ -43,6 +45,43 @@ seconds_per_sample = {
     psdk.PICO_TIME_UNIT.S: 1,
 }[sample_units] * actual_interval
 
+# Thread-safe queue and stop event for asynchronous streaming
+data_queue: Queue[list] = Queue()
+stop_event = threading.Event()
+
+
+def streaming_worker() -> None:
+    """Continuously read streaming data into a queue."""
+    trig_info = psdk.PICO_STREAMING_DATA_TRIGGER_INFO()
+    while not stop_event.is_set():
+        available = scope.no_of_streaming_values()
+        if available == 0:
+            time.sleep(0.001)
+            continue
+
+        to_read = min(available, chunk_samples)
+        data_array = (psdk.PICO_STREAMING_DATA_INFO * 1)()
+        data_array[0].channel_ = channel_a
+        data_array[0].mode_ = psdk.RATIO_MODE.RAW
+        data_array[0].type_ = psdk.DATA_TYPE.INT16_T
+        data_array[0].noOfSamples_ = to_read
+        data_array[0].bufferIndex_ = 0
+        data_array[0].startIndex_ = 0
+        data_array[0].overflow_ = 0
+
+        scope.get_streaming_latest_values(data_array, trig_info)
+        num = data_array[0].noOfSamples_
+        if num:
+            mv = [
+                scope.adc_to_mv(sample, voltage_range)
+                for sample in channels_buffer[channel_a][:num]
+            ]
+            data_queue.put(mv)
+
+
+worker = threading.Thread(target=streaming_worker, daemon=True)
+worker.start()
+
 # Setup matplotlib for interactive plotting
 plt.ion()
 fig, ax = plt.subplots()
@@ -56,30 +95,18 @@ time_axis = deque(maxlen=plot_samples)
 values = deque(maxlen=plot_samples)
 
 collected = 0
-trigger_info = psdk.PICO_STREAMING_DATA_TRIGGER_INFO()
 
 try:
     while True:
-        data_array = (psdk.PICO_STREAMING_DATA_INFO * 1)()
-        data_array[0].channel_ = channel_a
-        data_array[0].mode_ = psdk.RATIO_MODE.RAW
-        data_array[0].type_ = psdk.DATA_TYPE.INT16_T
-        data_array[0].noOfSamples_ = chunk_samples
-        data_array[0].bufferIndex_ = 0
-        data_array[0].startIndex_ = 0
-        data_array[0].overflow_ = 0
-
-        scope.get_streaming_latest_values(data_array, trigger_info)
-        num = data_array[0].noOfSamples_
-        if num == 0:
-            time.sleep(0.01)
+        try:
+            data_chunk = data_queue.get(timeout=0.1)
+        except Empty:
             continue
 
-        data = [scope.adc_to_mv(sample, voltage_range) for sample in channels_buffer[channel_a][:num]]
-        for i in range(num):
-            time_axis.append((collected + i) * seconds_per_sample)
-            values.append(data[i])
-        collected += num
+        for sample in data_chunk:
+            time_axis.append(collected * seconds_per_sample)
+            values.append(sample)
+            collected += 1
 
         line.set_data(list(time_axis), list(values))
         if time_axis:
@@ -87,6 +114,9 @@ try:
         plt.pause(0.001)
 except KeyboardInterrupt:
     pass
+finally:
+    stop_event.set()
+    worker.join()
 
 # Finish with PicoScope
 scope.close_unit()
