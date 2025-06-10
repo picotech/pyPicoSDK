@@ -821,7 +821,16 @@ class PicoScopeBase:
         )
 
     def no_of_streaming_values(self) -> int:
-        """Return number of samples available when streaming."""
+        """Return the number of samples currently available for streaming.
+
+        Wraps the PicoSDK ``NoOfStreamingValues`` function to query how many
+        values are ready to be retrieved from the driver's internal buffer.  See
+        :mod:`pypicosdk.constants` for related streaming constants.
+
+        Returns:
+            int: Number of samples that can be read using
+            :py:meth:`get_streaming_latest_values`.
+        """
 
         values = ctypes.c_uint64()
         self._call_attr_function(
