@@ -769,7 +769,27 @@ class PicoScopeBase:
         down_sample_ratio: int = 1,
         down_sample_ratio_mode: int = RATIO_MODE.RAW,
     ) -> float:
-        """Start streaming mode and return the actual sample interval."""
+        """
+        Start streaming acquisition using ``RunStreaming``.
+
+        Args:
+            sample_interval (float): Requested time between samples.
+            sample_interval_time_units (PICO_TIME_UNIT): Time units for
+                ``sample_interval``. See :mod:`pypicosdk.constants`.
+            max_pre_trigger_samples (int): Maximum number of pre-trigger
+                samples to collect.
+            max_post_trigger_samples (int): Maximum number of post-trigger
+                samples to collect.
+            auto_stop (int, optional): ``1`` to automatically stop once
+                ``max_post_trigger_samples`` have been captured.
+            down_sample_ratio (int, optional): Down-sampling ratio to apply.
+            down_sample_ratio_mode (RATIO_MODE, optional): Down-sampling mode
+                (for example, ``RATIO_MODE.RAW`` or ``RATIO_MODE.AVERAGE``).
+
+        Returns:
+            float: The actual sampling interval in the units specified by
+            ``sample_interval_time_units``.
+        """
 
         c_sample_interval = ctypes.c_double(sample_interval)
         self._call_attr_function(
