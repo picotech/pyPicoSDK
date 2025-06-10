@@ -8,9 +8,16 @@ samples = 5000
 channel_a = psdk.CHANNEL.A
 range = psdk.RANGE.V1
 
+# SigGen variables
+siggen_frequency = 1000  # Hz
+siggen_pk2pk = 2  # Volts peak-to-peak
+
 # Initialise PicoScope
 scope = psdk.ps6000a()
 scope.open_unit()
+
+# Output a sine wave to help visualise captured data
+scope.set_siggen(siggen_frequency, siggen_pk2pk, psdk.WAVEFORM.SINE)
 
 # Setup channels and trigger
 scope.set_channel(channel=channel_a, range=range)
