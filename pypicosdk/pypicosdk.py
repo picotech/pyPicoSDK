@@ -859,7 +859,7 @@ class PicoScopeBase:
         
     
     def run_simple_block_capture(self) -> dict:
-        raise NotImplementedError("This method is not yet implimented in this PicoScope")
+        raise NotImplementedError("This method is not yet implemented in this PicoScope")
     
     # Siggen Functions
     def _siggen_apply(self, enabled=1, sweep_enabled=0, trigger_enabled=0, 
