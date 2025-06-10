@@ -1153,8 +1153,19 @@ class ps6000a(PicoScopeBase):
         datatype: DATA_TYPE = DATA_TYPE.INT16_T,
         ratio_mode: int = RATIO_MODE.RAW,
     ) -> tuple[dict, list]:
-        """Perform a simple streaming capture and return buffers and time axis."""
+        """Perform a simple streaming capture and return buffers and time axis.
 
+        Args:
+            sample_interval (float): Desired sample interval.
+            sample_interval_time_units (PICO_TIME_UNIT): Units for ``sample_interval``.
+            samples (int): Number of samples to capture.
+            auto_stop (bool, optional): Stop automatically once ``samples`` have been collected.
+            datatype (DATA_TYPE, optional): Data type used for the capture buffer.
+            ratio_mode (RATIO_MODE, optional): Downsampling mode.
+
+        Returns:
+            tuple[dict, list]: Dictionary of channel buffers (in mV) and the time axis in seconds.
+        """
         channels_buffer = self.set_data_buffer_for_enabled_channels(samples, 0, datatype, ratio_mode)
 
         actual_interval = self.run_streaming(

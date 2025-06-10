@@ -38,7 +38,14 @@ scope = psdk.ps6000a()
 scope.open_unit()
 scope.set_channel(psdk.CHANNEL.A, psdk.RANGE.V1)
 scope.set_simple_trigger(psdk.CHANNEL.A, threshold_mv=0)
-data, times = scope.run_simple_streaming_capture(1, psdk.PICO_TIME_UNIT.US, 1000)
+data, times = scope.run_simple_streaming_capture(
+    sample_interval=1,
+    sample_interval_time_units=psdk.PICO_TIME_UNIT.US,
+    samples=1000,
+    auto_stop=True,
+    datatype=psdk.DATA_TYPE.INT16_T,
+    ratio_mode=psdk.RATIO_MODE.RAW,
+)
 scope.close_unit()
 ```
 

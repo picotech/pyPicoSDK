@@ -18,9 +18,12 @@ scope.set_simple_trigger(channel=channel_a, threshold_mv=0)
 
 # Run streaming capture
 channels, time_axis = scope.run_simple_streaming_capture(
-    sample_interval,
-    sample_units,
-    samples,
+    sample_interval=sample_interval,
+    sample_interval_time_units=sample_units,
+    samples=samples,
+    auto_stop=True,
+    datatype=psdk.DATA_TYPE.INT16_T,
+    ratio_mode=psdk.RATIO_MODE.RAW,
 )
 
 # Finish with PicoScope
