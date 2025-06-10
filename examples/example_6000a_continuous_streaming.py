@@ -8,6 +8,12 @@ signal generator with a simple sine wave so data appears on-screen.
 import logging
 import tracemalloc
 
+import matplotlib
+backend = matplotlib.get_backend()
+print(f"Matplotlib backend: {backend}")
+if backend not in matplotlib.rcsetup.interactive_bk:
+    matplotlib.use("TkAgg")
+
 import pypicosdk as psdk
 from matplotlib import pyplot as plt
 from collections import deque
