@@ -295,7 +295,7 @@ class PicoScopeBase:
     
     def get_timebase(timebase, samples):
         # Override for PicoScopeBase
-        raise NotImplemented("Method not yet available for this oscilloscope")
+        raise NotImplementedError("Method not yet available for this oscilloscope")
     
     def _get_timebase(self, timebase: int, samples: int, segment:int=0) -> dict:
         """
@@ -609,7 +609,7 @@ class PicoScopeBase:
         )
     
     def set_data_buffer_for_enabled_channels():
-        raise NotImplemented("Method not yet available for this oscilloscope")
+        raise NotImplementedError("Method not yet available for this oscilloscope")
     
     def _set_data_buffer_ps5000a(self, channel, samples, segment=0, ratio_mode=0):
         """Set data buffer (5000D)"""
