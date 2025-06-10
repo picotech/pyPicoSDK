@@ -1,3 +1,5 @@
+"""Continuous streaming example using threading to update a live plot."""
+
 import pypicosdk as psdk
 from matplotlib import pyplot as plt
 from collections import deque
@@ -21,7 +23,8 @@ scope.open_unit()
 scope.set_channel(channel=channel_a, range=voltage_range)
 scope.set_simple_trigger(channel=channel_a, threshold_mv=0)
 
-# Allocate initial buffer for streaming (re-added after each read)
+# Allocate a buffer for streaming
+# The same buffer is reused on every read so we don't need to re-register it
 channels_buffer = scope.set_data_buffer_for_enabled_channels(chunk_samples)
 
 # Start streaming with FIFO up to 4G samples
@@ -77,10 +80,6 @@ def streaming_worker() -> None:
                 for sample in channels_buffer[channel_a][:num]
             ]
             data_queue.put(mv)
-            # Re-register buffer for next chunk
-            channels_buffer[channel_a] = scope.set_data_buffer(
-                channel_a, chunk_samples, action=psdk.ACTION.ADD
-            )
 
 
 worker = threading.Thread(target=streaming_worker, daemon=True)
