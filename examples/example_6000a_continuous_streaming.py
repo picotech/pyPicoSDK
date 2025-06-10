@@ -1,7 +1,8 @@
 """Continuous streaming example using threading to update a live plot.
 
 This version adds various helpers to aid debugging of high CPU or memory
-usage when streaming large amounts of data.
+usage when streaming large amounts of data. It also drives the built-in
+signal generator with a simple sine wave so data appears on-screen.
 """
 
 import logging
@@ -29,9 +30,16 @@ chunk_samples = 1000  # number of samples to read per iteration
 channel_a = psdk.CHANNEL.A
 voltage_range = psdk.RANGE.V1
 
+# SigGen variables
+siggen_frequency = 1000  # Hz
+siggen_pk2pk = 2  # Volts peak-to-peak
+
 # Initialise PicoScope 6000
 scope = psdk.ps6000a()
 scope.open_unit()
+
+# Output a sine wave to help visualise captured data
+scope.set_siggen(siggen_frequency, siggen_pk2pk, psdk.WAVEFORM.SINE)
 
 # Setup channels and trigger
 scope.set_channel(channel=channel_a, range=voltage_range)
