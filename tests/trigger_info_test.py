@@ -11,6 +11,5 @@ def test_get_trigger_info_invocation():
         return 0
 
     scope._call_attr_function = fake_call
-    info = (PICO_TRIGGER_INFO * 1)()
-    scope.get_trigger_info(info, 0, 1)
+    info = scope.get_trigger_info(0, 1)
     assert called['name'] == 'GetTriggerInfo'
