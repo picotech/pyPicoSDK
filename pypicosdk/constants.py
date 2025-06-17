@@ -331,7 +331,24 @@ class PICO_STREAMING_DATA_TRIGGER_INFO(ctypes.Structure):
 
 
 class PICO_TRIGGER_INFO(ctypes.Structure):
-    """Structure describing trigger timing information."""
+    """Structure describing trigger timing information.
+
+    Attributes:
+        status_:   :class:`PICO_STATUS` value describing the trigger state. This
+            may be a bitwise OR of multiple status flags such as
+            ``PICO_DEVICE_TIME_STAMP_RESET`` or
+            ``PICO_TRIGGER_TIME_NOT_REQUESTED``.
+        segmentIndex_:  Memory segment index from which the information was
+            captured.
+        triggerIndex_:  Sample index at which the trigger occurred.
+        triggerTime_:   Time of the trigger event calculated with sub-sample
+            resolution.
+        timeUnits_:     Units for ``triggerTime_`` as a
+            :class:`PICO_TIME_UNIT` value.
+        missedTriggers_: Number of trigger events that occurred between this
+            capture and the previous one.
+        timeStampCounter_:  Timestamp in samples from the first capture.
+    """
 
     _fields_ = [
         ("status_", ctypes.c_int32),

@@ -3,6 +3,7 @@ import os
 import warnings
 import platform
 import time
+import typing
 
 from .error_list import ERROR_STRING
 from .constants import *
@@ -472,32 +473,38 @@ class PicoScopeBase:
 
     def get_trigger_info(
         self,
-        trigger_info,
         first_segment_index: int = 0,
         segment_count: int = 1,
-    ) -> None:
+    ) -> typing.Union[PICO_TRIGGER_INFO, list[PICO_TRIGGER_INFO]]:
         """Retrieve trigger timing information for one or more segments.
 
         Args:
-            trigger_info: Array of :class:`PICO_TRIGGER_INFO` structures that will
-                be populated by the driver.
-            first_segment_index (int, optional): Index of the first segment to
-                query. Defaults to ``0``.
-            segment_count (int, optional): Number of segments to query. Defaults
-                to ``1``.
+            first_segment_index: Index of the first memory segment to query.
+            segment_count: Number of segments to query starting from
+                ``first_segment_index``.
+
+        Returns:
+            :class:`PICO_TRIGGER_INFO` if ``segment_count`` is ``1`` otherwise a
+            list of ``PICO_TRIGGER_INFO`` objects.
 
         Raises:
             PicoSDKException: If the function call fails or preconditions are not
                 met.
         """
 
+        info_array = (PICO_TRIGGER_INFO * segment_count)()
+
         self._call_attr_function(
             "GetTriggerInfo",
             self.handle,
-            trigger_info,
+            ctypes.byref(info_array[0]),
             ctypes.c_uint64(first_segment_index),
             ctypes.c_uint64(segment_count),
         )
+
+        if segment_count == 1:
+            return info_array[0]
+        return list(info_array)
 
 
     
