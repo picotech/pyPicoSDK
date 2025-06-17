@@ -328,3 +328,17 @@ class PICO_STREAMING_DATA_TRIGGER_INFO(ctypes.Structure):
         ("triggered_", ctypes.c_int16),
         ("autoStop_", ctypes.c_int16),
     ]
+
+
+class PICO_TRIGGER_INFO(ctypes.Structure):
+    """Structure describing trigger timing information."""
+
+    _fields_ = [
+        ("status_", ctypes.c_int32),
+        ("segmentIndex_", ctypes.c_uint64),
+        ("triggerIndex_", ctypes.c_uint64),
+        ("triggerTime_", ctypes.c_double),
+        ("timeUnits_", ctypes.c_int32),
+        ("missedTriggers_", ctypes.c_uint64),
+        ("timeStampCounter_", ctypes.c_uint64),
+    ]

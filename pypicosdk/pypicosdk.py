@@ -470,26 +470,34 @@ class PicoScopeBase:
         return time.value
 
 
-    def get_trigger_info(self, segment_index: int = 0) -> int:
-        """Retrieve trigger timing information.
+    def get_trigger_info(
+        self,
+        trigger_info,
+        first_segment_index: int = 0,
+        segment_count: int = 1,
+    ) -> None:
+        """Retrieve trigger timing information for one or more segments.
 
         Args:
-            segment_index (int, optional): The memory segment to query. Defaults to 0.
-
-        Returns:
-            int: Raw trigger information returned by the driver.
+            trigger_info: Array of :class:`PICO_TRIGGER_INFO` structures that will
+                be populated by the driver.
+            first_segment_index (int, optional): Index of the first segment to
+                query. Defaults to ``0``.
+            segment_count (int, optional): Number of segments to query. Defaults
+                to ``1``.
 
         Raises:
-            PicoSDKException: If the function call fails or preconditions are not met.
+            PicoSDKException: If the function call fails or preconditions are not
+                met.
         """
-        info = ctypes.c_uint64()
+
         self._call_attr_function(
-            'GetTriggerInfo',
+            "GetTriggerInfo",
             self.handle,
-            ctypes.byref(info),
-            segment_index
+            trigger_info,
+            ctypes.c_uint64(first_segment_index),
+            ctypes.c_uint64(segment_count),
         )
-        return info.value
 
 
     
