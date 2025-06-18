@@ -478,22 +478,29 @@ class PicoScopeBase:
     ) -> typing.Union[PICO_TRIGGER_INFO, list[PICO_TRIGGER_INFO]]:
         """Retrieve trigger timing information for one or more segments.
 
-        The returned :class:`PICO_TRIGGER_INFO` objects expose their fields
-        with names that end in an underscore. When reading values from the
-        structure you must use these names, for example ``info.triggerTime_``.
+        This method wraps the ``ps6000aGetTriggerInfo`` API call and returns
+        one or more :class:`~pypicosdk.constants.PICO_TRIGGER_INFO` structures.
+        Each structure exposes attributes such as ``status_``, ``triggerTime_``
+        and ``timeUnits_`` (refer to :mod:`pypicosdk.constants` for the full
+        list of fields).  The ``status_`` field is a
+        :class:`~pypicosdk.constants.PICO_STATUS` bit field that may include
+        flags like ``PICO_DEVICE_TIME_STAMP_RESET`` or
+        ``PICO_TRIGGER_TIME_NOT_REQUESTED``. ``timeUnits_`` values are defined
+        by :class:`~pypicosdk.constants.PICO_TIME_UNIT`.
 
         Args:
             first_segment_index: Index of the first memory segment to query.
-            segment_count: Number of segments to query starting from
+            segment_count: Number of consecutive segments starting at
                 ``first_segment_index``.
 
         Returns:
-            :class:`PICO_TRIGGER_INFO` if ``segment_count`` is ``1`` otherwise a
-            list of ``PICO_TRIGGER_INFO`` objects.
+            If ``segment_count`` is ``1``, a single ``PICO_TRIGGER_INFO``
+            instance is returned. Otherwise a list of ``PICO_TRIGGER_INFO``
+            objects is provided.
 
         Raises:
-            PicoSDKException: If the function call fails or preconditions are not
-                met.
+            PicoSDKException: If the function call fails or preconditions are
+                not met.
         """
 
         info_array = (PICO_TRIGGER_INFO * segment_count)()
@@ -1068,6 +1075,19 @@ class ps6000a(PicoScopeBase):
             "SetDigitalPortOff",
             self.handle,
             port,
+        )
+
+    def set_aux_io_mode(self, mode: PICO_AUXIO_MODE) -> None:
+        """Configure the AUX port using ``ps6000aSetAuxIoMode``.
+
+        Args:
+            mode: Requested AUXIO mode from :class:`~pypicosdk.constants.PICO_AUXIO_MODE`.
+        """
+
+        self._call_attr_function(
+            "SetAuxIoMode",
+            self.handle,
+            mode,
         )
 
     def set_simple_trigger(self, channel, threshold_mv, enable=True, direction=TRIGGER_DIR.RISING, delay=0, auto_trigger_ms=5_000):

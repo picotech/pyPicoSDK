@@ -132,6 +132,12 @@ class CHANNEL(IntEnum):
     G = 6 
     H = 7
 
+    #: External trigger input.
+    EXTERNAL = 1000
+
+    #: Auxiliary trigger input/output.
+    TRIGGER_AUX = 1001
+
 
 CHANNEL_NAMES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 
@@ -304,6 +310,22 @@ class DIGITAL_PORT_HYSTERESIS(IntEnum):
     HIGH_200MV = 1
     NORMAL_100MV = 2
     LOW_50MV = 3
+
+
+class PICO_AUXIO_MODE(IntEnum):
+    """Modes for the AUX port input/output."""
+
+    #: High impedance input for triggering the scope or signal generator.
+    INPUT = 0
+
+    #: Constant logic high output.
+    HIGH_OUT = 1
+
+    #: Constant logic low output.
+    LOW_OUT = 2
+
+    #: Logic high pulse during the post-trigger acquisition time.
+    TRIGGER_OUT = 3
 
 
 class PICO_STREAMING_DATA_INFO(ctypes.Structure):
