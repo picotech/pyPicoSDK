@@ -110,8 +110,7 @@ class WAVEFORM:
     ARBITRARY = 0x10000000
 
 class CHANNEL(IntEnum):
-    """
-    Constants for each channel of the PicoScope.
+    """Constants representing PicoScope trigger and input channels.
 
     Attributes:
         A: Channel A
@@ -122,6 +121,7 @@ class CHANNEL(IntEnum):
         F: Channel F
         G: Channel G
         H: Channel H
+        TRIGGER_AUX: Dedicated auxiliary trigger input
     """
     A = 0
     B = 1
@@ -129,8 +129,9 @@ class CHANNEL(IntEnum):
     D = 3
     E = 4
     F = 5
-    G = 6 
+    G = 6
     H = 7
+    TRIGGER_AUX = 1001
 
 
 CHANNEL_NAMES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
@@ -304,6 +305,14 @@ class DIGITAL_PORT_HYSTERESIS(IntEnum):
     HIGH_200MV = 1
     NORMAL_100MV = 2
     LOW_50MV = 3
+
+
+class AUXIO_MODE(IntEnum):
+    """Operating modes for the AUX IO connector."""
+    INPUT = 0
+    HIGH_OUT = 1
+    LOW_OUT = 2
+    TRIGGER_OUT = 3
 
 
 class PICO_STREAMING_DATA_INFO(ctypes.Structure):
