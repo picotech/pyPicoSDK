@@ -622,7 +622,10 @@ class PicoScopeBase:
             delay (int, optional): Delay in samples after the trigger condition is met before starting capture. 
             auto_trigger (int, optional): Timeout after which data capture proceeds even if no trigger occurs. 
         """
-        threshold_adc = self.mv_to_adc(threshold_mv, self.range[channel])
+        if channel in self.range:
+            threshold_adc = self.mv_to_adc(threshold_mv, self.range[channel])
+        else:
+            threshold_adc = int(threshold_mv)
         self._call_attr_function(
             'SetSimpleTrigger',
             self.handle,
@@ -1077,11 +1080,11 @@ class ps6000a(PicoScopeBase):
             port,
         )
 
-    def set_aux_io_mode(self, mode: PICO_AUXIO_MODE) -> None:
-        """Configure the AUX port using ``ps6000aSetAuxIoMode``.
+    def set_aux_io_mode(self, mode: AUXIO_MODE) -> None:
+        """Configure the AUX IO connector using ``ps6000aSetAuxIoMode``.
 
         Args:
-            mode: Requested AUXIO mode from :class:`~pypicosdk.constants.PICO_AUXIO_MODE`.
+            mode: Requested AUXIO mode from :class:`~pypicosdk.constants.AUXIO_MODE`.
         """
 
         self._call_attr_function(
