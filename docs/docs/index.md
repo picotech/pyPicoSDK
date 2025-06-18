@@ -29,6 +29,12 @@ The output should be similar to:
 
 Once tested, try an [example script from github](https://github.com/StuLawPico/pyPicoSDK_Playground) to get started.
 
+### Struct field names
+Many functions return data using ``ctypes`` structures. The attributes of
+these structures include a trailing underscore in their names. Use the
+exact names shown in the API when accessing these values; for example
+``info.triggerTime_``.
+
 ## Useful links and references
 - [Documentation & Reference](https://stulawpico.github.io/pyPicoSDK_Playground)
 - [GitHub Repo (with examples)](https://github.com/StuLawPico/pyPicoSDK_Playground)

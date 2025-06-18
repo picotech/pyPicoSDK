@@ -478,6 +478,10 @@ class PicoScopeBase:
     ) -> typing.Union[PICO_TRIGGER_INFO, list[PICO_TRIGGER_INFO]]:
         """Retrieve trigger timing information for one or more segments.
 
+        The returned :class:`PICO_TRIGGER_INFO` objects expose their fields
+        with names that end in an underscore. When reading values from the
+        structure you must use these names, for example ``info.triggerTime_``.
+
         Args:
             first_segment_index: Index of the first memory segment to query.
             segment_count: Number of segments to query starting from

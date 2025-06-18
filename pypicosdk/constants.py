@@ -321,7 +321,13 @@ class PICO_STREAMING_DATA_INFO(ctypes.Structure):
 
 
 class PICO_STREAMING_DATA_TRIGGER_INFO(ctypes.Structure):
-    """Structure describing trigger information for streaming."""
+    """Structure describing trigger information for streaming.
+
+    All field names in this structure are defined with a trailing
+    underscore. These exact names must be used when accessing the
+    attributes returned by functions such as
+    :meth:`~pypicosdk.pypicosdk.PicoScopeBase.get_streaming_latest_values`.
+    """
 
     _fields_ = [
         ("triggerAt_", ctypes.c_uint64),
@@ -332,6 +338,12 @@ class PICO_STREAMING_DATA_TRIGGER_INFO(ctypes.Structure):
 
 class PICO_TRIGGER_INFO(ctypes.Structure):
     """Structure describing trigger timing information.
+
+    All fields of this ``ctypes`` structure include a trailing underscore in
+    their names. When you receive a :class:`PICO_TRIGGER_INFO` instance from
+    :meth:`~pypicosdk.pypicosdk.PicoScopeBase.get_trigger_info` or other
+    functions, access the attributes using these exact names, for example
+    ``info.triggerTime_``.
 
     Attributes:
         status_:   :class:`PICO_STATUS` value describing the trigger state. This
