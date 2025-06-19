@@ -344,6 +344,10 @@ class PICO_TRIGGER_STATE(IntEnum):
 class PICO_STREAMING_DATA_INFO(ctypes.Structure):
     """Structure describing streaming data buffer information."""
 
+    #: Structures in ``PicoDeviceStructs.h`` are packed to 1 byte. Mirror this
+    #: packing here so the memory layout matches the C definition.
+    _pack_ = 1
+
     _fields_ = [
         ("channel_", ctypes.c_int32),
         ("mode_", ctypes.c_int32),
@@ -363,6 +367,10 @@ class PICO_STREAMING_DATA_TRIGGER_INFO(ctypes.Structure):
     attributes returned by functions such as
     :meth:`~pypicosdk.pypicosdk.PicoScopeBase.get_streaming_latest_values`.
     """
+
+    #: Mirror the 1-byte packing of the C ``PICO_STREAMING_DATA_TRIGGER_INFO``
+    #: structure.
+    _pack_ = 1
 
     _fields_ = [
         ("triggerAt_", ctypes.c_uint64),
@@ -397,6 +405,9 @@ class PICO_TRIGGER_INFO(ctypes.Structure):
         timeStampCounter_:  Timestamp in samples from the first capture.
     """
 
+    #: Match the packed layout of the corresponding C structure.
+    _pack_ = 1
+
     _fields_ = [
         ("status_", ctypes.c_int32),
         ("segmentIndex_", ctypes.c_uint64),
@@ -414,6 +425,10 @@ class PICO_CONDITION(ctypes.Structure):
     Each instance defines the state that a particular input source must meet
     for the overall trigger to occur.
     """
+
+    #: Ensure this structure matches the 1-byte packed layout used in the
+    #: PicoSDK headers.
+    _pack_ = 1
 
     _fields_ = [
         ("source_", ctypes.c_int32),
