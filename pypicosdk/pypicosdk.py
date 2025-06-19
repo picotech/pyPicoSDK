@@ -636,6 +636,36 @@ class PicoScopeBase:
             delay,
             auto_trigger
         )
+
+    def set_trigger_channel_conditions(
+        self,
+        conditions: typing.Sequence[PICO_CONDITION],
+        action: int = ACTION.CLEAR_ALL | ACTION.ADD,
+    ) -> None:
+        """Configure complex triggering logic using ``SetTriggerChannelConditions``.
+
+        Args:
+            conditions: Sequence of :class:`~pypicosdk.constants.PICO_CONDITION`
+                structures defining the trigger logic. An empty sequence
+                disables triggering.
+            action: How to apply the provided conditions relative to any
+                existing conditions. Defaults to ``ACTION.CLEAR_ALL | ACTION.ADD``.
+        """
+
+        n_conditions = len(conditions)
+        if n_conditions:
+            cond_array = (PICO_CONDITION * n_conditions)(*conditions)
+            cond_ptr = cond_array
+        else:
+            cond_ptr = None
+
+        self._call_attr_function(
+            "SetTriggerChannelConditions",
+            self.handle,
+            cond_ptr,
+            ctypes.c_int16(n_conditions),
+            action,
+        )
     
     def set_data_buffer_for_enabled_channels():
         raise NotImplementedError("Method not yet available for this oscilloscope")
