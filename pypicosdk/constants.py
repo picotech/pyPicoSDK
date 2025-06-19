@@ -131,7 +131,6 @@ class CHANNEL(IntEnum):
     F = 5
     G = 6
     H = 7
-    TRIGGER_AUX = 1001
 
     #: External trigger input.
     EXTERNAL = 1000
