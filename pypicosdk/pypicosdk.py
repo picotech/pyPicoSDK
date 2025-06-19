@@ -6,6 +6,7 @@ import time
 import typing
 
 from .error_list import ERROR_STRING
+from . import constants as _constants
 from .constants import *
 from .version import VERSION
 
@@ -1379,3 +1380,17 @@ class ps5000a(PicoScopeBase):
     
     def change_power_source(self, state):
         return super()._change_power_source(state)
+
+
+# Build an explicit list of public names for ``from pypicosdk import *``.
+# This improves support in static analyzers like Pylance.
+__all__ = list(_constants.__all__) + [
+    'PicoSDKNotFoundException',
+    'PicoSDKException',
+    'OverrangeWarning',
+    'PowerSupplyWarning',
+    'get_all_enumerated_units',
+    'PicoScopeBase',
+    'ps6000a',
+    'ps5000a',
+]

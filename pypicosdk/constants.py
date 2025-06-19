@@ -434,3 +434,36 @@ class PICO_CONDITION(ctypes.Structure):
         ("source_", ctypes.c_int32),
         ("condition_", ctypes.c_int32),
     ]
+
+
+# Public names exported by :mod:`pypicosdk.constants` for ``import *`` support.
+# This explicit list helps static analyzers like Pylance discover available
+# attributes when the parent package re-exports ``pypicosdk.constants`` using
+# ``from .constants import *``.
+__all__ = [
+    'UNIT_INFO',
+    'RESOLUTION',
+    'TRIGGER_DIR',
+    'WAVEFORM',
+    'CHANNEL',
+    'CHANNEL_NAMES',
+    'COUPLING',
+    'RANGE',
+    'RANGE_LIST',
+    'BANDWIDTH_CH',
+    'DATA_TYPE',
+    'ACTION',
+    'RATIO_MODE',
+    'POWER_SOURCE',
+    'SAMPLE_RATE',
+    'TIME_UNIT',
+    'PICO_TIME_UNIT',
+    'DIGITAL_PORT',
+    'DIGITAL_PORT_HYSTERESIS',
+    'AUXIO_MODE',
+    'PICO_TRIGGER_STATE',
+    'PICO_STREAMING_DATA_INFO',
+    'PICO_STREAMING_DATA_TRIGGER_INFO',
+    'PICO_TRIGGER_INFO',
+    'PICO_CONDITION',
+]
