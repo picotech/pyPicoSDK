@@ -1138,6 +1138,26 @@ class ps6000a(PicoScopeBase):
         """
         auto_trigger_us = auto_trigger_ms * 1000
         return super().set_simple_trigger(channel, threshold_mv, enable, direction, delay, auto_trigger_us)
+
+    def set_trigger_channel_conditions(
+        self,
+        conditions: typing.Sequence[PICO_CONDITION],
+        action: int = ACTION.CLEAR_ALL | ACTION.ADD,
+    ) -> None:
+        """Configure complex triggering logic using ``ps6000aSetTriggerChannelConditions``.
+
+        This method mirrors :meth:`PicoScopeBase.set_trigger_channel_conditions` but
+        documents the underlying API call specific to the 6000A series.
+
+        Args:
+            conditions: Sequence of :class:`~pypicosdk.constants.PICO_CONDITION`
+                structures defining the trigger logic. An empty sequence disables
+                triggering.
+            action: How to combine ``conditions`` with any existing configuration.
+                Defaults to ``ACTION.CLEAR_ALL | ACTION.ADD``.
+        """
+
+        super().set_trigger_channel_conditions(conditions, action)
     
     def set_data_buffer(self, channel:CHANNEL, samples:int, segment:int=0, datatype:DATA_TYPE=DATA_TYPE.INT16_T, 
                         ratio_mode:RATIO_MODE=RATIO_MODE.RAW, action:ACTION=ACTION.CLEAR_ALL | ACTION.ADD) -> ctypes.Array:
