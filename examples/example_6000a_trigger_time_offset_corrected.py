@@ -24,8 +24,12 @@ uncorrected = []
 corrected_time_axes = []
 
 for _ in range(NCAPTURES):
-    # Capture a single waveform
-    buffers, time_axis = scope.run_simple_block_capture(timebase=TIMEBASE, samples=NSAMPLES)
+    # Capture a single waveform requesting trigger information
+    buffers, time_axis = scope.run_simple_block_capture(
+        timebase=TIMEBASE,
+        samples=NSAMPLES,
+        ratio_mode=psdk.RATIO_MODE.TRIGGER,
+    )
     waveform = buffers[channel]
     uncorrected.append(waveform)
 
