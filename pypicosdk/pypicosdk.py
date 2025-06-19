@@ -452,24 +452,30 @@ class PicoScopeBase:
         Get the trigger time offset for jitter correction in waveforms.
 
         Args:
-            time_unit (TIME_UNITS): Unit in which the trigger time offset will be returned.
+            time_unit (TIME_UNIT): Desired unit for the returned offset.
             segment_index (int, optional): The memory segment to query. Default is 0.
 
         Returns:
-            int: Trigger time offset in specified units.
+            int: Trigger time offset converted to ``time_unit``.
 
         Raises:
             PicoSDKException: If the function call fails or preconditions are not met.
         """
         time = ctypes.c_int64()
+        returned_unit = ctypes.c_int32()
+
         self._call_attr_function(
             'GetTriggerTimeOffset',
             self.handle,
             ctypes.byref(time),
-            PICO_TIME_UNIT[time_unit.name],
-            segment_index
+            ctypes.byref(returned_unit),
+            ctypes.c_uint64(segment_index)
         )
-        return time.value
+
+        # Convert the returned time to the requested ``time_unit``
+        pico_unit = PICO_TIME_UNIT(returned_unit.value)
+        time_s = time.value / TIME_UNIT[pico_unit.name]
+        return int(time_s * TIME_UNIT[time_unit.name])
 
 
     def get_trigger_info(
