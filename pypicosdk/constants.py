@@ -133,6 +133,12 @@ class CHANNEL(IntEnum):
     H = 7
     TRIGGER_AUX = 1001
 
+    #: External trigger input.
+    EXTERNAL = 1000
+
+    #: Auxiliary trigger input/output.
+    TRIGGER_AUX = 1001
+
 
 CHANNEL_NAMES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 
@@ -309,9 +315,17 @@ class DIGITAL_PORT_HYSTERESIS(IntEnum):
 
 class AUXIO_MODE(IntEnum):
     """Operating modes for the AUX IO connector."""
+
+    #: High impedance input for triggering the scope or signal generator.
     INPUT = 0
+
+    #: Constant logic high output.
     HIGH_OUT = 1
+
+    #: Constant logic low output.
     LOW_OUT = 2
+
+    #: Logic high pulse during the post-trigger acquisition time.
     TRIGGER_OUT = 3
 
 
