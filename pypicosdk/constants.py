@@ -328,6 +328,19 @@ class AUXIO_MODE(IntEnum):
     TRIGGER_OUT = 3
 
 
+class PICO_TRIGGER_STATE(IntEnum):
+    """Trigger state values used in :class:`PICO_CONDITION`."""
+
+    #: Channel is ignored when evaluating trigger conditions.
+    DONT_CARE = 0
+
+    #: Condition must be true for the channel.
+    TRUE = 1
+
+    #: Condition must be false for the channel.
+    FALSE = 2
+
+
 class PICO_STREAMING_DATA_INFO(ctypes.Structure):
     """Structure describing streaming data buffer information."""
 
@@ -392,4 +405,17 @@ class PICO_TRIGGER_INFO(ctypes.Structure):
         ("timeUnits_", ctypes.c_int32),
         ("missedTriggers_", ctypes.c_uint64),
         ("timeStampCounter_", ctypes.c_uint64),
+    ]
+
+
+class PICO_CONDITION(ctypes.Structure):
+    """Trigger condition structure used by ``SetTriggerChannelConditions``.
+
+    Each instance defines the state that a particular input source must meet
+    for the overall trigger to occur.
+    """
+
+    _fields_ = [
+        ("source_", ctypes.c_int32),
+        ("condition_", ctypes.c_int32),
     ]
