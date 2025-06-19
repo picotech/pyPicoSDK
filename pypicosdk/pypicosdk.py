@@ -1081,6 +1081,7 @@ class ps6000a(PicoScopeBase):
         )
 
     def set_aux_io_mode(self, mode: AUXIO_MODE) -> None:
+
         """Configure the AUX IO connector using ``ps6000aSetAuxIoMode``.
 
         Args:
