@@ -2,15 +2,37 @@ import pypicosdk as psdk
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 # Scope setup
 scope = psdk.ps6000a()
 scope.open_unit(resolution=psdk.RESOLUTION._12BIT)
 
-# Configure channel and trigger
+# Configure channels
+scope.set_channel(channel=psdk.CHANNEL.A, coupling=psdk.COUPLING.DC, range=psdk.RANGE.V1)
+scope.set_channel(channel=psdk.CHANNEL.B, enabled=0, coupling=psdk.COUPLING.DC, range=psdk.RANGE.mV500)
+scope.set_channel(channel=psdk.CHANNEL.C, enabled=0, coupling=psdk.COUPLING.DC, range=psdk.RANGE.mV500)
+scope.set_channel(channel=psdk.CHANNEL.D, enabled=0, coupling=psdk.COUPLING.DC, range=psdk.RANGE.mV500)
 channel = psdk.CHANNEL.A
-scope.set_channel(channel=channel, coupling=psdk.COUPLING.DC, range=psdk.RANGE.mV500)
-scope.set_simple_trigger(channel=channel, threshold_mv=200,
-                         direction=psdk.TRIGGER_DIR.RISING, auto_trigger_ms=0)
+
+# Configure an advanced trigger on Channel A at 200 mV
+threshold_adc = scope.mv_to_adc(200, psdk.RANGE.V1)
+trigger_prop = psdk.PICO_TRIGGER_CHANNEL_PROPERTIES(
+    threshold_adc,
+    0,
+    threshold_adc,
+    0,
+    psdk.CHANNEL.A,
+)
+scope.set_trigger_channel_properties([trigger_prop])
+condition = psdk.PICO_CONDITION(psdk.CHANNEL.A, psdk.PICO_TRIGGER_STATE.TRUE)
+scope.set_trigger_channel_conditions([condition])
+
+direction = psdk.PICO_DIRECTION(
+    psdk.CHANNEL.A,
+    psdk.PICO_THRESHOLD_DIRECTION.PICO_RISING,
+    psdk.PICO_THRESHOLD_MODE.PICO_LEVEL,
+)
+scope.set_trigger_channel_directions([direction])
 
 # Use the signal generator as a source
 scope.set_siggen(frequency=1000, pk2pk=0.9, wave_type=psdk.WAVEFORM.SINE)
