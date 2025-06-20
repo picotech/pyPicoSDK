@@ -692,8 +692,8 @@ class PicoScopeBase:
         )
         return buffer
     
-    def _set_data_buffer_ps6000a(self, channel, samples, segment=0, 
-                                 datatype=DATA_TYPE.INT16_T, ratio_mode=RATIO_MODE.RAW, 
+    def _set_data_buffer_ps6000a(self, channel, samples, segment=0,
+                                 datatype=DATA_TYPE.INT16_T, ratio_mode=RATIO_MODE.RAW,
                                  action=ACTION.CLEAR_ALL | ACTION.ADD) -> ctypes.Array:
         """
         Allocates and assigns a data buffer for a specified channel on the 6000A series.
@@ -733,6 +733,48 @@ class PicoScopeBase:
             action
         )
         return buffer
+
+    def _set_data_buffers_ps6000a(
+        self,
+        channel,
+        samples,
+        segment=0,
+        datatype=DATA_TYPE.INT16_T,
+        ratio_mode=RATIO_MODE.AGGREGATE,
+        action=ACTION.CLEAR_ALL | ACTION.ADD,
+    ) -> tuple[ctypes.Array, ctypes.Array]:
+        """Allocate and assign max and min data buffers (6000A)."""
+
+        if datatype == DATA_TYPE.INT8_T:
+            ctype = ctypes.c_int8
+        elif datatype == DATA_TYPE.INT16_T:
+            ctype = ctypes.c_int16
+        elif datatype == DATA_TYPE.INT32_T:
+            ctype = ctypes.c_int32
+        elif datatype == DATA_TYPE.INT64_T:
+            ctype = ctypes.c_int64
+        elif datatype == DATA_TYPE.UINT32_T:
+            ctype = ctypes.c_uint32
+        else:
+            raise PicoSDKException("Invalid datatype selected for buffer")
+
+        buffer_max = (ctype * samples)()
+        buffer_min = (ctype * samples)()
+
+        self._call_attr_function(
+            "SetDataBuffers",
+            self.handle,
+            channel,
+            ctypes.byref(buffer_max),
+            ctypes.byref(buffer_min),
+            samples,
+            datatype,
+            segment,
+            ratio_mode,
+            action,
+        )
+
+        return buffer_max, buffer_min
     
     # Run functions
     def run_block_capture(self, timebase, samples, pre_trig_percent=50, segment=0) -> int:
@@ -1166,7 +1208,7 @@ class ps6000a(PicoScopeBase):
 
         super().set_trigger_channel_conditions(conditions, action)
     
-    def set_data_buffer(self, channel:CHANNEL, samples:int, segment:int=0, datatype:DATA_TYPE=DATA_TYPE.INT16_T, 
+    def set_data_buffer(self, channel:CHANNEL, samples:int, segment:int=0, datatype:DATA_TYPE=DATA_TYPE.INT16_T,
                         ratio_mode:RATIO_MODE=RATIO_MODE.RAW, action:ACTION=ACTION.CLEAR_ALL | ACTION.ADD) -> ctypes.Array:
         """
         Tells the driver where to store the data that will be populated when get_values() is called.
@@ -1184,6 +1226,47 @@ class ps6000a(PicoScopeBase):
                 ctypes.Array: Array that will be populated when get_values() is called.
         """
         return super()._set_data_buffer_ps6000a(channel, samples, segment, datatype, ratio_mode, action)
+
+    def set_data_buffers(
+        self,
+        channel: CHANNEL,
+        samples: int,
+        segment: int = 0,
+        datatype: DATA_TYPE = DATA_TYPE.INT16_T,
+        ratio_mode: RATIO_MODE = RATIO_MODE.AGGREGATE,
+        action: ACTION = ACTION.CLEAR_ALL | ACTION.ADD,
+    ) -> tuple[ctypes.Array, ctypes.Array]:
+        """Configure both maximum and minimum data buffers for a channel.
+
+        Use this when downsampling in aggregation mode or requesting
+        post-capture aggregated values. It allocates two buffers - one to hold
+        the maximum values and another for the minimum values - and registers
+        them with ``ps6000aSetDataBuffers``.
+
+        Args:
+            channel (CHANNEL): Channel you want to use with the buffers.
+            samples (int): Number of samples/length of each buffer.
+            segment (int, optional): Memory segment index for the buffers.
+            datatype (DATA_TYPE, optional): C datatype of the data stored in the
+                buffers.
+            ratio_mode (RATIO_MODE, optional): Downsampling mode. Typically
+                ``RATIO_MODE.AGGREGATE`` when both buffers are required.
+            action (ACTION, optional): Method used when creating or updating the
+                buffers.
+
+        Returns:
+            tuple[ctypes.Array, ctypes.Array]: ``(buffer_max, buffer_min)`` that
+            will be populated when :meth:`get_values` is called.
+        """
+
+        return super()._set_data_buffers_ps6000a(
+            channel,
+            samples,
+            segment,
+            datatype,
+            ratio_mode,
+            action,
+        )
     
     def set_data_buffer_for_enabled_channels(self, samples:int, segment:int=0, datatype=DATA_TYPE.INT16_T, 
                                              ratio_mode=RATIO_MODE.RAW) -> dict:
