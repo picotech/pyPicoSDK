@@ -419,6 +419,36 @@ class PICO_TRIGGER_INFO(ctypes.Structure):
     ]
 
 
+class PICO_TRIGGER_CHANNEL_PROPERTIES(ctypes.Structure):
+    """Trigger threshold configuration for a single channel.
+
+    The fields of this structure mirror the ``PICO_TRIGGER_CHANNEL_PROPERTIES``
+    definition in the PicoSDK headers.  Each attribute name ends with an
+    underscore so that the names match the underlying C struct when accessed
+    from Python.
+
+    Attributes:
+        thresholdUpper_: ADC counts for the upper trigger threshold.
+        thresholdUpperHysteresis_: Hysteresis applied to ``thresholdUpper_`` in
+            ADC counts.
+        thresholdLower_: ADC counts for the lower trigger threshold.
+        thresholdLowerHysteresis_: Hysteresis applied to ``thresholdLower_`` in
+            ADC counts.
+        channel_: Input channel that these properties apply to as a
+            :class:`CHANNEL` value.
+    """
+
+    _pack_ = 1
+
+    _fields_ = [
+        ("thresholdUpper_", ctypes.c_int16),
+        ("thresholdUpperHysteresis_", ctypes.c_uint16),
+        ("thresholdLower_", ctypes.c_int16),
+        ("thresholdLowerHysteresis_", ctypes.c_uint16),
+        ("channel_", ctypes.c_int32),
+    ]
+
+
 class PICO_CONDITION(ctypes.Structure):
     """Trigger condition structure used by ``SetTriggerChannelConditions``.
 
@@ -465,5 +495,6 @@ __all__ = [
     'PICO_STREAMING_DATA_INFO',
     'PICO_STREAMING_DATA_TRIGGER_INFO',
     'PICO_TRIGGER_INFO',
+    'PICO_TRIGGER_CHANNEL_PROPERTIES',
     'PICO_CONDITION',
 ]

@@ -673,6 +673,41 @@ class PicoScopeBase:
             ctypes.c_int16(n_conditions),
             action,
         )
+
+    def set_trigger_channel_properties(
+        self,
+        properties: typing.Sequence[PICO_TRIGGER_CHANNEL_PROPERTIES],
+        aux_output_enable: int = 0,
+        auto_trigger_us: int = 0,
+    ) -> None:
+        """Configure trigger thresholds using ``SetTriggerChannelProperties``.
+
+        Args:
+            properties: Sequence of
+                :class:`~pypicosdk.constants.PICO_TRIGGER_CHANNEL_PROPERTIES`
+                structures describing the thresholds for each channel. An empty
+                sequence disables triggering.
+            aux_output_enable: Optional auxiliary output flag. Currently not
+                used by the driver.
+            auto_trigger_us: Time in microseconds to wait before automatically
+                triggering if no event occurs. ``0`` waits indefinitely.
+        """
+
+        n_props = len(properties)
+        if n_props:
+            props_array = (PICO_TRIGGER_CHANNEL_PROPERTIES * n_props)(*properties)
+            props_ptr = props_array
+        else:
+            props_ptr = None
+
+        self._call_attr_function(
+            "SetTriggerChannelProperties",
+            self.handle,
+            props_ptr,
+            ctypes.c_int16(n_props),
+            ctypes.c_int16(aux_output_enable),
+            ctypes.c_uint32(auto_trigger_us),
+        )
     
     def set_data_buffer_for_enabled_channels():
         raise NotImplementedError("Method not yet available for this oscilloscope")
@@ -1207,6 +1242,29 @@ class ps6000a(PicoScopeBase):
         """
 
         super().set_trigger_channel_conditions(conditions, action)
+
+    def set_trigger_channel_properties(
+        self,
+        properties: typing.Sequence[PICO_TRIGGER_CHANNEL_PROPERTIES],
+        aux_output_enable: int = 0,
+        auto_trigger_us: int = 0,
+    ) -> None:
+        """Configure channel thresholds using ``ps6000aSetTriggerChannelProperties``.
+
+        This method mirrors :meth:`PicoScopeBase.set_trigger_channel_properties`
+        while documenting the underlying 6000A API call.
+
+        Args:
+            properties: Sequence of :class:`~pypicosdk.constants.PICO_TRIGGER_CHANNEL_PROPERTIES`.
+            aux_output_enable: Optional auxiliary output flag.
+            auto_trigger_us: Auto-trigger timeout in microseconds.
+        """
+
+        super().set_trigger_channel_properties(
+            properties,
+            aux_output_enable,
+            auto_trigger_us,
+        )
     
     def set_data_buffer(self, channel:CHANNEL, samples:int, segment:int=0, datatype:DATA_TYPE=DATA_TYPE.INT16_T,
                         ratio_mode:RATIO_MODE=RATIO_MODE.RAW, action:ACTION=ACTION.CLEAR_ALL | ACTION.ADD) -> ctypes.Array:
