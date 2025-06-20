@@ -708,6 +708,31 @@ class PicoScopeBase:
             ctypes.c_int16(aux_output_enable),
             ctypes.c_uint32(auto_trigger_us),
         )
+
+    def set_trigger_channel_directions(
+        self,
+        directions: typing.Sequence[PICO_DIRECTION],
+    ) -> None:
+        """Configure trigger directions using ``SetTriggerChannelDirections``.
+
+        Args:
+            directions: Sequence of :class:`~pypicosdk.constants.PICO_DIRECTION`
+                structures specifying the trigger direction for each channel.
+        """
+
+        n_dirs = len(directions)
+        if n_dirs:
+            dirs_array = (PICO_DIRECTION * n_dirs)(*directions)
+            dirs_ptr = dirs_array
+        else:
+            dirs_ptr = None
+
+        self._call_attr_function(
+            "SetTriggerChannelDirections",
+            self.handle,
+            dirs_ptr,
+            ctypes.c_int16(n_dirs),
+        )
     
     def set_data_buffer_for_enabled_channels():
         raise NotImplementedError("Method not yet available for this oscilloscope")
@@ -1265,6 +1290,14 @@ class ps6000a(PicoScopeBase):
             aux_output_enable,
             auto_trigger_us,
         )
+
+    def set_trigger_channel_directions(
+        self,
+        directions: typing.Sequence[PICO_DIRECTION],
+    ) -> None:
+        """Configure channel directions using ``ps6000aSetTriggerChannelDirections``."""
+
+        super().set_trigger_channel_directions(directions)
     
     def set_data_buffer(self, channel:CHANNEL, samples:int, segment:int=0, datatype:DATA_TYPE=DATA_TYPE.INT16_T,
                         ratio_mode:RATIO_MODE=RATIO_MODE.RAW, action:ACTION=ACTION.CLEAR_ALL | ACTION.ADD) -> ctypes.Array:

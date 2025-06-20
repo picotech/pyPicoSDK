@@ -466,6 +466,47 @@ class PICO_CONDITION(ctypes.Structure):
     ]
 
 
+class PICO_THRESHOLD_DIRECTION(IntEnum):
+    """Enumerates trigger threshold directions used with :class:`PICO_DIRECTION`."""
+
+    PICO_ABOVE = 0
+    PICO_BELOW = 1
+    PICO_RISING = 2
+    PICO_FALLING = 3
+    PICO_RISING_OR_FALLING = 4
+    PICO_ABOVE_LOWER = 5
+    PICO_BELOW_LOWER = 6
+    PICO_RISING_LOWER = 7
+    PICO_FALLING_LOWER = 8
+    PICO_INSIDE = PICO_ABOVE
+    PICO_OUTSIDE = PICO_BELOW
+    PICO_ENTER = PICO_RISING
+    PICO_EXIT = PICO_FALLING
+    PICO_ENTER_OR_EXIT = PICO_RISING_OR_FALLING
+    PICO_POSITIVE_RUNT = 9
+    PICO_NEGATIVE_RUNT = 10
+    PICO_NONE = PICO_RISING
+
+
+class PICO_THRESHOLD_MODE(IntEnum):
+    """Threshold operation mode values used in :class:`PICO_DIRECTION`."""
+
+    PICO_LEVEL = 0
+    PICO_WINDOW = 1
+
+
+class PICO_DIRECTION(ctypes.Structure):
+    """Structure used by ``SetTriggerChannelDirections`` to specify trigger directions."""
+
+    _pack_ = 1
+
+    _fields_ = [
+        ("channel_", ctypes.c_int32),
+        ("direction_", ctypes.c_int32),
+        ("thresholdMode_", ctypes.c_int32),
+    ]
+
+
 # Public names exported by :mod:`pypicosdk.constants` for ``import *`` support.
 # This explicit list helps static analyzers like Pylance discover available
 # attributes when the parent package re-exports ``pypicosdk.constants`` using
@@ -497,4 +538,7 @@ __all__ = [
     'PICO_TRIGGER_INFO',
     'PICO_TRIGGER_CHANNEL_PROPERTIES',
     'PICO_CONDITION',
+    'PICO_THRESHOLD_DIRECTION',
+    'PICO_THRESHOLD_MODE',
+    'PICO_DIRECTION',
 ]
