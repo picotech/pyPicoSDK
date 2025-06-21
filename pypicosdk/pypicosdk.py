@@ -1643,44 +1643,80 @@ class ps6000a(PicoScopeBase):
         ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
         pre_trig_percent: int = 50,
     ) -> tuple[dict, list]:
-        """
-        Performs a complete single block capture using current channel and trigger configuration.
+        """Perform a complete single block capture.
 
-        This function sets up data buffers for all enabled channels, starts a block capture,
-        and retrieves the values once the device is ready. It is a simplified interface 
-        for common block capture use cases.
+        When ``ratio_mode`` is ``RATIO_MODE.TRIGGER`` the driver requires a
+        separate buffer to store the trigger samples. This helper allocates an
+        additional buffer internally and reads the trigger data before querying
+        the trigger time offset.
 
         Args:
-            timebase (int): Timebase value determining the sample interval (refer to PicoSDK guide).
-            samples (int): Total number of samples to capture.
-            segment (int, optional): Memory segment index to use.
-            start_index (int, optional): Starting index in the buffer.
-            datatype (DATA_TYPE, optional): Data type to use for the capture buffer.
-            ratio (int, optional): Downsampling ratio.
-            ratio_mode (RATIO_MODE, optional): Downsampling mode. When set to
-                ``RATIO_MODE.TRIGGER``, ``ratio`` must be greater than zero to
-                request trigger data from the driver.
-            pre_trig_percent (int, optional): Percentage of samples to capture before the trigger.
+            timebase: PicoScope timebase value.
+            samples: Number of samples to capture.
+            segment: Memory segment index to use.
+            start_index: Starting index in the buffer.
+            datatype: Data type to use for the capture buffer.
+            ratio: Downsampling ratio.
+            ratio_mode: Downsampling mode. If ``RATIO_MODE.TRIGGER`` is
+                specified, ``ratio`` is forced to ``1`` for the trigger-data
+                retrieval call.
+            pre_trig_percent: Percentage of samples to capture before the
+                trigger.
 
         Returns:
-            dict: A dictionary mapping each enabled channel to its corresponding data buffer.
-            list: Time axis (x-axis) list of timestamps for the sample data
+            tuple[dict, list]: Dictionary of channel buffers (in mV) and the time
+            axis in seconds.
 
         Examples:
             >>> scope.set_channel(CHANNEL.A, RANGE.V1)
             >>> scope.set_simple_trigger(CHANNEL.A, threshold_mv=500)
             >>> buffers = scope.run_simple_block_capture(timebase=3, samples=1000)
         """
-        # Setup data buffer for enabled channels
-        if ratio_mode == RATIO_MODE.TRIGGER and ratio == 0:
-            ratio = 1
-        channels_buffer = self.set_data_buffer_for_enabled_channels(samples, segment, datatype, ratio_mode)
+
+
+        super()._set_data_buffer_ps6000a(0, 0, 0, 0, 0, ACTION.CLEAR_ALL)
+
+        if ratio_mode == RATIO_MODE.TRIGGER:
+            trigger_ratio = ratio or 1
+            main_ratio_mode = RATIO_MODE.RAW
+            main_ratio = 0
+        else:
+            trigger_ratio = None
+            main_ratio_mode = ratio_mode
+            main_ratio = ratio
+
+        channels_buffer: dict = {}
+        trigger_buffer: dict | None = {} if trigger_ratio else None
+        for ch in self.range:
+            buf = super()._set_data_buffer_ps6000a(
+                ch,
+                samples,
+                segment,
+                datatype,
+                main_ratio_mode,
+                action=ACTION.ADD,
+            )
+            channels_buffer[ch] = buf
+            if trigger_buffer is not None:
+                tbuf = super()._set_data_buffer_ps6000a(
+                    ch,
+                    samples,
+                    segment,
+                    datatype,
+                    RATIO_MODE.TRIGGER,
+                    action=ACTION.ADD,
+                )
+                trigger_buffer[ch] = tbuf
+
 
         # Start block capture
         self.run_block_capture(timebase, samples, pre_trig_percent, segment)
 
         # Get values from PicoScope (returning actual samples for time_axis)
-        actual_samples = self.get_values(samples, start_index, segment, ratio, ratio_mode)
+        actual_samples = self.get_values(samples, start_index, segment, main_ratio, main_ratio_mode)
+
+        if trigger_buffer is not None:
+            self.get_values(samples, 0, segment, trigger_ratio, RATIO_MODE.TRIGGER)
 
         # Convert from ADC to mV values
         channels_buffer = self.channels_buffer_adc_to_mv(channels_buffer)
@@ -1703,8 +1739,10 @@ class ps6000a(PicoScopeBase):
     ) -> tuple[dict, list]:
         """Perform a basic rapid block capture.
 
-        When ``ratio_mode`` is ``RATIO_MODE.TRIGGER`` the ``ratio`` argument
-        must be greater than zero so the driver returns trigger data.
+        If ``ratio_mode`` is ``RATIO_MODE.TRIGGER`` an additional set of data
+        buffers is used internally to retrieve the trigger samples. The returned
+        waveform data always uses ``RATIO_MODE.RAW``. ``ratio`` is forced to
+        ``1`` for the trigger-data retrieval call when required.
         """
 
         self.memory_segments(n_captures)
@@ -1712,9 +1750,18 @@ class ps6000a(PicoScopeBase):
 
         super()._set_data_buffer_ps6000a(0, 0, 0, 0, 0, ACTION.CLEAR_ALL)
 
-        if ratio_mode == RATIO_MODE.TRIGGER and ratio == 0:
-            ratio = 1
+
+        if ratio_mode == RATIO_MODE.TRIGGER:
+            trigger_ratio = ratio or 1
+            main_ratio_mode = RATIO_MODE.RAW
+            main_ratio = 0
+        else:
+            trigger_ratio = None
+            main_ratio_mode = ratio_mode
+            main_ratio = ratio
+
         channels_buffer: dict = {ch: [] for ch in self.range}
+        trigger_buffer: dict | None = {ch: [] for ch in self.range} if trigger_ratio else None
         for segment in range(n_captures):
             for ch in self.range:
                 buf = super()._set_data_buffer_ps6000a(
@@ -1722,10 +1769,20 @@ class ps6000a(PicoScopeBase):
                     samples,
                     segment,
                     datatype,
-                    ratio_mode,
+                    main_ratio_mode,
                     action=ACTION.ADD,
                 )
                 channels_buffer[ch].append(buf)
+                if trigger_buffer is not None:
+                    tbuf = super()._set_data_buffer_ps6000a(
+                        ch,
+                        samples,
+                        segment,
+                        datatype,
+                        RATIO_MODE.TRIGGER,
+                        action=ACTION.ADD,
+                    )
+                    trigger_buffer[ch].append(tbuf)
 
         self.run_block_capture(timebase, samples, pre_trig_percent, 0)
 
@@ -1735,10 +1792,21 @@ class ps6000a(PicoScopeBase):
             samples,
             0,
             n_captures - 1,
-            ratio,
-            ratio_mode,
+            main_ratio,
+            main_ratio_mode,
             overflow,
         )
+
+        if trigger_buffer is not None:
+            self.get_values_bulk(
+                0,
+                samples,
+                0,
+                n_captures - 1,
+                trigger_ratio,
+                RATIO_MODE.TRIGGER,
+                overflow,
+            )
 
         for ch in channels_buffer:
             for i in range(n_captures):
