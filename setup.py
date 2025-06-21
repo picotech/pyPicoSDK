@@ -26,7 +26,7 @@ setup(
     description="Modern Python wrapper for PicoSDK",
     long_description=open("README.md").read() if os.path.exists("README.md") else "",
     long_description_content_type="text/markdown",
-    license_file="MIT",
+    license_file="LICENSE",
     classifiers=[
         "Programming Language :: Python :: 3",
         "Operating System :: Microsoft :: Windows",
