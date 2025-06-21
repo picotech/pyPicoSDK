@@ -618,16 +618,16 @@ class PicoScopeBase:
         return self._error_handler(status)
     
     def set_simple_trigger(self, channel, threshold_mv, enable=True, direction=TRIGGER_DIR.RISING, delay=0, auto_trigger=0):
-        """
-        Sets up a simple trigger from a specified channel and threshold in mV
+        """Configure a simple edge trigger.
 
         Args:
             channel (int): The input channel to apply the trigger to.
             threshold_mv (float): Trigger threshold level in millivolts.
-            enable (bool, optional): Enables or disables the trigger. 
-            direction (TRIGGER_DIR, optional): Trigger direction (e.g., TRIGGER_DIR.RISING, TRIGGER_DIR.FALLING). 
-            delay (int, optional): Delay in samples after the trigger condition is met before starting capture. 
-            auto_trigger (int, optional): Timeout after which data capture proceeds even if no trigger occurs. 
+            enable (bool, optional): Enables or disables the trigger.
+            direction (TRIGGER_DIR, optional): Trigger direction (e.g., ``TRIGGER_DIR.RISING``).
+            delay (int, optional): Delay in samples after the trigger condition is met before starting capture.
+            auto_trigger (int, optional): Timeout in **microseconds** after which data capture proceeds even if no
+                trigger occurs.
         """
         if channel in self.range:
             threshold_adc = self.mv_to_adc(threshold_mv, self.range[channel])
@@ -1542,12 +1542,13 @@ class ps5000a(PicoScopeBase):
         Args:
             channel (int): The input channel to apply the trigger to.
             threshold_mv (float): Trigger threshold level in millivolts.
-            enable (bool, optional): Enables or disables the trigger. 
-            direction (TRIGGER_DIR, optional): Trigger direction (e.g., TRIGGER_DIR.RISING, TRIGGER_DIR.FALLING). 
-            delay (int, optional): Delay in samples after the trigger condition is met before starting capture. 
-            auto_trigger_ms (int, optional): Timeout in milliseconds after which data capture proceeds even if no trigger occurs. 
+            enable (bool, optional): Enables or disables the trigger.
+            direction (TRIGGER_DIR, optional): Trigger direction (e.g., TRIGGER_DIR.RISING, TRIGGER_DIR.FALLING).
+            delay (int, optional): Delay in samples after the trigger condition is met before starting capture.
+            auto_trigger_ms (int, optional): Timeout in milliseconds after which data capture proceeds even if no trigger occurs.
         """
-        return super().set_simple_trigger(channel, threshold_mv, enable, direction, delay, auto_trigger_ms)
+        auto_trigger_us = auto_trigger_ms * 1000
+        return super().set_simple_trigger(channel, threshold_mv, enable, direction, delay, auto_trigger_us)
     
     def set_data_buffer(self, channel, samples, segment=0, ratio_mode=0):
         return super()._set_data_buffer_ps5000a(channel, samples, segment, ratio_mode)
