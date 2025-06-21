@@ -28,4 +28,15 @@
 - Indentation uses four spaces and no tabs.
 - Keep line lengths reasonably short for readability (many existing lines are under 79 characters).
 
+## Python wrapper style
+- All public functions and methods include a triple-quoted docstring. Start with a
+  short summary line followed by `Args:` and `Returns:` sections. Use `Raises:`
+  when applicable.
+- Type hints annotate function arguments and return values to clarify expected
+  types.
+- Private helper functions are prefixed with an underscore.
+- Classes have a brief docstring summarizing their purpose.
+- Each module ends with an explicit `__all__` list enumerating all exported
+  names. The package ``__init__`` re-exports these names for static analysers.
+
 Following these conventions keeps new constants and structures consistent with the existing definitions in `pypicosdk/constants.py`.
