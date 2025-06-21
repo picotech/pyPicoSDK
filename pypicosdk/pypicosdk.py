@@ -1183,6 +1183,85 @@ class ps6000a(PicoScopeBase):
         """
         super()._open_unit(serial_number, resolution)
         self.min_adc_value, self.max_adc_value =super()._get_adc_limits()
+
+    def memory_segments(self, n_segments: int) -> int:
+        """Configure the number of memory segments.
+
+        This wraps the ``ps6000aMemorySegments`` API call.
+
+        Args:
+            n_segments: Desired number of memory segments.
+
+        Returns:
+            int: Number of samples available in each segment.
+        """
+
+        max_samples = ctypes.c_uint64()
+        self._call_attr_function(
+            "MemorySegments",
+            self.handle,
+            ctypes.c_uint64(n_segments),
+            ctypes.byref(max_samples),
+        )
+        return max_samples.value
+
+    def memory_segments_by_samples(self, n_samples: int) -> int:
+        """Set the samples per memory segment.
+
+        This wraps ``ps6000aMemorySegmentsBySamples`` which divides the
+        capture memory so that each segment holds ``n_samples`` samples.
+
+        Args:
+            n_samples: Number of samples per segment.
+
+        Returns:
+            int: Number of segments the memory was divided into.
+        """
+
+        max_segments = ctypes.c_uint64()
+        self._call_attr_function(
+            "MemorySegmentsBySamples",
+            self.handle,
+            ctypes.c_uint64(n_samples),
+            ctypes.byref(max_segments),
+        )
+        return max_segments.value
+
+    def query_max_segments_by_samples(
+        self,
+        n_samples: int,
+        n_channel_enabled: int,
+    ) -> int:
+        """Return the maximum number of segments for a given sample count.
+
+        Wraps ``ps6000aQueryMaxSegmentsBySamples`` to query how many memory
+        segments can be configured when each segment stores ``n_samples``
+        samples.
+
+        Args:
+            n_samples: Number of samples per segment.
+            n_channel_enabled: Number of enabled channels.
+
+        Returns:
+            int: Maximum number of segments available.
+
+        Raises:
+            PicoSDKException: If the device has not been opened.
+        """
+
+        if self.resolution is None:
+            raise PicoSDKException("Device has not been initialized, use open_unit()")
+
+        max_segments = ctypes.c_uint64()
+        self._call_attr_function(
+            "QueryMaxSegmentsBySamples",
+            self.handle,
+            ctypes.c_uint64(n_samples),
+            ctypes.c_uint32(n_channel_enabled),
+            ctypes.byref(max_segments),
+            self.resolution,
+        )
+        return max_segments.value
     
     def get_timebase(self, timebase:int, samples:int, segment:int=0) -> None:
         """
