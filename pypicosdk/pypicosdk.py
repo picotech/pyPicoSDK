@@ -563,6 +563,118 @@ class PicoScopeBase:
             results.append((times[i], PICO_TIME_UNIT(units[i])))
         return results
 
+    def set_no_of_captures(self, n_captures: int) -> None:
+        """Configure the number of captures for rapid block mode."""
+
+        self._call_attr_function(
+            "SetNoOfCaptures",
+            self.handle,
+            ctypes.c_uint64(n_captures),
+        )
+
+    def get_no_of_captures(self) -> int:
+        """Return the number of captures configured for rapid block."""
+
+        n_captures = ctypes.c_uint64()
+        self._call_attr_function(
+            "GetNoOfCaptures",
+            self.handle,
+            ctypes.byref(n_captures),
+        )
+        return n_captures.value
+
+    def get_values_bulk(
+        self,
+        start_index: int,
+        no_of_samples: int,
+        from_segment_index: int,
+        to_segment_index: int,
+        down_sample_ratio: int,
+        down_sample_ratio_mode: int,
+        overflow: ctypes.c_int16,
+    ) -> int:
+        """Retrieve data from multiple memory segments."""
+
+        self.is_ready()
+        c_samples = ctypes.c_uint64(no_of_samples)
+        self._call_attr_function(
+            "GetValuesBulk",
+            self.handle,
+            ctypes.c_uint64(start_index),
+            ctypes.byref(c_samples),
+            ctypes.c_uint64(from_segment_index),
+            ctypes.c_uint64(to_segment_index),
+            ctypes.c_uint64(down_sample_ratio),
+            down_sample_ratio_mode,
+            ctypes.byref(overflow),
+        )
+        self.over_range = overflow.value
+        self.is_over_range()
+        return c_samples.value
+
+    def get_values_bulk_async(
+        self,
+        start_index: int,
+        no_of_samples: int,
+        from_segment_index: int,
+        to_segment_index: int,
+        down_sample_ratio: int,
+        down_sample_ratio_mode: int,
+        lp_data_ready,
+        p_parameter,
+    ) -> None:
+        """Begin asynchronous retrieval of values from multiple segments."""
+
+        self._call_attr_function(
+            "GetValuesBulkAsync",
+            self.handle,
+            ctypes.c_uint64(start_index),
+            ctypes.c_uint64(no_of_samples),
+            ctypes.c_uint64(from_segment_index),
+            ctypes.c_uint64(to_segment_index),
+            ctypes.c_uint64(down_sample_ratio),
+            down_sample_ratio_mode,
+            lp_data_ready,
+            p_parameter,
+        )
+
+    def get_values_overlapped(
+        self,
+        start_index: int,
+        no_of_samples: int,
+        down_sample_ratio: int,
+        down_sample_ratio_mode: int,
+        from_segment_index: int,
+        to_segment_index: int,
+        overflow: ctypes.c_int16,
+    ) -> int:
+        """Retrieve overlapped data from multiple segments."""
+
+        self.is_ready()
+        c_samples = ctypes.c_uint64(no_of_samples)
+        self._call_attr_function(
+            "GetValuesOverlapped",
+            self.handle,
+            ctypes.c_uint64(start_index),
+            ctypes.byref(c_samples),
+            ctypes.c_uint64(down_sample_ratio),
+            down_sample_ratio_mode,
+            ctypes.c_uint64(from_segment_index),
+            ctypes.c_uint64(to_segment_index),
+            ctypes.byref(overflow),
+        )
+        self.over_range = overflow.value
+        self.is_over_range()
+        return c_samples.value
+
+    def stop_using_get_values_overlapped(self) -> None:
+        """Terminate overlapped capture mode."""
+
+        self._call_attr_function(
+            "StopUsingGetValuesOverlapped",
+            self.handle,
+        )
+
 
     
     # Data conversion ADC/mV & ctypes/int 
@@ -1561,6 +1673,59 @@ class ps6000a(PicoScopeBase):
         channels_buffer = self.channels_buffer_adc_to_mv(channels_buffer)
 
         # Generate the time axis based on actual samples and timebase
+        time_axis = self.get_time_axis(timebase, actual_samples)
+
+        return channels_buffer, time_axis
+
+    def run_simple_rapid_block_capture(
+        self,
+        timebase: int,
+        samples: int,
+        n_captures: int,
+        start_index: int = 0,
+        datatype: DATA_TYPE = DATA_TYPE.INT16_T,
+        ratio: int = 0,
+        ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
+        pre_trig_percent: int = 50,
+    ) -> tuple[dict, list]:
+        """Perform a basic rapid block capture."""
+
+        self.memory_segments(n_captures)
+        self.set_no_of_captures(n_captures)
+
+        super()._set_data_buffer_ps6000a(0, 0, 0, 0, 0, ACTION.CLEAR_ALL)
+
+        channels_buffer: dict = {ch: [] for ch in self.range}
+        for segment in range(n_captures):
+            for ch in self.range:
+                buf = super()._set_data_buffer_ps6000a(
+                    ch,
+                    samples,
+                    segment,
+                    datatype,
+                    ratio_mode,
+                    action=ACTION.ADD,
+                )
+                channels_buffer[ch].append(buf)
+
+        self.run_block_capture(timebase, samples, pre_trig_percent, 0)
+
+        overflow = ctypes.c_int16()
+        actual_samples = self.get_values_bulk(
+            start_index,
+            samples,
+            0,
+            n_captures - 1,
+            ratio,
+            ratio_mode,
+            overflow,
+        )
+
+        for ch in channels_buffer:
+            for i in range(n_captures):
+                data_list = self.buffer_ctypes_to_list(channels_buffer[ch][i])
+                channels_buffer[ch][i] = self.buffer_adc_to_mv(data_list, ch)
+
         time_axis = self.get_time_axis(timebase, actual_samples)
 
         return channels_buffer, time_axis
