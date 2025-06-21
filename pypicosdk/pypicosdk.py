@@ -524,6 +524,45 @@ class PicoScopeBase:
             return info_array[0]
         return list(info_array)
 
+    def get_values_trigger_time_offset_bulk(
+        self,
+        from_segment_index: int,
+        to_segment_index: int,
+    ) -> list[tuple[int, PICO_TIME_UNIT]]:
+        """Retrieve trigger time offsets for a range of segments.
+
+        This method calls ``ps6000aGetValuesTriggerTimeOffsetBulk`` and
+        returns the trigger time offset and associated time unit for each
+        requested segment.
+
+        Args:
+            from_segment_index: Index of the first memory segment to query.
+            to_segment_index: Index of the last memory segment. If this value
+                is less than ``from_segment_index`` the driver wraps around.
+
+        Returns:
+            list[tuple[int, PICO_TIME_UNIT]]: ``[(offset, unit), ...]`` for each
+            segment beginning with ``from_segment_index``.
+        """
+
+        count = to_segment_index - from_segment_index + 1
+        times = (ctypes.c_int64 * count)()
+        units = (ctypes.c_int32 * count)()
+
+        self._call_attr_function(
+            "GetValuesTriggerTimeOffsetBulk",
+            self.handle,
+            ctypes.byref(times),
+            ctypes.byref(units),
+            ctypes.c_uint64(from_segment_index),
+            ctypes.c_uint64(to_segment_index),
+        )
+
+        results = []
+        for i in range(count):
+            results.append((times[i], PICO_TIME_UNIT(units[i])))
+        return results
+
 
     
     # Data conversion ADC/mV & ctypes/int 
