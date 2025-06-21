@@ -1673,6 +1673,7 @@ class ps6000a(PicoScopeBase):
             >>> buffers = scope.run_simple_block_capture(timebase=3, samples=1000)
         """
 
+
         super()._set_data_buffer_ps6000a(0, 0, 0, 0, 0, ACTION.CLEAR_ALL)
 
         if ratio_mode == RATIO_MODE.TRIGGER:
@@ -1706,6 +1707,7 @@ class ps6000a(PicoScopeBase):
                     action=ACTION.ADD,
                 )
                 trigger_buffer[ch] = tbuf
+
 
         # Start block capture
         self.run_block_capture(timebase, samples, pre_trig_percent, segment)
@@ -1747,6 +1749,7 @@ class ps6000a(PicoScopeBase):
         self.set_no_of_captures(n_captures)
 
         super()._set_data_buffer_ps6000a(0, 0, 0, 0, 0, ACTION.CLEAR_ALL)
+
 
         if ratio_mode == RATIO_MODE.TRIGGER:
             trigger_ratio = ratio or 1

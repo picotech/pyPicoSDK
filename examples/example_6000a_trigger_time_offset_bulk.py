@@ -18,6 +18,7 @@ buffers, time_axis = scope.run_simple_rapid_block_capture(
     timebase=TIMEBASE,
     samples=SAMPLES,
     n_captures=CAPTURES,
+    ratio=1,
     ratio_mode=psdk.RATIO_MODE.TRIGGER,
 )
 
