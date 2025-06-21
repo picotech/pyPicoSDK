@@ -1632,8 +1632,17 @@ class ps6000a(PicoScopeBase):
         self._siggen_set_duty_cycle(duty)
         return self._siggen_apply()
     
-    def run_simple_block_capture(self, timebase:int, samples:int, segment=0, start_index=0, datatype=DATA_TYPE.INT16_T, ratio=0,
-                         ratio_mode=RATIO_MODE.RAW, pre_trig_percent=50) -> tuple[dict, list]:
+    def run_simple_block_capture(
+        self,
+        timebase: int,
+        samples: int,
+        segment: int = 0,
+        start_index: int = 0,
+        datatype: DATA_TYPE = DATA_TYPE.INT16_T,
+        ratio: int = 0,
+        ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
+        pre_trig_percent: int = 50,
+    ) -> tuple[dict, list]:
         """
         Performs a complete single block capture using current channel and trigger configuration.
 
@@ -1648,7 +1657,9 @@ class ps6000a(PicoScopeBase):
             start_index (int, optional): Starting index in the buffer.
             datatype (DATA_TYPE, optional): Data type to use for the capture buffer.
             ratio (int, optional): Downsampling ratio.
-            ratio_mode (RATIO_MODE, optional): Downsampling mode.
+            ratio_mode (RATIO_MODE, optional): Downsampling mode. When set to
+                ``RATIO_MODE.TRIGGER``, ``ratio`` must be greater than zero to
+                request trigger data from the driver.
             pre_trig_percent (int, optional): Percentage of samples to capture before the trigger.
 
         Returns:
@@ -1661,6 +1672,8 @@ class ps6000a(PicoScopeBase):
             >>> buffers = scope.run_simple_block_capture(timebase=3, samples=1000)
         """
         # Setup data buffer for enabled channels
+        if ratio_mode == RATIO_MODE.TRIGGER and ratio == 0:
+            ratio = 1
         channels_buffer = self.set_data_buffer_for_enabled_channels(samples, segment, datatype, ratio_mode)
 
         # Start block capture
@@ -1688,13 +1701,19 @@ class ps6000a(PicoScopeBase):
         ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
         pre_trig_percent: int = 50,
     ) -> tuple[dict, list]:
-        """Perform a basic rapid block capture."""
+        """Perform a basic rapid block capture.
+
+        When ``ratio_mode`` is ``RATIO_MODE.TRIGGER`` the ``ratio`` argument
+        must be greater than zero so the driver returns trigger data.
+        """
 
         self.memory_segments(n_captures)
         self.set_no_of_captures(n_captures)
 
         super()._set_data_buffer_ps6000a(0, 0, 0, 0, 0, ACTION.CLEAR_ALL)
 
+        if ratio_mode == RATIO_MODE.TRIGGER and ratio == 0:
+            ratio = 1
         channels_buffer: dict = {ch: [] for ch in self.range}
         for segment in range(n_captures):
             for ch in self.range:
