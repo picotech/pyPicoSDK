@@ -35,6 +35,6 @@ plt.plot(time_axis, channel_buffer[channel_a])
 # Add labels to pyplot
 plt.xlabel("Time (ns)")
 plt.ylabel("Amplitude (mV)")
-plt.ylim(*scope.get_plot_range())
+plt.ylim(scope.get_plot_range())
 plt.grid(True)
 plt.show()
