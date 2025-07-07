@@ -486,6 +486,13 @@ class PicoScopeBase:
             channels_buffer[channel] = self.buffer_ctypes_to_list(channels_buffer[channel])
         return channels_buffer
 
+    def get_plot_range(self) -> tuple:
+        """Return plot limits based on the widest enabled channel range."""
+        if not self.range:
+            raise PicoSDKException("No channels have been configured using set_channel()")
+        max_mv = max(RANGE_LIST[r] for r in self.range.values())
+        return -max_mv, max_mv
+
     # Set methods for PicoScope configuration    
     def _change_power_source(self, state: POWER_SOURCE) -> 0:
         """
