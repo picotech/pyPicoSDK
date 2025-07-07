@@ -391,7 +391,7 @@ class PicoScopeBase:
         """
         Gets the ADC limits for specified devices.
 
-        Currently tested on: 5000a.
+        Currently tested on: 6000a.
 
         Returns:
                 int: Maximum ADC value.
@@ -523,18 +523,6 @@ class PicoScopeBase:
         )
         return self._error_handler(status)
     
-    def _set_channel(self, channel, range, enabled=True, coupling=COUPLING.DC, offset=0.0):
-        """Set a channel ON with a specified range (5000D)"""
-        self.range[channel] = range
-        status = self.dll.ps5000aSetChannel(
-            self.handle,
-            channel,
-            enabled,
-            coupling,
-            range,
-            ctypes.c_float(offset)
-        )
-        return self._error_handler(status)
     
     def set_simple_trigger(self, channel, threshold_mv, enable=True, direction=TRIGGER_DIR.RISING, delay=0, auto_trigger=0):
         """
@@ -563,20 +551,6 @@ class PicoScopeBase:
     def set_data_buffer_for_enabled_channels():
         raise NotImplemented("Method not yet available for this oscilloscope")
     
-    def _set_data_buffer_ps5000a(self, channel, samples, segment=0, ratio_mode=0):
-        """Set data buffer (5000D)"""
-        buffer = (ctypes.c_int16 * samples)
-        buffer = buffer()
-        self._call_attr_function(
-            'SetDataBuffer',
-            self.handle,
-            channel,
-            ctypes.byref(buffer),
-            samples,
-            segment,
-            ratio_mode
-        )
-        return buffer
     
     def _set_data_buffer_ps6000a(self, channel, samples, segment=0, 
                                  datatype=DATA_TYPE.INT16_T, ratio_mode=RATIO_MODE.RAW, 

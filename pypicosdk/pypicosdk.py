@@ -1,6 +1,5 @@
 from .base import *
 from .ps6000a import ps6000a
-from .ps5000a import ps5000a
 
 
 def get_all_enumerated_units() -> tuple[int, list[str]]:
