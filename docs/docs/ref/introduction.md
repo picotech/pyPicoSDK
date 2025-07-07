@@ -1,7 +1,7 @@
 # Introduction
 
 Each picoSDK class is built from a common class (PicoScopeBase) and a specific sub-class (ps####a).
-This allows each PicoScope to have shared, common functions i.e opening the unit, and specific functions i.e. changing power source on 5000 series PicoScopes.
+This allows each PicoScope to have shared, common functions such as opening the unit, while certain models have additional, hardware-specific functions.
 
 ## C PicoSDK (ctypes)
 This wrapper is built over the C DLL drivers from Pico Technology. 
@@ -14,7 +14,6 @@ For reference on these DLL's and their C implementation, go to [https://www.pico
 The PicoScope (A) drivers are the latest generation of drivers from Pico Technology. If you have a PicoScope with a letter designation higher than the following, you will need to use the (A) class and drivers:
 
  - PicoScope 3000**D**
- - PicoScope 5000**D**
  - PicoScope 6000**E**
 
 [Click here to see the current support for these wrappers.](../dev/current.md/)
