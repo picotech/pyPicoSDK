@@ -1,6 +1,6 @@
 from enum import IntEnum
 
-class UNIT_INFO:
+class UNIT_INFO(IntEnum):
     """
     Unit information identifiers for querying PicoScope device details.
 
@@ -34,7 +34,7 @@ class UNIT_INFO:
     PICO_FIRMWARE_VERSION_1 = 9
     PICO_FIRMWARE_VERSION_2 = 10
 
-class RESOLUTION:
+class RESOLUTION(IntEnum):
     """
     Resolution constants for PicoScope devices.
 
@@ -58,7 +58,7 @@ class RESOLUTION:
     _15BIT = 3
     _16BIT = 4
 
-class TRIGGER_DIR:
+class TRIGGER_DIR(IntEnum):
     """
     Trigger direction constants for configuring PicoScope triggers.
 
@@ -75,7 +75,7 @@ class TRIGGER_DIR:
     FALLING = 3
     RISING_OR_FALLING = 4
 
-class WAVEFORM:    
+class WAVEFORM(IntEnum):
     """
     Waveform type constants for PicoScope signal generator configuration.
 

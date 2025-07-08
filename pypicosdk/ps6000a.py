@@ -22,7 +22,7 @@ class ps6000a(PicoScopeBase):
         super().__init__("ps6000a", *args, **kwargs)
 
 
-    def open_unit(self, serial_number:str=None, resolution:RESOLUTION = 0) -> None:
+    def open_unit(self, serial_number: str | None = None, resolution: RESOLUTION = RESOLUTION._8BIT) -> None:
         """
         Open PicoScope unit.
 

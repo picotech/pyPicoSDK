@@ -165,7 +165,7 @@ class PicoScopeBase:
         return status
 
     # General PicoSDK functions    
-    def _open_unit(self, serial_number:int=None, resolution:RESOLUTION=0) -> None:
+    def _open_unit(self, serial_number: int | None = None, resolution: RESOLUTION = RESOLUTION._8BIT) -> None:
         """
         Opens PicoScope unit.
 
