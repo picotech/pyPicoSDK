@@ -24,23 +24,47 @@ class PowerSupplyWarning(UserWarning):
 
 # General Functions
 def _check_path(location, folders):
+    """Return the first existing path from ``folders`` joined to ``location``.
+
+    Args:
+        location (str): Base directory to search within.
+        folders (Iterable[str]): Candidate folder names relative to ``location``.
+
+    Returns:
+        str: The full path to the first folder found.
+
+    Raises:
+        PicoSDKException: If none of the provided paths exist.
+    """
     for folder in folders:
         path = os.path.join(location, folder)
         if os.path.exists(path):
             return path
-    raise PicoSDKException("No PicoSDK or PicoScope 7 drivers installed, get them from http://picotech.com/downloads")
+    raise PicoSDKException(
+        "No PicoSDK or PicoScope 7 drivers installed, get them from http://picotech.com/downloads"
+    )
 
 def _get_lib_path() -> str:
+    """Determine the platform-specific directory containing PicoSDK libraries.
+
+    Returns:
+        str: Absolute path to the PicoSDK library directory.
+
+    Raises:
+        PicoSDKException: If the platform is unsupported or required drivers are
+            missing.
+    """
     system = platform.system()
     if system == "Windows":
         program_files = os.environ.get("PROGRAMFILES")
         checklist = [
-            'Pico Technology\\SDK\\lib', 
-            'Pico Technology\\PicoScope 7 T&M Stable',
-            'Pico Technology\\PicoScope 7 T&M Early Access']
+            "Pico Technology\\SDK\\lib",
+            "Pico Technology\\PicoScope 7 T&M Stable",
+            "Pico Technology\\PicoScope 7 T&M Early Access",
+        ]
         return _check_path(program_files, checklist)
     elif system == "Linux":
-        return _check_path('opt', 'picoscope')
+        return _check_path("opt", "picoscope")
     elif system == "Darwin":
         raise PicoSDKException("macOS is not yet tested and supported")
     else:
@@ -53,9 +77,18 @@ class PicoScopeBase:
     """PicoScope base class including common SDK and python modules and functions"""
     # Class Functions
     def __init__(self, dll_name, *args, **kwargs):
+        """Initialise a PicoScope wrapper and load the underlying SDK library.
+
+        Args:
+            dll_name (str): Prefix of the PicoSDK DLL for this scope model.
+            *args: Optional positional arguments. Passing ``"pytest"`` skips DLL
+                loading for unit tests.
+            **kwargs: Additional keyword arguments (unused).
+        """
+
         # Pytest override
         self._pytest = "pytest" in args
-            
+
         # Setup DLL location per device
         if self._pytest:
             self.dll = None
@@ -72,9 +105,11 @@ class PicoScopeBase:
         self.over_range = 0
     
     def __exit__(self):
+        """Context manager cleanup that closes the PicoScope unit."""
         self.close_unit()
 
     def __del__(self):
+        """Destructor ensuring the PicoScope unit is closed."""
         self.close_unit()
 
     # General Functions
