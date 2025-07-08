@@ -23,7 +23,6 @@ from scipy.fft import rfft, rfftfreq
 from scipy.signal import windows
 
 # Setup variables
-timebase = 3
 samples = 5_000_000
 channel_a = psdk.CHANNEL.A
 range = psdk.RANGE.V1
@@ -38,6 +37,12 @@ wave_type = psdk.WAVEFORM.SQUARE
 scope = psdk.ps6000a()
 scope.open_unit()
 
+# Set capture timebase
+TIMEBASE = scope.sample_rate_to_timebase(sample_rate=500,
+                                         unit=psdk.SAMPLE_RATE.MSPS)
+# TIMEBASE = 2  # direct driver timebase
+# TIMEBASE = scope.interval_to_timebase(20E-9)
+
 # Setup siggen
 scope.set_siggen(frequency, pk2pk, wave_type)
 
@@ -47,7 +52,7 @@ scope.set_simple_trigger(channel=channel_a, threshold_mv=threshold)
 
 # Run the block capture
 channel_buffer, time_axis = scope.run_simple_block_capture(
-    timebase, samples, time_unit=psdk.TIME_UNIT.S
+    TIMEBASE, samples, time_unit=psdk.TIME_UNIT.S
 )
 
 # Finish with PicoScope

@@ -2,7 +2,6 @@ import pypicosdk as psdk
 from matplotlib import pyplot as plt
 
 # Setup variables
-timebase = 2
 samples = 50_000
 channel_a = psdk.CHANNEL.A
 channel_b = psdk.CHANNEL.B
@@ -12,6 +11,12 @@ range = psdk.RANGE.V1
 scope = psdk.ps6000a()
 scope.open_unit()
 
+# Set capture timebase
+TIMEBASE = scope.sample_rate_to_timebase(sample_rate=500,
+                                         unit=psdk.SAMPLE_RATE.MSPS)
+# TIMEBASE = 2  # direct driver timebase
+# TIMEBASE = scope.interval_to_timebase(20E-9)
+
 # Setup channels and trigger
 scope.set_channel(channel=channel_a, range=range)
 scope.set_channel(channel=channel_b, range=range)
@@ -19,7 +24,7 @@ scope.set_simple_trigger(channel=channel_a, threshold_mv=0)
 
 # Run the block capture
 channel_buffer, time_axis = scope.run_simple_block_capture(
-    timebase, samples, time_unit=psdk.TIME_UNIT.US
+    TIMEBASE, samples, time_unit=psdk.TIME_UNIT.US
 )
 
 # Finish with PicoScope

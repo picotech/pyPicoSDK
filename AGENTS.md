@@ -44,5 +44,14 @@
 ## Examples
 - Example scripts pass argument values inline when calling API functions. This
   keeps each call self-contained and highlights the parameters in use.
+- When configuring a capture timebase, examples include three commented options:
+  ```python
+  TIMEBASE = scope.sample_rate_to_timebase(sample_rate=500,
+                                           unit=psdk.SAMPLE_RATE.MSPS)
+  # TIMEBASE = 2  # direct driver timebase
+  # TIMEBASE = scope.interval_to_timebase(20E-9)
+  ```
+  The first form using `sample_rate_to_timebase` with `SAMPLE_RATE.MSPS` is the
+  preferred option.
 
 Following these conventions keeps new constants and structures consistent with the existing definitions in `pypicosdk/constants.py`.
