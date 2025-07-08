@@ -835,6 +835,154 @@ class PicoScopeBase:
                 OverrangeWarning
             )
         return over_range_channels
+
+    def set_no_of_captures(self, n_captures: int) -> None:
+        """Configure the number of captures in rapid block mode.
+
+        Args:
+            n_captures (int): Number of waveforms to capture in one run.
+        """
+        self._call_attr_function(
+            "SetNoOfCaptures",
+            self.handle,
+            ctypes.c_uint64(n_captures),
+        )
+
+    def get_no_of_captures(self) -> int:
+        """Return how many captures were collected in rapid block mode.
+
+        Returns:
+            int: Number of available captures.
+        """
+        n_captures = ctypes.c_uint64()
+        self._call_attr_function(
+            "GetNoOfCaptures",
+            self.handle,
+            ctypes.byref(n_captures),
+        )
+        return n_captures.value
+
+    def get_values_bulk(
+        self,
+        start_index: int,
+        no_of_samples: int,
+        from_segment_index: int,
+        to_segment_index: int,
+        down_sample_ratio: int = 0,
+        ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
+    ) -> int:
+        """Retrieve multiple waveforms captured in rapid block mode.
+
+        Args:
+            start_index (int): Starting index within each buffer.
+            no_of_samples (int): Number of samples requested.
+            from_segment_index (int): First memory segment index.
+            to_segment_index (int): Last memory segment index.
+            down_sample_ratio (int, optional): Downsampling ratio.
+            ratio_mode (RATIO_MODE, optional): Downsampling mode.
+
+        Returns:
+            int: Actual number of samples retrieved.
+        """
+        self.is_ready()
+        total_samples = ctypes.c_uint64(no_of_samples)
+        over_range = ctypes.c_int16()
+        self._call_attr_function(
+            "GetValuesBulk",
+            self.handle,
+            ctypes.c_uint64(start_index),
+            ctypes.byref(total_samples),
+            ctypes.c_uint64(from_segment_index),
+            ctypes.c_uint64(to_segment_index),
+            ctypes.c_uint64(down_sample_ratio),
+            ratio_mode,
+            ctypes.byref(over_range),
+        )
+        self.over_range = over_range.value
+        self.is_over_range()
+        return total_samples.value
+
+    def get_values_bulk_async(
+        self,
+        start_index: int,
+        no_of_samples: int,
+        from_segment_index: int,
+        to_segment_index: int,
+        down_sample_ratio: int = 0,
+        ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
+        data_ready: ctypes.c_void_p | None = None,
+        parameter: ctypes.c_void_p | None = None,
+    ) -> None:
+        """Retrieve multiple rapid block waveforms using a callback.
+
+        Args:
+            start_index (int): Starting index within each buffer.
+            no_of_samples (int): Number of samples to request.
+            from_segment_index (int): First memory segment index.
+            to_segment_index (int): Last memory segment index.
+            down_sample_ratio (int, optional): Downsampling ratio.
+            ratio_mode (RATIO_MODE, optional): Downsampling mode.
+            data_ready (ctypes.c_void_p | None, optional): Callback for when data is ready.
+            parameter (ctypes.c_void_p | None, optional): User parameter for callback.
+        """
+        self._call_attr_function(
+            "GetValuesBulkAsync",
+            self.handle,
+            ctypes.c_uint64(start_index),
+            ctypes.c_uint64(no_of_samples),
+            ctypes.c_uint64(from_segment_index),
+            ctypes.c_uint64(to_segment_index),
+            ctypes.c_uint64(down_sample_ratio),
+            ratio_mode,
+            data_ready,
+            parameter,
+        )
+
+    def get_values_overlapped(
+        self,
+        start_index: int,
+        no_of_samples: int,
+        down_sample_ratio: int,
+        ratio_mode: RATIO_MODE,
+        from_segment_index: int,
+        to_segment_index: int,
+    ) -> int:
+        """Request data collection deferred until ``run_block_capture``.
+
+        Args:
+            start_index (int): Starting index within each buffer.
+            no_of_samples (int): Number of samples requested.
+            down_sample_ratio (int): Downsampling ratio.
+            ratio_mode (RATIO_MODE): Downsampling mode.
+            from_segment_index (int): First memory segment index.
+            to_segment_index (int): Last memory segment index.
+
+        Returns:
+            int: Actual number of samples that will be captured.
+        """
+        total_samples = ctypes.c_uint64(no_of_samples)
+        over_range = ctypes.c_int16()
+        self._call_attr_function(
+            "GetValuesOverlapped",
+            self.handle,
+            ctypes.c_uint64(start_index),
+            ctypes.byref(total_samples),
+            ctypes.c_uint64(down_sample_ratio),
+            ratio_mode,
+            ctypes.c_uint64(from_segment_index),
+            ctypes.c_uint64(to_segment_index),
+            ctypes.byref(over_range),
+        )
+        self.over_range = over_range.value
+        self.is_over_range()
+        return total_samples.value
+
+    def stop_using_get_values_overlapped(self) -> None:
+        """Stop deferred data collection initiated by ``get_values_overlapped``."""
+        self._call_attr_function(
+            "StopUsingGetValuesOverlapped",
+            self.handle,
+        )
         
     
     def run_simple_block_capture(self) -> dict:
