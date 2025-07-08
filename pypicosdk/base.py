@@ -2,6 +2,7 @@ import ctypes
 import os
 import warnings
 import platform
+import numpy as np
 
 from .error_list import ERROR_STRING
 from .constants import *
@@ -404,20 +405,41 @@ class PicoScopeBase:
         )
         return max_value.value
     
-    def get_time_axis(self, timebase:int, samples:int) -> list:
-        """
-        Return an array of time values based on the timebase and number
-        of samples
+    def get_time_axis(self, timebase:int, samples:int, unit: TIME_UNIT | None = TIME_UNIT.NS):
+        """Return a NumPy array of time values for a capture.
+
+        The returned array is generated using the sampling interval provided by
+        :meth:`get_timebase`.  Users can specify the units for these values; if
+        ``unit`` is ``None`` the method will choose a sensible unit based on the
+        capture's total duration.
 
         Args:
-            timebase (int): PicoScope timebase 
+            timebase (int): PicoScope timebase
             samples (int): Number of samples captured
+            unit (TIME_UNIT | None, optional): Desired time units.  If ``None``
+                an appropriate unit is chosen automatically.
 
         Returns:
-            list: List of time values in nano-seconds
+            numpy.ndarray: Array of time values in the specified units
         """
-        interval = self.get_timebase(timebase, samples)['Interval(ns)']
-        return [round(x*interval, 4) for x in range(samples)]
+        interval_ns = self.get_timebase(timebase, samples)['Interval(ns)']
+
+        # Autoselect a sensible unit when not explicitly provided
+        if unit is None:
+            total_s = (interval_ns * samples) / TIME_UNIT.NS
+            if total_s < 1e-6:
+                unit = TIME_UNIT.NS
+            elif total_s < 1e-3:
+                unit = TIME_UNIT.US
+            elif total_s < 1:
+                unit = TIME_UNIT.MS
+            else:
+                unit = TIME_UNIT.S
+
+        scale = unit / TIME_UNIT.NS
+        interval = interval_ns * scale
+
+        return np.around(np.arange(samples, dtype=float) * interval, 4)
     
     def get_trigger_time_offset(self, time_unit: TIME_UNIT, segment_index: int = 0) -> int:
         """

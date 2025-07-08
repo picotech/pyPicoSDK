@@ -21,6 +21,7 @@ setup(
     package_data={
         "pypicosdk": extra_files,
     },
+    install_requires=["numpy"],
     author="Pico Technology",
     author_email="support@picotech.com",
     description="Modern Python wrapper for PicoSDK",

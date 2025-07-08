@@ -46,14 +46,16 @@ scope.set_channel(channel=channel_a, range=range)
 scope.set_simple_trigger(channel=channel_a, threshold_mv=threshold)
 
 # Run the block capture
-channel_buffer, time_axis = scope.run_simple_block_capture(timebase, samples)
+channel_buffer, time_axis = scope.run_simple_block_capture(
+    timebase, samples, time_unit=psdk.TIME_UNIT.S
+)
 
 # Finish with PicoScope
 scope.close_unit()
 
-# Take out data (converting ns time axis to s)
+# Take out data; time axis already in seconds
 v = np.array(channel_buffer[channel_a])
-t = np.array(time_axis) * 1E-9
+t = np.array(time_axis)
 
 # Get sample rate
 dt = t[1] - t[0]
