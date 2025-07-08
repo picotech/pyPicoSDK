@@ -11,6 +11,10 @@ from .constants import (
     ACTION,
     WAVEFORM,
     TRIGGER_DIR,
+    TRIGGER_STATE,
+    THRESHOLD_MODE,
+    THRESHOLD_DIRECTION,
+    CONDITIONS_INFO,
     RESOLUTION,
     TIME_UNIT,
 )
@@ -84,6 +88,18 @@ class ps6000a(PicoScopeBase):
         """
         auto_trigger_us = auto_trigger_ms * 1000
         return super().set_simple_trigger(channel, threshold_mv, enable, direction, delay, auto_trigger_us)
+
+    def set_trigger_channel_properties(self, properties, aux_output_enable=0, auto_trigger_ms=0):
+        """Wrapper converting auto-trigger from ms to µs."""
+
+        auto_trigger_us = auto_trigger_ms * 1000
+        return super().set_trigger_channel_properties(properties, aux_output_enable, auto_trigger_us)
+
+    def set_advanced_trigger(self, properties, directions, conditions, aux_output_enable=0, auto_trigger_ms=0, action=CONDITIONS_INFO.CLEAR_CONDITIONS | CONDITIONS_INFO.ADD_CONDITION):
+        """Configure an advanced trigger using millisecond units."""
+
+        auto_trigger_us = auto_trigger_ms * 1000
+        super().set_advanced_trigger(properties, directions, conditions, aux_output_enable, auto_trigger_us, action)
     
     def set_data_buffer(self, channel:CHANNEL, samples:int, segment:int=0, datatype:DATA_TYPE=DATA_TYPE.INT16_T,
                         ratio_mode:RATIO_MODE=RATIO_MODE.RAW, action:ACTION = ACTION.CLEAR_ALL | ACTION.ADD):

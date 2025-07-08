@@ -1,4 +1,5 @@
 from enum import IntEnum
+import ctypes
 
 class UNIT_INFO(IntEnum):
     """
@@ -74,6 +75,124 @@ class TRIGGER_DIR(IntEnum):
     RISING = 2
     FALLING = 3
     RISING_OR_FALLING = 4
+
+class TRIGGER_STATE(IntEnum):
+    """Trigger state used in advanced trigger conditions.
+
+    Attributes:
+        DONT_CARE: Ignore this channel when evaluating the condition.
+        TRUE: Condition must be true for the channel.
+        FALSE: Condition must be false for the channel.
+    """
+
+    DONT_CARE = 0
+    TRUE = 1
+    FALSE = 2
+
+class THRESHOLD_MODE(IntEnum):
+    """Threshold evaluation mode for trigger directions.
+
+    Attributes:
+        LEVEL: Use a single threshold level.
+        WINDOW: Use both upper and lower threshold values.
+    """
+
+    LEVEL = 0
+    WINDOW = 1
+
+class THRESHOLD_DIRECTION(IntEnum):
+    """Direction for threshold-based triggering.
+
+    Attributes:
+        ABOVE: Trigger when the signal is above the upper threshold.
+        BELOW: Trigger when the signal is below the lower threshold.
+        RISING: Trigger on a rising edge crossing the upper threshold.
+        FALLING: Trigger on a falling edge crossing the upper threshold.
+        RISING_OR_FALLING: Trigger on either rising or falling edge.
+        ABOVE_LOWER: Trigger when the signal is above the lower threshold.
+        BELOW_LOWER: Trigger when the signal is below the lower threshold.
+        RISING_LOWER: Trigger on a rising edge crossing the lower threshold.
+        FALLING_LOWER: Trigger on a falling edge crossing the lower threshold.
+        INSIDE: Trigger when the signal is inside the window.
+        OUTSIDE: Trigger when the signal is outside the window.
+        ENTER: Trigger when the signal enters the window.
+        EXIT: Trigger when the signal exits the window.
+        ENTER_OR_EXIT: Trigger when the signal enters or exits the window.
+        POSITIVE_RUNT: Trigger on a positive runt pulse.
+        NEGATIVE_RUNT: Trigger on a negative runt pulse.
+        NONE: Disable triggering for the channel.
+    """
+
+    ABOVE = 0
+    BELOW = 1
+    RISING = 2
+    FALLING = 3
+    RISING_OR_FALLING = 4
+    ABOVE_LOWER = 5
+    BELOW_LOWER = 6
+    RISING_LOWER = 7
+    FALLING_LOWER = 8
+    INSIDE = ABOVE
+    OUTSIDE = BELOW
+    ENTER = RISING
+    EXIT = FALLING
+    ENTER_OR_EXIT = RISING_OR_FALLING
+    POSITIVE_RUNT = 9
+    NEGATIVE_RUNT = 10
+    NONE = RISING
+
+class CONDITIONS_INFO(IntEnum):
+    """Actions when configuring multiple trigger conditions.
+
+    Attributes:
+        CLEAR_CONDITIONS: Clear any existing conditions before applying new ones.
+        ADD_CONDITION: Add the specified condition to any existing configuration.
+    """
+
+    CLEAR_CONDITIONS = 0x00000001
+    ADD_CONDITION = 0x00000002
+
+
+class TRIGGER_CHANNEL_PROPERTIES(ctypes.Structure):
+    """Threshold limits for a trigger channel.
+
+    Attributes:
+        thresholdUpper_: Upper threshold value in ADC counts.
+        thresholdUpperHysteresis_: Hysteresis for the upper threshold in ADC counts.
+        thresholdLower_: Lower threshold value in ADC counts.
+        thresholdLowerHysteresis_: Hysteresis for the lower threshold in ADC counts.
+        channel_: Channel this configuration applies to.
+    """
+
+    _pack_ = 1
+    _fields_ = [
+        ("thresholdUpper_", ctypes.c_int16),
+        ("thresholdUpperHysteresis_", ctypes.c_uint16),
+        ("thresholdLower_", ctypes.c_int16),
+        ("thresholdLowerHysteresis_", ctypes.c_uint16),
+        ("channel_", ctypes.c_int32),
+    ]
+
+
+class CONDITION(ctypes.Structure):
+    """Trigger condition for a specific channel."""
+
+    _pack_ = 1
+    _fields_ = [
+        ("source_", ctypes.c_int32),
+        ("condition_", ctypes.c_int32),
+    ]
+
+
+class DIRECTION(ctypes.Structure):
+    """Trigger direction for a channel."""
+
+    _pack_ = 1
+    _fields_ = [
+        ("channel_", ctypes.c_int32),
+        ("direction_", ctypes.c_int32),
+        ("thresholdMode_", ctypes.c_int32),
+    ]
 
 class WAVEFORM(IntEnum):
     """
@@ -308,6 +427,13 @@ __all__ = [
     "SAMPLE_RATE",
     "TIME_UNIT",
     "TRIGGER_DIR",
+    "TRIGGER_STATE",
+    "THRESHOLD_MODE",
+    "THRESHOLD_DIRECTION",
+    "CONDITIONS_INFO",
+    "TRIGGER_CHANNEL_PROPERTIES",
+    "CONDITION",
+    "DIRECTION",
     "UNIT_INFO",
     "WAVEFORM",
 ]
