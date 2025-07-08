@@ -846,3 +846,31 @@ class PicoScopeBase:
         raise NotImplementedError("Method not yet available for this oscilloscope")
 
 
+# Public API exports
+__all__ = [
+    "PicoSDKNotFoundException",
+    "PicoSDKException",
+    "OverrangeWarning",
+    "PowerSupplyWarning",
+    "PicoScopeBase",
+    "UNIT_INFO",
+    "RESOLUTION",
+    "TRIGGER_DIR",
+    "WAVEFORM",
+    "CHANNEL",
+    "CHANNEL_NAMES",
+    "COUPLING",
+    "RANGE",
+    "RANGE_LIST",
+    "BANDWIDTH_CH",
+    "DATA_TYPE",
+    "ACTION",
+    "RATIO_MODE",
+    "POWER_SOURCE",
+    "SAMPLE_RATE",
+    "TIME_UNIT",
+    "PICO_TIME_UNIT",
+    "VERSION",
+]
+
+
