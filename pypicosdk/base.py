@@ -1277,6 +1277,9 @@ __all__ = [
     "SAMPLE_RATE",
     "TIME_UNIT",
     "PICO_TIME_UNIT",
+    "DIGITAL_PORT",
+    "DIGITAL_PORT_HYSTERESIS",
+    "AUX_IO_MODE",
     "VERSION",
 ]
 
