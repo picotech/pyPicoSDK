@@ -10,6 +10,12 @@ interval_s = 10E-9 # 10 us
 scope = ps6000a()
 scope.open_unit()
 
+# Set capture timebase
+TIMEBASE = scope.sample_rate_to_timebase(sample_rate=500,
+                                         unit=SAMPLE_RATE.MSPS)
+# TIMEBASE = 2  # direct driver timebase
+# TIMEBASE = scope.interval_to_timebase(20E-9)
+
 # Setup channels to make sure sample interval is accurate
 scope.set_channel(CHANNEL.A, RANGE.V1)
 scope.set_channel(CHANNEL.C, RANGE.mV100)
