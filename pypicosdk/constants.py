@@ -209,6 +209,7 @@ class PICO_TRIGGER_INFO(ctypes.Structure):
         ("timeStampCounter_", ctypes.c_uint64),
     ]
 
+
 class WAVEFORM(IntEnum):
     """
     Waveform type constants for PicoScope signal generator configuration.
