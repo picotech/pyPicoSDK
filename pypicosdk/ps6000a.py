@@ -1,6 +1,19 @@
 import ctypes
+import numpy as np
 from .base import PicoScopeBase
-from .constants import CHANNEL, RANGE, COUPLING, BANDWIDTH_CH, DATA_TYPE, RATIO_MODE, ACTION, WAVEFORM, TRIGGER_DIR, RESOLUTION
+from .constants import (
+    CHANNEL,
+    RANGE,
+    COUPLING,
+    BANDWIDTH_CH,
+    DATA_TYPE,
+    RATIO_MODE,
+    ACTION,
+    WAVEFORM,
+    TRIGGER_DIR,
+    RESOLUTION,
+    TIME_UNIT,
+)
 
 class ps6000a(PicoScopeBase):
     """PicoScope 6000 (A) API specific functions"""
@@ -132,10 +145,19 @@ class ps6000a(PicoScopeBase):
         self._siggen_set_frequency(frequency)
         self._siggen_set_duty_cycle(duty)
         return self._siggen_apply()
-    
-    def run_simple_block_capture(self, timebase:int, samples:int, segment=0, start_index=0, datatype=DATA_TYPE.INT16_T, ratio=0, 
-                         ratio_mode=RATIO_MODE.RAW, pre_trig_percent=50) -> tuple[dict, list]:
-        """
+
+    def run_simple_block_capture(
+        self,
+        timebase: int,
+        samples: int,
+        segment: int = 0,
+        start_index: int = 0,
+        datatype: DATA_TYPE = DATA_TYPE.INT16_T,
+        ratio: int = 0,
+        ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
+        pre_trig_percent: int = 50,
+        time_unit: TIME_UNIT | None = TIME_UNIT.NS,
+    ) -> tuple[dict, "np.ndarray"]:
         Performs a complete single block capture using current channel and trigger configuration.
 
         This function sets up data buffers for all enabled channels, starts a block capture,
@@ -151,10 +173,12 @@ class ps6000a(PicoScopeBase):
             ratio (int, optional): Downsampling ratio.
             ratio_mode (RATIO_MODE, optional): Downsampling mode.
             pre_trig_percent (int, optional): Percentage of samples to capture before the trigger.
+            time_unit (TIME_UNIT | None, optional): Units for the returned time axis.
+                ``None`` selects a sensible unit automatically.
 
         Returns:
-            dict: A dictionary mapping each enabled channel to its corresponding data buffer.
-            list: Time axis (x-axis) list of timestamps for the sample data
+            dict: Mapping of each enabled channel to a numpy array of captured values in mV.
+            numpy.ndarray: Time axis (x-axis) of timestamps for the sample data.
 
         Examples:
             >>> scope.set_channel(CHANNEL.A, RANGE.V1)
@@ -170,10 +194,13 @@ class ps6000a(PicoScopeBase):
         # Get values from PicoScope (returning actual samples for time_axis)
         actual_samples = self.get_values(samples, start_index, segment, ratio, ratio_mode)
 
-        # Convert from ADC to mV values
-        channels_buffer = self.channels_buffer_adc_to_mv(channels_buffer)
+        # Convert from ADC to mV values and into numpy arrays
+        channels_buffer = {
+            ch: np.asarray(self.buffer_adc_to_mv(buf, ch), dtype=float)
+            for ch, buf in channels_buffer.items()
+        }
 
         # Generate the time axis based on actual samples and timebase
-        time_axis = self.get_time_axis(timebase, actual_samples)
+        time_axis = np.asarray(self.get_time_axis(timebase, actual_samples, time_unit), dtype=float)
 
         return channels_buffer, time_axis

@@ -49,7 +49,8 @@ for _ in range(nCaptures):
     # Simple block capture
     channel_buffer, time_axis = scope.run_simple_block_capture(
         timebase=scope.sample_rate_to_timebase(1.25, psdk.SAMPLE_RATE.MSPS),
-        samples=nSamples
+        samples=nSamples,
+        time_unit=psdk.TIME_UNIT.US,
     )
 
     # Add channel data to list
@@ -74,7 +75,7 @@ fig, axs = plt.subplots(2, 1, figsize=(10, 8))
 # Top subplot: Overlay of all waveforms
 for waveform in waveforms:
     axs[0].plot(time_axis, waveform, alpha=0.3)
-axs[0].set_xlabel("Time (ns)")
+axs[0].set_xlabel("Time (\u03bcs)")
 axs[0].set_ylabel("Amplitude (mV)")
 axs[0].set_title(f"Overlay of {nCaptures} Waveforms")
 axs[0].grid(True)

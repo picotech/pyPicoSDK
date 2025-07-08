@@ -18,7 +18,9 @@ scope.set_channel(channel=channel_b, range=range)
 scope.set_simple_trigger(channel=channel_a, threshold_mv=0)
 
 # Run the block capture
-channel_buffer, time_axis = scope.run_simple_block_capture(timebase, samples)
+channel_buffer, time_axis = scope.run_simple_block_capture(
+    timebase, samples, time_unit=psdk.TIME_UNIT.US
+)
 
 # Finish with PicoScope
 scope.close_unit()
@@ -28,7 +30,7 @@ plt.plot(time_axis, channel_buffer[channel_a], label='Channel A')
 plt.plot(time_axis, channel_buffer[channel_b], label='Channel B')
 
 # Add labels to pyplot
-plt.xlabel("Time (ns)")
+plt.xlabel("Time (\u03bcs)")
 plt.ylabel("Amplitude (mV)")
 plt.ylim(scope.get_plot_range())
 plt.legend()

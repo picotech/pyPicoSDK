@@ -5,6 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "pypicosdk"
 dynamic = ["version"]
+dependencies = ["numpy"]
 keywords = [
     "test",
     "measurement",
