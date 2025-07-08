@@ -291,3 +291,23 @@ class PICO_TIME_UNIT(IntEnum):
     US = 3
     MS = 4
     S = 5
+
+__all__ = [
+    "ACTION",
+    "BANDWIDTH_CH",
+    "CHANNEL",
+    "CHANNEL_NAMES",
+    "COUPLING",
+    "DATA_TYPE",
+    "PICO_TIME_UNIT",
+    "POWER_SOURCE",
+    "RANGE",
+    "RANGE_LIST",
+    "RATIO_MODE",
+    "RESOLUTION",
+    "SAMPLE_RATE",
+    "TIME_UNIT",
+    "TRIGGER_DIR",
+    "UNIT_INFO",
+    "WAVEFORM",
+]
