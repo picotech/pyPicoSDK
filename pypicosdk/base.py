@@ -668,6 +668,86 @@ class PicoScopeBase:
             delay,
             auto_trigger
         )
+
+    def set_trigger_channel_properties(
+        self,
+        properties: list[dict],
+        aux_output_enable: int = 0,
+        auto_trigger: int = 0,
+    ) -> None:
+        """Configure per-channel trigger thresholds."""
+
+        prop_array_type = TRIGGER_CHANNEL_PROPERTIES * len(properties)
+        prop_array = prop_array_type()
+        for idx, prop in enumerate(properties):
+            ch = prop["channel"]
+            prop_array[idx].thresholdUpper_ = self.mv_to_adc(prop["threshold_upper"], self.range[ch])
+            prop_array[idx].thresholdUpperHysteresis_ = self.mv_to_adc(prop.get("threshold_upper_hysteresis", 0), self.range[ch])
+            prop_array[idx].thresholdLower_ = self.mv_to_adc(prop["threshold_lower"], self.range[ch])
+            prop_array[idx].thresholdLowerHysteresis_ = self.mv_to_adc(prop.get("threshold_lower_hysteresis", 0), self.range[ch])
+            prop_array[idx].channel_ = ch
+
+        self._call_attr_function(
+            "SetTriggerChannelProperties",
+            self.handle,
+            prop_array,
+            len(properties),
+            aux_output_enable,
+            auto_trigger,
+        )
+
+    def set_trigger_channel_conditions(
+        self,
+        conditions: dict,
+        action: CONDITIONS_INFO = CONDITIONS_INFO.CLEAR_CONDITIONS | CONDITIONS_INFO.ADD_CONDITION,
+    ) -> None:
+        """Set conditions combining multiple trigger sources."""
+
+        cond_array_type = CONDITION * len(conditions)
+        cond_array = cond_array_type()
+        for idx, (ch, state) in enumerate(conditions.items()):
+            cond_array[idx].source_ = ch
+            cond_array[idx].condition_ = state
+
+        self._call_attr_function(
+            "SetTriggerChannelConditions",
+            self.handle,
+            cond_array,
+            len(conditions),
+            action,
+        )
+
+    def set_trigger_channel_directions(self, directions: dict) -> None:
+        """Specify trigger directions for multiple channels."""
+
+        dir_array_type = DIRECTION * len(directions)
+        dir_array = dir_array_type()
+        for idx, (ch, (direction, mode)) in enumerate(directions.items()):
+            dir_array[idx].channel_ = ch
+            dir_array[idx].direction_ = direction
+            dir_array[idx].thresholdMode_ = mode
+
+        self._call_attr_function(
+            "SetTriggerChannelDirections",
+            self.handle,
+            dir_array,
+            len(directions),
+        )
+
+    def set_advanced_trigger(
+        self,
+        properties: list[dict],
+        directions: dict,
+        conditions: dict,
+        aux_output_enable: int = 0,
+        auto_trigger: int = 0,
+        action: CONDITIONS_INFO = CONDITIONS_INFO.CLEAR_CONDITIONS | CONDITIONS_INFO.ADD_CONDITION,
+    ) -> None:
+        """Configure advanced trigger properties, directions and conditions."""
+
+        self.set_trigger_channel_properties(properties, aux_output_enable, auto_trigger)
+        self.set_trigger_channel_directions(directions)
+        self.set_trigger_channel_conditions(conditions, action)
     
     def set_data_buffer_for_enabled_channels():
         raise NotImplemented("Method not yet available for this oscilloscope")
@@ -1096,6 +1176,13 @@ __all__ = [
     "UNIT_INFO",
     "RESOLUTION",
     "TRIGGER_DIR",
+    "TRIGGER_STATE",
+    "THRESHOLD_MODE",
+    "THRESHOLD_DIRECTION",
+    "CONDITIONS_INFO",
+    "TRIGGER_CHANNEL_PROPERTIES",
+    "CONDITION",
+    "DIRECTION",
     "WAVEFORM",
     "CHANNEL",
     "CHANNEL_NAMES",
