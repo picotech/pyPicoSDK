@@ -18,6 +18,7 @@ from .constants import (
 class ps6000a(PicoScopeBase):
     """PicoScope 6000 (A) API specific functions"""
     def __init__(self, *args, **kwargs):
+        """Create a PicoScope 6000A instance and load its SDK library."""
         super().__init__("ps6000a", *args, **kwargs)
 
 
