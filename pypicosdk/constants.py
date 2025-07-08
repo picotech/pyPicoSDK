@@ -194,6 +194,22 @@ class DIRECTION(ctypes.Structure):
         ("thresholdMode_", ctypes.c_int32),
     ]
 
+
+class PICO_TRIGGER_INFO(ctypes.Structure):
+    """Trigger timing details returned by :func:`ps6000aGetTriggerInfo`."""
+
+    _pack_ = 1
+    _fields_ = [
+        ("status_", ctypes.c_int32),
+        ("segmentIndex_", ctypes.c_uint64),
+        ("triggerIndex_", ctypes.c_uint64),
+        ("triggerTime_", ctypes.c_double),
+        ("timeUnits_", ctypes.c_int32),
+        ("missedTriggers_", ctypes.c_uint64),
+        ("timeStampCounter_", ctypes.c_uint64),
+    ]
+
+
 class WAVEFORM(IntEnum):
     """
     Waveform type constants for PicoScope signal generator configuration.
@@ -434,6 +450,7 @@ __all__ = [
     "TRIGGER_CHANNEL_PROPERTIES",
     "CONDITION",
     "DIRECTION",
+    "PICO_TRIGGER_INFO",
     "UNIT_INFO",
     "WAVEFORM",
 ]

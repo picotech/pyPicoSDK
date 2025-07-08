@@ -2,6 +2,7 @@ import ctypes
 import os
 import warnings
 import platform
+import typing
 import numpy as np
 
 from .error_list import ERROR_STRING
@@ -499,6 +500,84 @@ class PicoScopeBase:
             segment_index
         )
         return time.value
+
+    def get_trigger_info(
+        self,
+        first_segment_index: int = 0,
+        segment_count: int = 1,
+    ) -> typing.Union[PICO_TRIGGER_INFO, list[PICO_TRIGGER_INFO]]:
+        """Retrieve trigger timing information for one or more segments.
+
+        This wraps the ``ps6000aGetTriggerInfo`` API call and returns one or
+        more :class:`~pypicosdk.constants.PICO_TRIGGER_INFO` structures.
+
+        Args:
+            first_segment_index: Index of the first memory segment to query.
+            segment_count: Number of consecutive segments starting at
+                ``first_segment_index``.
+
+        Returns:
+            ``PICO_TRIGGER_INFO`` if ``segment_count`` is ``1`` otherwise a
+            list of ``PICO_TRIGGER_INFO`` objects.
+
+        Raises:
+            PicoSDKException: If the driver call fails.
+        """
+
+        info_array = (PICO_TRIGGER_INFO * segment_count)()
+
+        self._call_attr_function(
+            "GetTriggerInfo",
+            self.handle,
+            ctypes.byref(info_array[0]),
+            ctypes.c_uint64(first_segment_index),
+            ctypes.c_uint64(segment_count),
+        )
+
+        if segment_count == 1:
+            return info_array[0]
+        return list(info_array)
+
+    def get_values_trigger_time_offset_bulk(
+        self,
+        from_segment_index: int,
+        to_segment_index: int,
+    ) -> list[tuple[int, PICO_TIME_UNIT]]:
+        """Retrieve trigger time offsets for a range of segments.
+
+        This method calls ``ps6000aGetValuesTriggerTimeOffsetBulk`` and returns
+        the trigger time offset and associated time unit for each requested
+        segment.
+
+        Args:
+            from_segment_index: First segment index in the range.
+            to_segment_index: Last segment index in the range.
+
+        Returns:
+            list[tuple[int, PICO_TIME_UNIT]]: Trigger offsets and units per
+                segment.
+
+        Raises:
+            PicoSDKException: If the driver call fails.
+        """
+
+        count = to_segment_index - from_segment_index + 1
+        times = (ctypes.c_int64 * count)()
+        units = (ctypes.c_int32 * count)()
+
+        self._call_attr_function(
+            "GetValuesTriggerTimeOffsetBulk",
+            self.handle,
+            ctypes.byref(times),
+            ctypes.byref(units),
+            ctypes.c_uint64(from_segment_index),
+            ctypes.c_uint64(to_segment_index),
+        )
+
+        return [
+            (times[i], PICO_TIME_UNIT(units[i]))
+            for i in range(count)
+        ]
 
     def memory_segments(self, n_segments: int) -> int:
         """Configure the number of memory segments on the device.
@@ -1183,6 +1262,7 @@ __all__ = [
     "TRIGGER_CHANNEL_PROPERTIES",
     "CONDITION",
     "DIRECTION",
+    "PICO_TRIGGER_INFO",
     "WAVEFORM",
     "CHANNEL",
     "CHANNEL_NAMES",
