@@ -427,6 +427,30 @@ class PICO_TIME_UNIT(IntEnum):
     MS = 4
     S = 5
 
+class DIGITAL_PORT(IntEnum):
+    """Digital port identifier constants."""
+
+    PORT0 = 128
+    PORT1 = 129
+    PORT2 = 130
+    PORT3 = 131
+
+class DIGITAL_PORT_HYSTERESIS(IntEnum):
+    """Hysteresis levels for digital port thresholds."""
+
+    VERY_HIGH_400MV = 0
+    HIGH_200MV = 1
+    NORMAL_100MV = 2
+    LOW_50MV = 3
+
+class AUX_IO_MODE(IntEnum):
+    """Modes for the auxiliary I/O connector."""
+
+    INPUT = 0
+    HIGH_OUT = 1
+    LOW_OUT = 2
+    TRIGGER_OUT = 3
+
 __all__ = [
     "ACTION",
     "BANDWIDTH_CH",
@@ -453,4 +477,7 @@ __all__ = [
     "PICO_TRIGGER_INFO",
     "UNIT_INFO",
     "WAVEFORM",
+    "DIGITAL_PORT",
+    "DIGITAL_PORT_HYSTERESIS",
+    "AUX_IO_MODE",
 ]

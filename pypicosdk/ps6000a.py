@@ -17,6 +17,9 @@ from .constants import (
     CONDITIONS_INFO,
     RESOLUTION,
     TIME_UNIT,
+    DIGITAL_PORT,
+    DIGITAL_PORT_HYSTERESIS,
+    AUX_IO_MODE,
 )
 
 class ps6000a(PicoScopeBase):
@@ -53,7 +56,7 @@ class ps6000a(PicoScopeBase):
 
         return super()._get_timebase(timebase, samples, segment)
     
-    def set_channel(self, channel:CHANNEL, range:RANGE, enabled=True, coupling:COUPLING=COUPLING.DC, 
+    def set_channel(self, channel:CHANNEL, range:RANGE, enabled=True, coupling:COUPLING=COUPLING.DC,
                     offset:float=0.0, bandwidth=BANDWIDTH_CH.FULL) -> None:
         """
         Enable/disable a channel and specify certain variables i.e. range, coupling, offset, etc.
@@ -73,6 +76,49 @@ class ps6000a(PicoScopeBase):
             super()._set_channel_on(channel, range, coupling, offset, bandwidth)
         else:
             super()._set_channel_off(channel)
+
+    def set_digital_port_on(
+        self,
+        port: DIGITAL_PORT,
+        logic_threshold_level: list[int],
+        hysteresis: DIGITAL_PORT_HYSTERESIS,
+    ) -> None:
+        """Enable a digital port using ``ps6000aSetDigitalPortOn``.
+
+        Args:
+            port (DIGITAL_PORT): Digital port to enable.
+            logic_threshold_level (list[int]): Threshold level for each pin in millivolts.
+            hysteresis (DIGITAL_PORT_HYSTERESIS): Hysteresis level applied to all pins.
+        """
+
+        level_array = (ctypes.c_int16 * len(logic_threshold_level))(*logic_threshold_level)
+
+        self._call_attr_function(
+            "SetDigitalPortOn",
+            self.handle,
+            port,
+            level_array,
+            len(logic_threshold_level),
+            hysteresis,
+        )
+
+    def set_digital_port_off(self, port: DIGITAL_PORT) -> None:
+        """Disable a digital port using ``ps6000aSetDigitalPortOff``."""
+
+        self._call_attr_function(
+            "SetDigitalPortOff",
+            self.handle,
+            port,
+        )
+
+    def set_aux_io_mode(self, mode: AUX_IO_MODE) -> None:
+        """Configure the auxiliary I/O mode using ``ps6000aSetAuxIoMode``."""
+
+        self._call_attr_function(
+            "SetAuxIoMode",
+            self.handle,
+            mode,
+        )
 
     def set_simple_trigger(self, channel, threshold_mv, enable=True, direction=TRIGGER_DIR.RISING, delay=0, auto_trigger_ms=5_000):
         """
