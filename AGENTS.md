@@ -21,7 +21,8 @@
 - Set `_pack_ = 1` to mirror the 1-byte packing used in the SDK headers.
 - Declare `_fields_` as a list of `(field_name, ctype)` tuples.
 - Field names have a trailing underscore (`triggerTime_`) to match the C struct names exactly.
-- Provide a docstring explaining the purpose of the structure and any special naming conventions.
+- Provide a docstring with a short summary followed by an `Attributes:` section
+  describing each field. Mention any special naming conventions there as well.
 
 ## Miscellaneous
 - Lists or helper constants (e.g., `CHANNEL_NAMES`) are defined at module scope with uppercase names.
@@ -37,6 +38,11 @@
 - Private helper functions are prefixed with an underscore.
 - Classes have a brief docstring summarizing their purpose.
 - Each module ends with an explicit `__all__` list enumerating all exported
-  names. The package ``__init__`` re-exports these names for static analysers.
+  names. The package ``__init__`` re-exports these names using ``from .module
+  import *`` so IDEs and static checkers can discover the public API.
+
+## Examples
+- Example scripts pass argument values inline when calling API functions. This
+  keeps each call self-contained and highlights the parameters in use.
 
 Following these conventions keeps new constants and structures consistent with the existing definitions in `pypicosdk/constants.py`.
