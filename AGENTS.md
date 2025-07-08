@@ -55,3 +55,8 @@
   preferred option.
 
 Following these conventions keeps new constants and structures consistent with the existing definitions in `pypicosdk/constants.py`.
+
+## Data buffers
+- Allocate buffers as NumPy arrays when possible.
+- Use the array's ``.ctypes`` interface to pass pointers to driver functions.
+- Avoid converting NumPy arrays into standalone ``ctypes`` arrays.

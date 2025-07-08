@@ -101,44 +101,103 @@ class ps6000a(PicoScopeBase):
         auto_trigger_us = auto_trigger_ms * 1000
         super().set_advanced_trigger(properties, directions, conditions, aux_output_enable, auto_trigger_us, action)
     
-    def set_data_buffer(self, channel:CHANNEL, samples:int, segment:int=0, datatype:DATA_TYPE=DATA_TYPE.INT16_T,
-                        ratio_mode:RATIO_MODE=RATIO_MODE.RAW, action:ACTION = ACTION.CLEAR_ALL | ACTION.ADD):
-        """
-        Tells the driver where to store the data that will be populated when get_values() is called.
-        This function works on a single buffer. For aggregation mode, call set_data_buffers instead.
+    def set_data_buffer(
+        self,
+        channel: CHANNEL,
+        samples: int,
+        segment: int = 0,
+        datatype: DATA_TYPE = DATA_TYPE.INT16_T,
+        ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
+        action: ACTION = ACTION.CLEAR_ALL | ACTION.ADD,
+    ) -> np.ndarray:
+        """Assign a single data buffer for ``get_values`` results.
 
         Args:
-                channel (CHANNEL): Channel you want to use with the buffer.
-                samples (int): Number of samples/length of the buffer.
-                segment (int, optional): Location of the buffer.
-                datatype (DATATYPE, optional): C datatype of the data.
-                ratio_mode (RATIO_MODE, optional): Down-sampling mode.
-                action (ACTION, optional): Method to use when creating a buffer.
+            channel (CHANNEL): Channel you want to use with the buffer.
+            samples (int): Number of samples/length of the buffer.
+            segment (int, optional): Location of the buffer.
+            datatype (DATA_TYPE, optional): C datatype of the data.
+            ratio_mode (RATIO_MODE, optional): Down-sampling mode.
+            action (ACTION, optional): Method to use when creating a buffer.
 
         Returns:
-                numpy.ndarray: Array that will be populated when get_values() is called.
+            numpy.ndarray: Array that will be populated when ``get_values`` is
+            called.
         """
-        return super()._set_data_buffer_ps6000a(channel, samples, segment, datatype, ratio_mode, action)
-    
-    def set_data_buffer_for_enabled_channels(self, samples:int, segment:int=0, datatype=DATA_TYPE.INT16_T,
-                                             ratio_mode=RATIO_MODE.RAW) -> dict:
-        """
-        Sets data buffers for enabled channels set by picosdk.set_channel()
+
+        return super()._set_data_buffer_ps6000a(
+            channel, samples, segment, datatype, ratio_mode, action
+        )
+
+    def set_data_buffers(
+        self,
+        channel: CHANNEL,
+        samples: int,
+        segment: int = 0,
+        datatype: DATA_TYPE = DATA_TYPE.INT16_T,
+        ratio_mode: RATIO_MODE = RATIO_MODE.AGGREGATE,
+        action: ACTION = ACTION.CLEAR_ALL | ACTION.ADD,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """Configure both maximum and minimum data buffers for a channel.
+
+        Use this when downsampling in aggregation mode or requesting
+        post-capture aggregated values.
 
         Args:
-            samples (int): The sample buffer or size to allocate.
+            channel (CHANNEL): Channel you want to use with the buffers.
+            samples (int): Number of samples/length of each buffer.
+            segment (int, optional): Memory segment index for the buffers.
+            datatype (DATA_TYPE, optional): C datatype of the data stored in the
+                buffers.
+            ratio_mode (RATIO_MODE, optional): Downsampling mode. Typically
+                ``RATIO_MODE.AGGREGATE`` when both buffers are required.
+            action (ACTION, optional): Method used when creating or updating the
+                buffers.
+
+        Returns:
+            tuple[numpy.ndarray, numpy.ndarray]: ``(buffer_max, buffer_min)``
+            that will be populated when :meth:`get_values` is called.
+        """
+
+        return super()._set_data_buffers_ps6000a(
+            channel,
+            samples,
+            segment,
+            datatype,
+            ratio_mode,
+            action,
+        )
+    
+    def set_data_buffer_for_enabled_channels(
+        self,
+        samples: int,
+        segment: int = 0,
+        datatype: DATA_TYPE = DATA_TYPE.INT16_T,
+        ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
+    ) -> dict:
+        """Create buffers for all currently enabled channels.
+
+        Args:
+            samples (int): The sample buffer size to allocate.
             segment (int): The memory segment index.
             datatype (DATA_TYPE): The data type used for the buffer.
             ratio_mode (RATIO_MODE): The ratio mode (e.g., RAW, AVERAGE).
 
         Returns:
-            dict: A dictionary mapping each channel to its associated NumPy array buffer.
+            dict: Mapping of each channel to its associated NumPy array buffer.
         """
-        # Clear the buffer
+
         super()._set_data_buffer_ps6000a(0, 0, 0, 0, 0, ACTION.CLEAR_ALL)
         channels_buffer = {}
         for channel in self.range:
-            channels_buffer[channel] = super()._set_data_buffer_ps6000a(channel, samples, segment, datatype, ratio_mode, action=ACTION.ADD)
+            channels_buffer[channel] = super()._set_data_buffer_ps6000a(
+                channel,
+                samples,
+                segment,
+                datatype,
+                ratio_mode,
+                action=ACTION.ADD,
+            )
         return channels_buffer
     
     def set_siggen(self, frequency:float, pk2pk:float, wave_type:WAVEFORM, offset:float=0.0, duty:float=50) -> dict:
@@ -174,7 +233,7 @@ class ps6000a(PicoScopeBase):
         ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
         pre_trig_percent: int = 50,
         time_unit: TIME_UNIT | None = TIME_UNIT.NS,
-    ) -> tuple[dict, "np.ndarray"]:
+    ) -> tuple[dict, np.ndarray]:
         """Performs a complete single block capture using current channel and trigger configuration.
 
         This function sets up data buffers for all enabled channels, starts a block capture,

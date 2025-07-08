@@ -19,3 +19,4 @@ def test_set_data_buffer_for_enabled_channels_returns_numpy(monkeypatch):
     buffers = scope.set_data_buffer_for_enabled_channels(5)
     assert set(buffers.keys()) == {CHANNEL.A, CHANNEL.B}
     assert all(isinstance(b, np.ndarray) for b in buffers.values())
+    assert all(b.dtype == np.int16 for b in buffers.values())
