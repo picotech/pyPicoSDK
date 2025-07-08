@@ -206,6 +206,67 @@ class ps6000a(PicoScopeBase):
 
         return channels_buffer, time_axis
 
+    def run_simple_rapid_block_capture(
+        self,
+        timebase: int,
+        samples: int,
+        n_captures: int,
+        start_index: int = 0,
+        datatype: DATA_TYPE = DATA_TYPE.INT16_T,
+        ratio: int = 0,
+        ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
+        pre_trig_percent: int = 50,
+        time_unit: TIME_UNIT | None = TIME_UNIT.NS,
+    ) -> tuple[list[dict], "np.ndarray"]:
+        """Perform a rapid block capture using the current configuration.
+
+        Args:
+            timebase (int): Timebase determining sample interval.
+            samples (int): Samples per capture.
+            n_captures (int): Number of captures to perform.
+            start_index (int, optional): Starting index in each buffer.
+            datatype (DATA_TYPE, optional): Buffer data type.
+            ratio (int, optional): Downsampling ratio.
+            ratio_mode (RATIO_MODE, optional): Downsampling mode.
+            pre_trig_percent (int, optional): Percentage of pre-trigger samples.
+            time_unit (TIME_UNIT | None, optional): Unit of the returned time axis.
+
+        Returns:
+            list[dict]: List of channel buffers per capture in mV.
+            numpy.ndarray: Time axis for the captured samples.
+        """
+
+        self.memory_segments(n_captures)
+        self.set_no_of_captures(n_captures)
+
+        segment_buffers = [
+            self.set_data_buffer_for_enabled_channels(samples, seg, datatype, ratio_mode)
+            for seg in range(n_captures)
+        ]
+
+        self.run_block_capture(timebase, samples, pre_trig_percent, segment=0)
+
+        actual_samples = self.get_values_bulk(
+            start_index,
+            samples,
+            0,
+            n_captures - 1,
+            ratio,
+            ratio_mode,
+        )
+
+        segment_buffers = [
+            {
+                ch: np.asarray(self.buffer_adc_to_mv(buf, ch), dtype=float)
+                for ch, buf in seg_buf.items()
+            }
+            for seg_buf in segment_buffers
+        ]
+
+        time_axis = np.asarray(self.get_time_axis(timebase, actual_samples, time_unit), dtype=float)
+
+        return segment_buffers, time_axis
+
 
 # Public API exports for this module
 __all__ = ["ps6000a"]
