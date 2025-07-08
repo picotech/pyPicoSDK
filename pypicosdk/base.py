@@ -404,7 +404,7 @@ class PicoScopeBase:
             ctypes.byref(max_value)
         )
         return max_value.value
-    
+
     def get_time_axis(self, timebase:int, samples:int, unit: TIME_UNIT | None = TIME_UNIT.NS):
         """Return a NumPy array of time values for a capture.
 

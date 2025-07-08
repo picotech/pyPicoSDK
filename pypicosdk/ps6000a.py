@@ -145,7 +145,7 @@ class ps6000a(PicoScopeBase):
         self._siggen_set_frequency(frequency)
         self._siggen_set_duty_cycle(duty)
         return self._siggen_apply()
-    
+
     def run_simple_block_capture(
         self,
         timebase: int,
@@ -158,7 +158,6 @@ class ps6000a(PicoScopeBase):
         pre_trig_percent: int = 50,
         time_unit: TIME_UNIT | None = TIME_UNIT.NS,
     ) -> tuple[dict, "np.ndarray"]:
-        """
         Performs a complete single block capture using current channel and trigger configuration.
 
         This function sets up data buffers for all enabled channels, starts a block capture,
