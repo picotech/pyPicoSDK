@@ -205,3 +205,7 @@ class ps6000a(PicoScopeBase):
         time_axis = np.asarray(self.get_time_axis(timebase, actual_samples, time_unit), dtype=float)
 
         return channels_buffer, time_axis
+
+
+# Public API exports for this module
+__all__ = ["ps6000a"]
