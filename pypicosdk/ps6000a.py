@@ -84,8 +84,8 @@ class ps6000a(PicoScopeBase):
         auto_trigger_us = auto_trigger_ms * 1000
         return super().set_simple_trigger(channel, threshold_mv, enable, direction, delay, auto_trigger_us)
     
-    def set_data_buffer(self, channel:CHANNEL, samples:int, segment:int=0, datatype:DATA_TYPE=DATA_TYPE.INT16_T, 
-                        ratio_mode:RATIO_MODE=RATIO_MODE.RAW, action:ACTION=ACTION.CLEAR_ALL | ACTION.ADD) -> ctypes.Array:
+    def set_data_buffer(self, channel:CHANNEL, samples:int, segment:int=0, datatype:DATA_TYPE=DATA_TYPE.INT16_T,
+                        ratio_mode:RATIO_MODE=RATIO_MODE.RAW, action:ACTION = ACTION.CLEAR_ALL | ACTION.ADD):
         """
         Tells the driver where to store the data that will be populated when get_values() is called.
         This function works on a single buffer. For aggregation mode, call set_data_buffers instead.
@@ -99,11 +99,11 @@ class ps6000a(PicoScopeBase):
                 action (ACTION, optional): Method to use when creating a buffer.
 
         Returns:
-                ctypes.Array: Array that will be populated when get_values() is called.
+                numpy.ndarray: Array that will be populated when get_values() is called.
         """
         return super()._set_data_buffer_ps6000a(channel, samples, segment, datatype, ratio_mode, action)
     
-    def set_data_buffer_for_enabled_channels(self, samples:int, segment:int=0, datatype=DATA_TYPE.INT16_T, 
+    def set_data_buffer_for_enabled_channels(self, samples:int, segment:int=0, datatype=DATA_TYPE.INT16_T,
                                              ratio_mode=RATIO_MODE.RAW) -> dict:
         """
         Sets data buffers for enabled channels set by picosdk.set_channel()
@@ -115,7 +115,7 @@ class ps6000a(PicoScopeBase):
             ratio_mode (RATIO_MODE): The ratio mode (e.g., RAW, AVERAGE).
 
         Returns:
-            dict: A dictionary mapping each channel to its associated data buffer.
+            dict: A dictionary mapping each channel to its associated NumPy array buffer.
         """
         # Clear the buffer
         super()._set_data_buffer_ps6000a(0, 0, 0, 0, 0, ACTION.CLEAR_ALL)
@@ -158,7 +158,7 @@ class ps6000a(PicoScopeBase):
         pre_trig_percent: int = 50,
         time_unit: TIME_UNIT | None = TIME_UNIT.NS,
     ) -> tuple[dict, "np.ndarray"]:
-        Performs a complete single block capture using current channel and trigger configuration.
+        """Performs a complete single block capture using current channel and trigger configuration.
 
         This function sets up data buffers for all enabled channels, starts a block capture,
         and retrieves the values once the device is ready. It is a simplified interface 
