@@ -24,23 +24,47 @@ class PowerSupplyWarning(UserWarning):
 
 # General Functions
 def _check_path(location, folders):
+    """Return the first existing path from ``folders`` joined to ``location``.
+
+    Args:
+        location (str): Base directory to search within.
+        folders (Iterable[str]): Candidate folder names relative to ``location``.
+
+    Returns:
+        str: The full path to the first folder found.
+
+    Raises:
+        PicoSDKException: If none of the provided paths exist.
+    """
     for folder in folders:
         path = os.path.join(location, folder)
         if os.path.exists(path):
             return path
-    raise PicoSDKException("No PicoSDK or PicoScope 7 drivers installed, get them from http://picotech.com/downloads")
+    raise PicoSDKException(
+        "No PicoSDK or PicoScope 7 drivers installed, get them from http://picotech.com/downloads"
+    )
 
 def _get_lib_path() -> str:
+    """Determine the platform-specific directory containing PicoSDK libraries.
+
+    Returns:
+        str: Absolute path to the PicoSDK library directory.
+
+    Raises:
+        PicoSDKException: If the platform is unsupported or required drivers are
+            missing.
+    """
     system = platform.system()
     if system == "Windows":
         program_files = os.environ.get("PROGRAMFILES")
         checklist = [
-            'Pico Technology\\SDK\\lib', 
-            'Pico Technology\\PicoScope 7 T&M Stable',
-            'Pico Technology\\PicoScope 7 T&M Early Access']
+            "Pico Technology\\SDK\\lib",
+            "Pico Technology\\PicoScope 7 T&M Stable",
+            "Pico Technology\\PicoScope 7 T&M Early Access",
+        ]
         return _check_path(program_files, checklist)
     elif system == "Linux":
-        return _check_path('opt', 'picoscope')
+        return _check_path("opt", "picoscope")
     elif system == "Darwin":
         raise PicoSDKException("macOS is not yet tested and supported")
     else:
@@ -53,9 +77,18 @@ class PicoScopeBase:
     """PicoScope base class including common SDK and python modules and functions"""
     # Class Functions
     def __init__(self, dll_name, *args, **kwargs):
+        """Initialise a PicoScope wrapper and load the underlying SDK library.
+
+        Args:
+            dll_name (str): Prefix of the PicoSDK DLL for this scope model.
+            *args: Optional positional arguments. Passing ``"pytest"`` skips DLL
+                loading for unit tests.
+            **kwargs: Additional keyword arguments (unused).
+        """
+
         # Pytest override
         self._pytest = "pytest" in args
-            
+
         # Setup DLL location per device
         if self._pytest:
             self.dll = None
@@ -72,9 +105,11 @@ class PicoScopeBase:
         self.over_range = 0
     
     def __exit__(self):
+        """Context manager cleanup that closes the PicoScope unit."""
         self.close_unit()
 
     def __del__(self):
+        """Destructor ensuring the PicoScope unit is closed."""
         self.close_unit()
 
     # General Functions
@@ -130,7 +165,7 @@ class PicoScopeBase:
         return status
 
     # General PicoSDK functions    
-    def _open_unit(self, serial_number:int=None, resolution:RESOLUTION=0) -> None:
+    def _open_unit(self, serial_number: int | None = None, resolution: RESOLUTION = RESOLUTION._8BIT) -> None:
         """
         Opens PicoScope unit.
 
@@ -581,9 +616,9 @@ class PicoScopeBase:
         raise NotImplemented("Method not yet available for this oscilloscope")
     
     
-    def _set_data_buffer_ps6000a(self, channel, samples, segment=0, 
-                                 datatype=DATA_TYPE.INT16_T, ratio_mode=RATIO_MODE.RAW, 
-                                 action=ACTION.CLEAR_ALL | ACTION.ADD) -> ctypes.Array:
+    def _set_data_buffer_ps6000a(self, channel, samples, segment=0,
+                                 datatype=DATA_TYPE.INT16_T, ratio_mode=RATIO_MODE.RAW,
+                                 action=ACTION.CLEAR_ALL | ACTION.ADD):
         """
         Allocates and assigns a data buffer for a specified channel on the 6000A series.
 
@@ -596,25 +631,38 @@ class PicoScopeBase:
             action (ACTION, optional): Action to apply to the data buffer (e.g., CLEAR_ALL | ADD).
 
         Returns:
-            ctypes.Array: A ctypes array that will be populated with data during capture.
+            numpy.ndarray: A NumPy array that will be populated with data during
+                capture.
 
         Raises:
             PicoSDKException: If an unsupported data type is provided.
         """
-        if datatype == DATA_TYPE.INT8_T:     buffer = (ctypes.c_int8 * samples)
-        elif datatype == DATA_TYPE.INT16_T:  buffer = (ctypes.c_int16 * samples)
-        elif datatype == DATA_TYPE.INT32_T:  buffer = (ctypes.c_int32 * samples)
-        elif datatype == DATA_TYPE.INT64_T:  buffer = (ctypes.c_int64 * samples)
-        elif datatype == DATA_TYPE.UINT32_T: buffer = (ctypes.c_uint32 * samples)
-        else: raise PicoSDKException("Invalid datatype selected for buffer")
+        if datatype == DATA_TYPE.INT8_T:
+            dtype = np.int8
+            c_type = ctypes.c_int8
+        elif datatype == DATA_TYPE.INT16_T:
+            dtype = np.int16
+            c_type = ctypes.c_int16
+        elif datatype == DATA_TYPE.INT32_T:
+            dtype = np.int32
+            c_type = ctypes.c_int32
+        elif datatype == DATA_TYPE.INT64_T:
+            dtype = np.int64
+            c_type = ctypes.c_int64
+        elif datatype == DATA_TYPE.UINT32_T:
+            dtype = np.uint32
+            c_type = ctypes.c_uint32
+        else:
+            raise PicoSDKException("Invalid datatype selected for buffer")
 
-        buffer = buffer()
+        buffer = np.zeros(samples, dtype=dtype)
+        c_buffer = buffer.ctypes.data_as(ctypes.POINTER(c_type))
         
         self._call_attr_function(
             'SetDataBuffer',
             self.handle,
             channel,
-            ctypes.byref(buffer),
+            c_buffer,
             samples,
             datatype,
             segment,
@@ -831,5 +879,33 @@ class PicoScopeBase:
 
     def set_siggen(self, *args):
         raise NotImplementedError("Method not yet available for this oscilloscope")
+
+
+# Public API exports
+__all__ = [
+    "PicoSDKNotFoundException",
+    "PicoSDKException",
+    "OverrangeWarning",
+    "PowerSupplyWarning",
+    "PicoScopeBase",
+    "UNIT_INFO",
+    "RESOLUTION",
+    "TRIGGER_DIR",
+    "WAVEFORM",
+    "CHANNEL",
+    "CHANNEL_NAMES",
+    "COUPLING",
+    "RANGE",
+    "RANGE_LIST",
+    "BANDWIDTH_CH",
+    "DATA_TYPE",
+    "ACTION",
+    "RATIO_MODE",
+    "POWER_SOURCE",
+    "SAMPLE_RATE",
+    "TIME_UNIT",
+    "PICO_TIME_UNIT",
+    "VERSION",
+]
 
 
