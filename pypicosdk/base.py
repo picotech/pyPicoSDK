@@ -500,6 +500,63 @@ class PicoScopeBase:
         )
         return time.value
 
+    def memory_segments(self, n_segments: int) -> int:
+        """Configure the number of memory segments on the device.
+
+        Args:
+            n_segments (int): Desired number of memory segments.
+
+        Returns:
+            int: Maximum number of samples available per segment.
+        """
+        max_samples = ctypes.c_uint64()
+        self._call_attr_function(
+            "MemorySegments",
+            self.handle,
+            ctypes.c_uint64(n_segments),
+            ctypes.byref(max_samples),
+        )
+        return max_samples.value
+
+    def memory_segments_by_samples(self, n_samples: int) -> int:
+        """Divide memory so each segment holds ``n_samples`` samples.
+
+        Args:
+            n_samples (int): Number of samples required per segment.
+
+        Returns:
+            int: Number of segments created by the driver.
+        """
+        max_segments = ctypes.c_uint64()
+        self._call_attr_function(
+            "MemorySegmentsBySamples",
+            self.handle,
+            ctypes.c_uint64(n_samples),
+            ctypes.byref(max_segments),
+        )
+        return max_segments.value
+
+    def query_max_segments_by_samples(self, n_samples: int, n_channel_enabled: int) -> int:
+        """Query the maximum segments available for a capture setup.
+
+        Args:
+            n_samples (int): Number of samples per segment.
+            n_channel_enabled (int): Number of channels enabled.
+
+        Returns:
+            int: Maximum number of segments supported.
+        """
+        max_segments = ctypes.c_uint64()
+        self._call_attr_function(
+            "QueryMaxSegmentsBySamples",
+            self.handle,
+            ctypes.c_uint64(n_samples),
+            ctypes.c_uint32(n_channel_enabled),
+            ctypes.byref(max_segments),
+            self.resolution,
+        )
+        return max_segments.value
+
 
     
     # Data conversion ADC/mV & ctypes/int 
