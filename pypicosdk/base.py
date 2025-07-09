@@ -4,6 +4,7 @@ import warnings
 import platform
 import typing
 import numpy as np
+import numpy.ctypeslib as npc
 
 from .error_list import ERROR_STRING
 from .constants import *
@@ -871,9 +872,8 @@ class PicoScopeBase:
         else:
             raise PicoSDKException("Invalid datatype selected for buffer")
 
-        ctype = np.ctypeslib.as_ctypes_type(dtype)
         buffer = np.zeros(samples, dtype=dtype)
-        buf_ptr = np.ctypeslib.as_ctypes(buffer) if samples else None
+        buf_ptr = npc.as_ctypes(buffer) if samples else None
 
         self._call_attr_function(
             "SetDataBuffer",
@@ -913,7 +913,6 @@ class PicoScopeBase:
         else:
             raise PicoSDKException("Invalid datatype selected for buffer")
 
-        ctype = np.ctypeslib.as_ctypes_type(dtype)
         buffer_max = np.zeros(samples, dtype=dtype)
         buffer_min = np.zeros(samples, dtype=dtype)
 
@@ -921,8 +920,8 @@ class PicoScopeBase:
             "SetDataBuffers",
             self.handle,
             channel,
-            np.ctypeslib.as_ctypes(buffer_max) if samples else None,
-            np.ctypeslib.as_ctypes(buffer_min) if samples else None,
+            npc.as_ctypes(buffer_max) if samples else None,
+            npc.as_ctypes(buffer_min) if samples else None,
             samples,
             datatype,
             segment,

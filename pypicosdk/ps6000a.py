@@ -1,5 +1,6 @@
 import ctypes
 import numpy as np
+import numpy.ctypeslib as npc
 from .base import PicoScopeBase
 from .constants import (
     CHANNEL,
