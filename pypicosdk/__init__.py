@@ -1,9 +1,11 @@
-from . import base as _base
-from . import ps6000a as _ps6000a
-from . import pypicosdk as _pypicosdk
+"""Public package interface for :mod:`pypicosdk`."""
 
-from .base import *
-from .ps6000a import *
+# Import the implementation module under an internal name so we can
+# reference its ``__all__`` attribute for static type checkers like Pylance.
+from . import pypicosdk as _impl
+
+# Re-export everything defined in ``pypicosdk`` for backwards compatibility.
 from .pypicosdk import *
 
-__all__ = _base.__all__ + _ps6000a.__all__ + _pypicosdk.__all__
+# Expose the full list of public names for static analysers.
+__all__ = _impl.__all__

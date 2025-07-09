@@ -1,11 +1,19 @@
-from . import base as _base
-from . import ps6000a as _ps6000a
-from .base import *
-from .ps6000a import *
+from . import constants as _constants
+from .constants import *
+from .version import VERSION
+
+from .base import (
+    PicoSDKNotFoundException,
+    PicoSDKException,
+    OverrangeWarning,
+    PowerSupplyWarning,
+    PicoScopeBase,
+)
+from .ps6000a import ps6000a
 
 
 def get_all_enumerated_units() -> tuple[int, list[str]]:
-    """Enumerate supported PicoScope units and return count and serial numbers."""
+    """Enumerate all supported PicoScope units."""
     n_units = 0
     unit_serial: list[str] = []
     for scope in [ps6000a()]:
@@ -15,6 +23,12 @@ def get_all_enumerated_units() -> tuple[int, list[str]]:
     return n_units, unit_serial
 
 
-# Public API exports for this module
-__all__ = _base.__all__ + _ps6000a.__all__ + ["get_all_enumerated_units"]
-
+__all__ = list(_constants.__all__) + [
+    'PicoSDKNotFoundException',
+    'PicoSDKException',
+    'OverrangeWarning',
+    'PowerSupplyWarning',
+    'get_all_enumerated_units',
+    'PicoScopeBase',
+    'ps6000a',
+]

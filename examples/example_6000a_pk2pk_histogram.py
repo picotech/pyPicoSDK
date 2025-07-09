@@ -1,10 +1,9 @@
 ##################################################################
-# FFT example for a PicoScope 6000E.
+# Histogram example for a PicoScope 6000E.
 #
 # Description:
 #   This example script captures multiple signals and displays
-#   a histogram of captured peak-to-peak (pk2pk) values along
-#   with similar measurements
+#   a histogram of captured peak-to-peak (pk2pk) values.
 #
 # Requirements: 
 # - PicoScope 6000E
@@ -12,8 +11,8 @@
 #   pip install matplotlib scipy numpy pypicosdk
 #
 # Setup:
-#   - Connect 6000E SigGen (AWG) to Channel A of the oscilloscope
-#     using a BNC cable or probe
+#   - Connect 6000E (preferebly with FlexRes) SigGen (AWG) to 
+#     Channel A of the oscilloscope using a BNC cable or probe
 #
 ##################################################################
 
@@ -21,46 +20,42 @@ import pypicosdk as psdk
 import matplotlib.pyplot as plt
 import numpy as np
 
+# Pico examples use inline argument values for clarity
+
 # Scope setup
 scope = psdk.ps6000a()
 scope.open_unit(resolution=psdk.RESOLUTION._12BIT)
 
-# Set channels
-channel = psdk.CHANNEL.A
-
+# Set channels (inline arguments)
 scope.set_channel(channel=psdk.CHANNEL.A, coupling=psdk.COUPLING.DC, range=psdk.RANGE.mV500)
-scope.set_channel(channel=psdk.CHANNEL.B, enabled=0, range=psdk.RANGE.mV500)
-scope.set_channel(channel=psdk.CHANNEL.C, enabled=0, range=psdk.RANGE.mV500)
-scope.set_channel(channel=psdk.CHANNEL.D, enabled=0, range=psdk.RANGE.mV500)
-scope.set_simple_trigger(channel=channel, threshold_mv=200, direction=psdk.TRIGGER_DIR.RISING, auto_trigger_ms=0)
+
+# Turn off extra channels for full use of bandwidth & resolution
+scope.set_channel(channel=psdk.CHANNEL.B, enabled=0, range=0)
+scope.set_channel(channel=psdk.CHANNEL.C, enabled=0, range=0)
+scope.set_channel(channel=psdk.CHANNEL.D, enabled=0, range=0)
+
+scope.set_simple_trigger(channel=psdk.CHANNEL.A, threshold_mv=200, direction=psdk.TRIGGER_DIR.RISING, auto_trigger_ms=0)
 
 # Setup SigGen
 scope.set_siggen(frequency=1000, pk2pk=0.9, wave_type=psdk.WAVEFORM.SINE)
 
 # Acquisition parameters 
 nSamples = 1000
-nCaptures = 100
+nCaptures = 1000
 
 pk2pk_values = []
 waveforms = []  # Store each waveform
-
-# Set capture timebase
-TIMEBASE = scope.sample_rate_to_timebase(sample_rate=500,
-                                         unit=psdk.SAMPLE_RATE.MSPS)
-# TIMEBASE = 2  # direct driver timebase
-# TIMEBASE = scope.interval_to_timebase(20E-9)
 
 # Main capture loop
 for _ in range(nCaptures):
     # Simple block capture
     channel_buffer, time_axis = scope.run_simple_block_capture(
-        timebase=TIMEBASE,
-        samples=nSamples,
-        time_unit=psdk.TIME_UNIT.US,
+        timebase=scope.interval_to_timebase(20E-9),
+        samples=nSamples
     )
 
     # Add channel data to list
-    waveform = channel_buffer[channel]
+    waveform = channel_buffer[psdk.CHANNEL.A]
     waveforms.append(waveform)
 
     # Calculate pk2pk values, add to list
@@ -81,7 +76,7 @@ fig, axs = plt.subplots(2, 1, figsize=(10, 8))
 # Top subplot: Overlay of all waveforms
 for waveform in waveforms:
     axs[0].plot(time_axis, waveform, alpha=0.3)
-axs[0].set_xlabel("Time (\u03bcs)")
+axs[0].set_xlabel("Time (ns)")
 axs[0].set_ylabel("Amplitude (mV)")
 axs[0].set_title(f"Overlay of {nCaptures} Waveforms")
 axs[0].grid(True)
