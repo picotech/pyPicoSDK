@@ -203,6 +203,53 @@ class ps6000a(PicoScopeBase):
             self.handle,
             cb,
         )
+
+    def set_device_resolution(self, resolution: RESOLUTION) -> None:
+        """Configure the ADC resolution using ``ps6000aSetDeviceResolution``.
+        Args:
+            resolution: Desired resolution as a :class:`RESOLUTION` value.
+        """
+
+        self._call_attr_function(
+            "SetDeviceResolution",
+            self.handle,
+            resolution,
+        )
+        self.resolution = resolution
+        self.min_adc_value, self.max_adc_value = super()._get_adc_limits()
+
+    def get_device_resolution(self) -> RESOLUTION:
+        """Return the currently configured resolution.
+        Returns:
+            :class:`RESOLUTION`: Device resolution.
+        """
+
+        resolution = ctypes.c_int32()
+        self._call_attr_function(
+            "GetDeviceResolution",
+            self.handle,
+            ctypes.byref(resolution),
+        )
+        self.resolution = RESOLUTION(resolution.value)
+        self.min_adc_value, self.max_adc_value = super()._get_adc_limits()
+        return RESOLUTION(resolution.value)
+
+    def get_maximum_available_memory(self, resolution: RESOLUTION) -> int:
+        """Return maximum sample memory for ``resolution``.
+        Args:
+            resolution: Query resolution as :class:`RESOLUTION`.
+        Returns:
+            int: Number of samples available.
+        """
+
+        max_samples = ctypes.c_uint64()
+        self._call_attr_function(
+            "GetMaximumAvailableMemory",
+            self.handle,
+            ctypes.byref(max_samples),
+            resolution,
+        )
+        return max_samples.value
     
     def get_timebase(self, timebase:int, samples:int, segment:int=0) -> None:
         """
