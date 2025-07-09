@@ -4,6 +4,8 @@
 
 import pypicosdk as psdk
 
+# Pico examples use inline argument values for clarity
+
 # Enumerate units
 n_units, unit_list = psdk.get_all_enumerated_units()
 
