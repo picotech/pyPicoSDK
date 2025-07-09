@@ -251,6 +251,17 @@ class ps6000a(PicoScopeBase):
         )
         return max_samples.value
     
+    def no_of_streaming_values(self) -> int:
+        """Return the number of values currently available while streaming."""
+
+        count = ctypes.c_uint64()
+        self._call_attr_function(
+            "NoOfStreamingValues",
+            self.handle,
+            ctypes.byref(count),
+        )
+        return count.value
+    
     def get_timebase(self, timebase:int, samples:int, segment:int=0) -> None:
         """
         This function calculates the sampling rate and maximum number of 
