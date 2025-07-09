@@ -154,6 +154,56 @@ class ps6000a(PicoScopeBase):
         )
         return max_segments.value
     
+    def ping_unit(self) -> bool:
+        """Check that the device is still connected.
+        This wraps ``ps6000aPingUnit`` which verifies communication with
+        the PicoScope. If the call succeeds the method returns ``True``.
+        Returns:
+            bool: ``True`` if the unit responded.
+        """
+
+        status = self._call_attr_function("PingUnit", self.handle)
+        return status == 0
+
+    def check_for_update(self, n_infos: int = 8) -> tuple[list, bool]:
+        """Query whether a firmware update is available for the device.
+        Args:
+            n_infos: Size of the firmware information buffer.
+        Returns:
+            tuple[list, bool]: ``(firmware_info, updates_required)`` where
+                ``firmware_info`` is a list of :class:`PICO_FIRMWARE_INFO`
+                structures and ``updates_required`` indicates whether any
+                firmware components require updating.
+        """
+
+        info_array = (PICO_FIRMWARE_INFO * n_infos)()
+        n_returned = ctypes.c_int16(n_infos)
+        updates_required = ctypes.c_uint16()
+        self._call_attr_function(
+            "CheckForUpdate",
+            self.handle,
+            info_array,
+            ctypes.byref(n_returned),
+            ctypes.byref(updates_required),
+        )
+
+        return list(info_array)[: n_returned.value], bool(updates_required.value)
+
+    def start_firmware_update(self, progress=None) -> None:
+        """Begin installing any available firmware update.
+        Args:
+            progress: Optional callback ``(handle, percent)`` that receives
+                progress updates as the firmware is written.
+        """
+
+        CALLBACK = ctypes.CFUNCTYPE(None, ctypes.c_int16, ctypes.c_uint16)
+        cb = CALLBACK(progress) if progress else None
+        self._call_attr_function(
+            "StartFirmwareUpdate",
+            self.handle,
+            cb,
+        )
+    
     def get_timebase(self, timebase:int, samples:int, segment:int=0) -> None:
         """
         This function calculates the sampling rate and maximum number of 
