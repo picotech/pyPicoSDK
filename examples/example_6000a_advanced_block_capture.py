@@ -17,15 +17,15 @@ scope = psdk.ps6000a()
 scope.open_unit()
 print(scope.get_unit_serial())
 
+# Setup channels and trigger
+scope.set_channel(channel=channel, range=range)
+scope.set_simple_trigger(channel=channel, threshold_mv=0) 
+
 # Set capture timebase
 TIMEBASE = scope.sample_rate_to_timebase(sample_rate=500,
                                          unit=psdk.SAMPLE_RATE.MSPS)
 # TIMEBASE = 2  # direct driver timebase
 # TIMEBASE = scope.interval_to_timebase(20E-9)
-
-# Setup channels and trigger
-scope.set_channel(channel=channel, range=range)
-scope.set_simple_trigger(channel=channel, threshold_mv=0) 
 
 # Run block capture and retrieve values
 channels_buffer = scope.set_data_buffer_for_enabled_channels(samples=samples)

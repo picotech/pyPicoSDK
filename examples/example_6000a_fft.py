@@ -37,18 +37,18 @@ wave_type = psdk.WAVEFORM.SQUARE
 scope = psdk.ps6000a()
 scope.open_unit()
 
-# Set capture timebase
-TIMEBASE = scope.sample_rate_to_timebase(sample_rate=500,
-                                         unit=psdk.SAMPLE_RATE.MSPS)
-# TIMEBASE = 2  # direct driver timebase
-# TIMEBASE = scope.interval_to_timebase(20E-9)
-
 # Setup siggen
 scope.set_siggen(frequency, pk2pk, wave_type)
 
 # Setup channels and trigger
 scope.set_channel(channel=channel_a, range=range)
 scope.set_simple_trigger(channel=channel_a, threshold_mv=threshold)
+
+# Set capture timebase
+TIMEBASE = scope.sample_rate_to_timebase(sample_rate=500,
+                                         unit=psdk.SAMPLE_RATE.MSPS)
+# TIMEBASE = 2  # direct driver timebase
+# TIMEBASE = scope.interval_to_timebase(20E-9)
 
 # Run the block capture
 channel_buffer, time_axis = scope.run_simple_block_capture(
