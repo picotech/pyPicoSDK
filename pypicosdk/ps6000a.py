@@ -348,6 +348,65 @@ class ps6000a(PicoScopeBase):
             self.handle,
             mode,
         )
+    
+    def channel_combinations_stateless(
+        self, 
+        resolution: RESOLUTION, 
+        timebase: int
+    ) -> list[PICO_CHANNEL_FLAGS]:
+        """Return valid channel flag combinations for a configuration."""
+
+        size = 8
+        func = self._get_attr_function("ChannelCombinationsStateless")
+        while True:
+            combos = (ctypes.c_uint32 * size)()
+            n_combos = ctypes.c_uint32(size)
+            status = func(
+                self.handle,
+                combos,
+                ctypes.byref(n_combos),
+                resolution,
+                ctypes.c_uint32(timebase),
+            )
+            if status == 401:
+                size = n_combos.value
+                continue
+            self._error_handler(status)
+            return [PICO_CHANNEL_FLAGS(combos[i]) for i in range(n_combos.value)]
+
+    def get_accessory_info(self, channel: CHANNEL, info: UNIT_INFO) -> str:
+        """Retrieve information about an accessory connected to ``channel``."""
+
+        buf_len = 64
+        string = ctypes.create_string_buffer(buf_len)
+        req_size = ctypes.c_int16(buf_len)
+        self._call_attr_function(
+            "GetAccessoryInfo",
+            self.handle,
+            channel,
+            string,
+            ctypes.c_int16(buf_len),
+            ctypes.byref(req_size),
+            ctypes.c_uint32(info),
+        )
+        return string.value.decode()
+
+    def get_analogue_offset_limits(
+        self, range: PICO_CONNECT_PROBE_RANGE, coupling: COUPLING
+    ) -> tuple[float, float]:
+        """Get the allowed analogue offset range for ``range`` and ``coupling``."""
+
+        max_v = ctypes.c_double()
+        min_v = ctypes.c_double()
+        self._call_attr_function(
+            "GetAnalogueOffsetLimits",
+            self.handle,
+            range,
+            coupling,
+            ctypes.byref(max_v),
+            ctypes.byref(min_v),
+        )
+        return max_v.value, min_v.value
 
     def set_simple_trigger(self, channel, threshold_mv=0, enable=True, direction=TRIGGER_DIR.RISING, delay=0, auto_trigger_ms=5_000):
         """
