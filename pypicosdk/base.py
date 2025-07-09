@@ -860,24 +860,20 @@ class PicoScopeBase:
 
         if datatype == DATA_TYPE.INT8_T:
             dtype = np.int8
-            ctype = ctypes.c_int8
         elif datatype == DATA_TYPE.INT16_T:
             dtype = np.int16
-            ctype = ctypes.c_int16
         elif datatype == DATA_TYPE.INT32_T:
             dtype = np.int32
-            ctype = ctypes.c_int32
         elif datatype == DATA_TYPE.INT64_T:
             dtype = np.int64
-            ctype = ctypes.c_int64
         elif datatype == DATA_TYPE.UINT32_T:
             dtype = np.uint32
-            ctype = ctypes.c_uint32
         else:
             raise PicoSDKException("Invalid datatype selected for buffer")
 
+        ctype = np.ctypeslib.as_ctypes_type(dtype)
         buffer = np.zeros(samples, dtype=dtype)
-        buf_ptr = buffer.ctypes.data_as(ctypes.POINTER(ctype)) if samples else None
+        buf_ptr = np.ctypeslib.as_ctypes(buffer) if samples else None
 
         self._call_attr_function(
             "SetDataBuffer",
@@ -906,22 +902,18 @@ class PicoScopeBase:
 
         if datatype == DATA_TYPE.INT8_T:
             dtype = np.int8
-            ctype = ctypes.c_int8
         elif datatype == DATA_TYPE.INT16_T:
             dtype = np.int16
-            ctype = ctypes.c_int16
         elif datatype == DATA_TYPE.INT32_T:
             dtype = np.int32
-            ctype = ctypes.c_int32
         elif datatype == DATA_TYPE.INT64_T:
             dtype = np.int64
-            ctype = ctypes.c_int64
         elif datatype == DATA_TYPE.UINT32_T:
             dtype = np.uint32
-            ctype = ctypes.c_uint32
         else:
             raise PicoSDKException("Invalid datatype selected for buffer")
 
+        ctype = np.ctypeslib.as_ctypes_type(dtype)
         buffer_max = np.zeros(samples, dtype=dtype)
         buffer_min = np.zeros(samples, dtype=dtype)
 
@@ -929,8 +921,8 @@ class PicoScopeBase:
             "SetDataBuffers",
             self.handle,
             channel,
-            buffer_max.ctypes.data_as(ctypes.POINTER(ctype)),
-            buffer_min.ctypes.data_as(ctypes.POINTER(ctype)),
+            np.ctypeslib.as_ctypes(buffer_max) if samples else None,
+            np.ctypeslib.as_ctypes(buffer_min) if samples else None,
             samples,
             datatype,
             segment,
