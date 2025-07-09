@@ -25,12 +25,6 @@ import numpy as np
 scope = psdk.ps6000a()
 scope.open_unit(resolution=psdk.RESOLUTION._12BIT)
 
-# Set capture timebase
-TIMEBASE = scope.sample_rate_to_timebase(sample_rate=500,
-                                         unit=psdk.SAMPLE_RATE.MSPS)
-# TIMEBASE = 2  # direct driver timebase
-# TIMEBASE = scope.interval_to_timebase(20E-9)
-
 # Set channels
 channel = psdk.CHANNEL.A
 
@@ -49,6 +43,12 @@ nCaptures = 100
 
 pk2pk_values = []
 waveforms = []  # Store each waveform
+
+# Set capture timebase
+TIMEBASE = scope.sample_rate_to_timebase(sample_rate=500,
+                                         unit=psdk.SAMPLE_RATE.MSPS)
+# TIMEBASE = 2  # direct driver timebase
+# TIMEBASE = scope.interval_to_timebase(20E-9)
 
 # Main capture loop
 for _ in range(nCaptures):
