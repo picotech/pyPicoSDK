@@ -487,6 +487,30 @@ class ps6000a(PicoScopeBase):
         )
         return string.value.decode()
 
+    def get_minimum_timebase_stateless(self) -> dict:
+        """Return the fastest timebase available for the current setup.
+        Queries ``ps6000aGetMinimumTimebaseStateless`` using the enabled
+        channels and current device resolution.
+        Returns:
+            dict: ``{"timebase": int, "time_interval": float}`` where
+            ``time_interval`` is the sample period in seconds.
+        """
+
+        timebase = ctypes.c_uint32()
+        time_interval = ctypes.c_double()
+        self._call_attr_function(
+            "GetMinimumTimebaseStateless",
+            self.handle,
+            self._get_enabled_channel_flags(),
+            ctypes.byref(timebase),
+            ctypes.byref(time_interval),
+            self.resolution,
+        )
+        return {
+            "timebase": timebase.value,
+            "time_interval": time_interval.value,
+        }
+
     def get_analogue_offset_limits(
         self, range: PICO_CONNECT_PROBE_RANGE, coupling: COUPLING
     ) -> tuple[float, float]:
