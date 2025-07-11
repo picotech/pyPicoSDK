@@ -302,6 +302,43 @@ class PICO_TIME_UNIT(IntEnum):
     MS = 4
     S = 5
 
+class PICO_VERSION(ctypes.Structure):
+    """Firmware or driver version information.
+    Attributes:
+        major_: Major version number.
+        minor_: Minor version number.
+        revision_: Revision number.
+        build_: Build number.
+    """
+
+    _pack_ = 1
+
+    _fields_ = [
+        ("major_", ctypes.c_int16),
+        ("minor_", ctypes.c_int16),
+        ("revision_", ctypes.c_int16),
+        ("build_", ctypes.c_int16),
+    ]
+
+
+class PICO_FIRMWARE_INFO(ctypes.Structure):
+    """Information describing firmware versions and updates.
+    Attributes:
+        firmwareType_: Firmware identifier as a :class:`UNIT_INFO` value.
+        currentVersion_: Currently installed :class:`PICO_VERSION`.
+        updateVersion_: Available update :class:`PICO_VERSION`.
+        updateRequired_: ``1`` if an update is required, otherwise ``0``.
+    """
+
+    _pack_ = 1
+
+    _fields_ = [
+        ("firmwareType_", ctypes.c_uint32),
+        ("currentVersion_", PICO_VERSION),
+        ("updateVersion_", PICO_VERSION),
+        ("updateRequired_", ctypes.c_uint16),
+    ]
+
 class DIGITAL_PORT(IntEnum):
     """Digital port identifiers for the 6000A series."""
     PORT0 = 128
@@ -314,6 +351,43 @@ class DIGITAL_PORT_HYSTERESIS(IntEnum):
     NORMAL_100MV = 2
     LOW_50MV = 3
 
+class PICO_CHANNEL_FLAGS(IntEnum):
+    """Bit flags for enabled channels used by ``ps6000aChannelCombinationsStateless``."""
+
+    CHANNEL_A_FLAGS = 1
+    CHANNEL_B_FLAGS = 2
+    CHANNEL_C_FLAGS = 4
+    CHANNEL_D_FLAGS = 8
+    CHANNEL_E_FLAGS = 16
+    CHANNEL_F_FLAGS = 32
+    CHANNEL_G_FLAGS = 64
+    CHANNEL_H_FLAGS = 128
+
+    PORT0_FLAGS = 65536
+    PORT1_FLAGS = 131072
+    PORT2_FLAGS = 262144
+    PORT3_FLAGS = 524288
+
+
+class PICO_CONNECT_PROBE_RANGE(IntEnum):
+    """Input range identifiers for ``get_analogue_offset_limits``."""
+
+    CONNECT_PROBE_OFF = 1024
+
+    D9_BNC_10MV = 0
+    D9_BNC_20MV = 1
+    D9_BNC_50MV = 2
+    D9_BNC_100MV = 3
+    D9_BNC_200MV = 4
+    D9_BNC_500MV = 5
+    D9_BNC_1V = 6
+    D9_BNC_2V = 7
+    D9_BNC_5V = 8
+    D9_BNC_10V = 9
+    D9_BNC_20V = 10
+    D9_BNC_50V = 11
+    D9_BNC_100V = 12
+    D9_BNC_200V = 13
 
 class AUXIO_MODE(IntEnum):
     """Operating modes for the AUX IO connector."""
@@ -543,8 +617,12 @@ __all__ = [
     'SAMPLE_RATE',
     'TIME_UNIT',
     'PICO_TIME_UNIT',
+    'PICO_VERSION',
+    'PICO_FIRMWARE_INFO',
     'DIGITAL_PORT',
     'DIGITAL_PORT_HYSTERESIS',
+    'PICO_CHANNEL_FLAGS',
+    'PICO_CONNECT_PROBE_RANGE',
     'AUXIO_MODE',
     'PICO_TRIGGER_STATE',
     'PICO_STREAMING_DATA_INFO',
