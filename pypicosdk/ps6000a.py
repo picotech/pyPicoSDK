@@ -322,6 +322,30 @@ class ps6000a(PicoScopeBase):
         )
 
         return list(combo_array)
+
+    def report_all_channels_overvoltage_trip_status(
+        self,
+    ) -> list[PICO_CHANNEL_OVERVOLTAGE_TRIPPED]:
+        """Return the overvoltage trip status for each channel.
+        This wraps ``ps6000aReportAllChannelsOvervoltageTripStatus`` to
+        query whether any channel's 50 Ω input protection has tripped.
+        Returns:
+            list[PICO_CHANNEL_OVERVOLTAGE_TRIPPED]: Trip status for all
+            channels.
+        """
+
+        n_channels = len(CHANNEL_NAMES)
+        array_type = PICO_CHANNEL_OVERVOLTAGE_TRIPPED * n_channels
+        status_array = array_type()
+
+        self._call_attr_function(
+            "ReportAllChannelsOvervoltageTripStatus",
+            self.handle,
+            status_array,
+            n_channels,
+        )
+
+        return list(status_array)
     
     def get_timebase(self, timebase:int, samples:int, segment:int=0) -> None:
         """
