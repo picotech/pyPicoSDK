@@ -267,6 +267,44 @@ class ps6000a(PicoScopeBase):
         )
         return max_samples.value
     
+    def get_channel_combinations(self, timebase: int) -> list[int]:
+        """Return valid channel flag combinations for a proposed timebase.
+        This wraps ``ps6000aChannelCombinationsStateless`` and requires the
+        device to be opened first.
+        Args:
+            timebase: Proposed timebase value to test.
+        Returns:
+            list[int]: Sequence of bit masks using :class:`PICO_CHANNEL_FLAGS`.
+        Raises:
+            PicoSDKException: If the device has not been opened.
+        """
+
+        if self.resolution is None:
+            raise PicoSDKException("Device has not been initialized, use open_unit()")
+
+        n_combos = ctypes.c_uint32()
+        # First call obtains the required array size
+        self._call_attr_function(
+            "ChannelCombinationsStateless",
+            self.handle,
+            None,
+            ctypes.byref(n_combos),
+            self.resolution,
+            ctypes.c_uint32(timebase),
+        )
+
+        combo_array = (ctypes.c_uint32 * n_combos.value)()
+        self._call_attr_function(
+            "ChannelCombinationsStateless",
+            self.handle,
+            combo_array,
+            ctypes.byref(n_combos),
+            self.resolution,
+            ctypes.c_uint32(timebase),
+        )
+
+        return list(combo_array)
+    
     def get_timebase(self, timebase:int, samples:int, segment:int=0) -> None:
         """
         This function calculates the sampling rate and maximum number of 

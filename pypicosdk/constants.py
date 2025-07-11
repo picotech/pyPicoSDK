@@ -141,6 +141,23 @@ class CHANNEL(IntEnum):
 
 CHANNEL_NAMES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 
+class PICO_CHANNEL_FLAGS(IntEnum):
+    """Bit flags describing individual channels and digital ports."""
+
+    CHANNEL_A = 1
+    CHANNEL_B = 2
+    CHANNEL_C = 4
+    CHANNEL_D = 8
+    CHANNEL_E = 16
+    CHANNEL_F = 32
+    CHANNEL_G = 64
+    CHANNEL_H = 128
+
+    PORT0 = 65536
+    PORT1 = 131072
+    PORT2 = 262144
+    PORT3 = 524288
+
 class COUPLING(IntEnum):
     """
     Enum class representing different types of coupling used in signal processing.
@@ -606,6 +623,7 @@ __all__ = [
     'WAVEFORM',
     'CHANNEL',
     'CHANNEL_NAMES',
+    'PICO_CHANNEL_FLAGS',
     'COUPLING',
     'RANGE',
     'RANGE_LIST',
