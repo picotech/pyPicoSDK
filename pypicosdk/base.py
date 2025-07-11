@@ -1108,6 +1108,45 @@ class PicoScopeBase:
         )
         return time_indisposed_ms.value
     
+    def run_streaming(
+        self,
+        sample_interval: float,
+        time_units: PICO_TIME_UNIT,
+        max_pre_trigger_samples: int,
+        max_post_trigger_samples: int,
+        auto_stop: int,
+        ratio: int,
+        ratio_mode: RATIO_MODE,
+    ) -> float:
+        """Begin a streaming capture.
+        This wraps the ``RunStreaming`` driver call and configures the
+        acquisition according to the provided arguments.
+        Args:
+            sample_interval: Requested interval between samples.
+            time_units: Unit for ``sample_interval``.
+            max_pre_trigger_samples: Number of pre-trigger samples to collect.
+            max_post_trigger_samples: Number of post-trigger samples to collect.
+            auto_stop: Whether the driver should stop when the buffer is full.
+            ratio: Down sampling ratio.
+            ratio_mode: Down sampling mode.
+        Returns:
+            float: The actual sample interval configured by the driver.
+        """
+
+        c_sample_interval = ctypes.c_double(sample_interval)
+        self._call_attr_function(
+            "RunStreaming",
+            self.handle,
+            ctypes.byref(c_sample_interval),
+            time_units,
+            max_pre_trigger_samples,
+            max_post_trigger_samples,
+            auto_stop,
+            ratio,
+            ratio_mode,
+        )
+        return c_sample_interval.value
+    
     def get_enumerated_units(self) -> tuple[int, str, int]:
         """
         Returns count, serials and serial string length of a specific PicoScope unit.

@@ -19,6 +19,62 @@ class ps6000a(PicoScopeBase):
         super()._open_unit(serial_number, resolution)
         self.min_adc_value, self.max_adc_value =super()._get_adc_limits()
 
+    def open_unit_async(
+        self,
+        serial_number: str | None = None,
+        resolution: RESOLUTION = 0,
+    ) -> int:
+        """Open a unit without blocking the calling thread.
+        Wraps ``ps6000aOpenUnitAsync`` which begins the open operation and
+        returns immediately.
+        Args:
+            serial_number: Serial number of the device to open.
+            resolution: Requested resolution for the device.
+        Returns:
+            int: Status flag from the driver (``0`` if the request was not
+                started, ``1`` if the operation began successfully).
+        """
+
+        status_flag = ctypes.c_int16()
+        if serial_number is not None:
+            serial_number = serial_number.encode()
+
+        self._call_attr_function(
+            "OpenUnitAsync",
+            ctypes.byref(status_flag),
+            serial_number,
+            resolution,
+        )
+
+        self._pending_resolution = resolution
+        return status_flag.value
+
+    def open_unit_progress(self) -> tuple[int, int, int]:
+        """Check the progress of :meth:`open_unit_async`.
+        This wraps ``ps6000aOpenUnitProgress`` and should be called repeatedly
+        until ``complete`` is non-zero.
+        Returns:
+            tuple[int, int, int]: ``(handle, progress_percent, complete)``.
+        """
+
+        handle = ctypes.c_int16()
+        progress = ctypes.c_int16()
+        complete = ctypes.c_int16()
+
+        self._call_attr_function(
+            "OpenUnitProgress",
+            ctypes.byref(handle),
+            ctypes.byref(progress),
+            ctypes.byref(complete),
+        )
+
+        if complete.value:
+            self.handle = handle
+            self.resolution = getattr(self, "_pending_resolution", 0)
+            self.min_adc_value, self.max_adc_value = super()._get_adc_limits()
+
+        return handle.value, progress.value, complete.value
+
     def memory_segments(self, n_segments: int) -> int:
         """Configure the number of memory segments.
 
@@ -97,6 +153,114 @@ class ps6000a(PicoScopeBase):
             self.resolution,
         )
         return max_segments.value
+    
+    def ping_unit(self) -> bool:
+        """Check that the device is still connected.
+        This wraps ``ps6000aPingUnit`` which verifies communication with
+        the PicoScope. If the call succeeds the method returns ``True``.
+        Returns:
+            bool: ``True`` if the unit responded.
+        """
+
+        status = self._call_attr_function("PingUnit", self.handle)
+        return status == 0
+
+    def check_for_update(self, n_infos: int = 8) -> tuple[list, bool]:
+        """Query whether a firmware update is available for the device.
+        Args:
+            n_infos: Size of the firmware information buffer.
+        Returns:
+            tuple[list, bool]: ``(firmware_info, updates_required)`` where
+                ``firmware_info`` is a list of :class:`PICO_FIRMWARE_INFO`
+                structures and ``updates_required`` indicates whether any
+                firmware components require updating.
+        """
+
+        info_array = (PICO_FIRMWARE_INFO * n_infos)()
+        n_returned = ctypes.c_int16(n_infos)
+        updates_required = ctypes.c_uint16()
+        self._call_attr_function(
+            "CheckForUpdate",
+            self.handle,
+            info_array,
+            ctypes.byref(n_returned),
+            ctypes.byref(updates_required),
+        )
+
+        return list(info_array)[: n_returned.value], bool(updates_required.value)
+
+    def start_firmware_update(self, progress=None) -> None:
+        """Begin installing any available firmware update.
+        Args:
+            progress: Optional callback ``(handle, percent)`` that receives
+                progress updates as the firmware is written.
+        """
+
+        CALLBACK = ctypes.CFUNCTYPE(None, ctypes.c_int16, ctypes.c_uint16)
+        cb = CALLBACK(progress) if progress else None
+        self._call_attr_function(
+            "StartFirmwareUpdate",
+            self.handle,
+            cb,
+        )
+
+    def set_device_resolution(self, resolution: RESOLUTION) -> None:
+        """Configure the ADC resolution using ``ps6000aSetDeviceResolution``.
+        Args:
+            resolution: Desired resolution as a :class:`RESOLUTION` value.
+        """
+
+        self._call_attr_function(
+            "SetDeviceResolution",
+            self.handle,
+            resolution,
+        )
+        self.resolution = resolution
+        self.min_adc_value, self.max_adc_value = super()._get_adc_limits()
+
+    def get_device_resolution(self) -> RESOLUTION:
+        """Return the currently configured resolution.
+        Returns:
+            :class:`RESOLUTION`: Device resolution.
+        """
+
+        resolution = ctypes.c_int32()
+        self._call_attr_function(
+            "GetDeviceResolution",
+            self.handle,
+            ctypes.byref(resolution),
+        )
+        self.resolution = RESOLUTION(resolution.value)
+        self.min_adc_value, self.max_adc_value = super()._get_adc_limits()
+        return RESOLUTION(resolution.value)
+
+    def get_maximum_available_memory(self, resolution: RESOLUTION) -> int:
+        """Return maximum sample memory for ``resolution``.
+        Args:
+            resolution: Query resolution as :class:`RESOLUTION`.
+        Returns:
+            int: Number of samples available.
+        """
+
+        max_samples = ctypes.c_uint64()
+        self._call_attr_function(
+            "GetMaximumAvailableMemory",
+            self.handle,
+            ctypes.byref(max_samples),
+            resolution,
+        )
+        return max_samples.value
+    
+    def no_of_streaming_values(self) -> int:
+        """Return the number of values currently available while streaming."""
+
+        count = ctypes.c_uint64()
+        self._call_attr_function(
+            "NoOfStreamingValues",
+            self.handle,
+            ctypes.byref(count),
+        )
+        return count.value
     
     def get_maximum_available_memory(self) -> int:
         """Return the maximum sample depth for the current resolution.
@@ -217,6 +381,65 @@ class ps6000a(PicoScopeBase):
             self.handle,
             mode,
         )
+    
+    def channel_combinations_stateless(
+        self, 
+        resolution: RESOLUTION, 
+        timebase: int
+    ) -> list[PICO_CHANNEL_FLAGS]:
+        """Return valid channel flag combinations for a configuration."""
+
+        size = 8
+        func = self._get_attr_function("ChannelCombinationsStateless")
+        while True:
+            combos = (ctypes.c_uint32 * size)()
+            n_combos = ctypes.c_uint32(size)
+            status = func(
+                self.handle,
+                combos,
+                ctypes.byref(n_combos),
+                resolution,
+                ctypes.c_uint32(timebase),
+            )
+            if status == 401:
+                size = n_combos.value
+                continue
+            self._error_handler(status)
+            return [PICO_CHANNEL_FLAGS(combos[i]) for i in range(n_combos.value)]
+
+    def get_accessory_info(self, channel: CHANNEL, info: UNIT_INFO) -> str:
+        """Retrieve information about an accessory connected to ``channel``."""
+
+        buf_len = 64
+        string = ctypes.create_string_buffer(buf_len)
+        req_size = ctypes.c_int16(buf_len)
+        self._call_attr_function(
+            "GetAccessoryInfo",
+            self.handle,
+            channel,
+            string,
+            ctypes.c_int16(buf_len),
+            ctypes.byref(req_size),
+            ctypes.c_uint32(info),
+        )
+        return string.value.decode()
+
+    def get_analogue_offset_limits(
+        self, range: PICO_CONNECT_PROBE_RANGE, coupling: COUPLING
+    ) -> tuple[float, float]:
+        """Get the allowed analogue offset range for ``range`` and ``coupling``."""
+
+        max_v = ctypes.c_double()
+        min_v = ctypes.c_double()
+        self._call_attr_function(
+            "GetAnalogueOffsetLimits",
+            self.handle,
+            range,
+            coupling,
+            ctypes.byref(max_v),
+            ctypes.byref(min_v),
+        )
+        return max_v.value, min_v.value
 
     def set_simple_trigger(self, channel, threshold_mv=0, enable=True, direction=TRIGGER_DIR.RISING, delay=0, auto_trigger_ms=5_000):
         """
