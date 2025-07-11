@@ -98,6 +98,28 @@ class ps6000a(PicoScopeBase):
         )
         return max_segments.value
     
+    def get_maximum_available_memory(self) -> int:
+        """Return the maximum sample depth for the current resolution.
+        Wraps ``ps6000aGetMaximumAvailableMemory`` to query how many samples
+        can be captured at ``self.resolution``.
+        Returns:
+            int: Maximum number of samples supported.
+        Raises:
+            PicoSDKException: If the device has not been opened.
+        """
+
+        if self.resolution is None:
+            raise PicoSDKException("Device has not been initialized, use open_unit()")
+
+        max_samples = ctypes.c_uint64()
+        self._call_attr_function(
+            "GetMaximumAvailableMemory",
+            self.handle,
+            ctypes.byref(max_samples),
+            self.resolution,
+        )
+        return max_samples.value
+    
     def get_timebase(self, timebase:int, samples:int, segment:int=0) -> None:
         """
         This function calculates the sampling rate and maximum number of 
