@@ -233,23 +233,6 @@ class ps6000a(PicoScopeBase):
         self.resolution = RESOLUTION(resolution.value)
         self.min_adc_value, self.max_adc_value = super()._get_adc_limits()
         return RESOLUTION(resolution.value)
-
-    def get_maximum_available_memory(self, resolution: RESOLUTION) -> int:
-        """Return maximum sample memory for ``resolution``.
-        Args:
-            resolution: Query resolution as :class:`RESOLUTION`.
-        Returns:
-            int: Number of samples available.
-        """
-
-        max_samples = ctypes.c_uint64()
-        self._call_attr_function(
-            "GetMaximumAvailableMemory",
-            self.handle,
-            ctypes.byref(max_samples),
-            resolution,
-        )
-        return max_samples.value
     
     def no_of_streaming_values(self) -> int:
         """Return the number of values currently available while streaming."""
