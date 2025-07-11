@@ -421,6 +421,19 @@ class AUXIO_MODE(IntEnum):
     #: Logic high pulse during the post-trigger acquisition time.
     TRIGGER_OUT = 3
 
+class PICO_CHANNEL_OVERVOLTAGE_TRIPPED(ctypes.Structure):
+    """Status flag indicating whether a channel's input protection tripped.
+    Attributes:
+        channel_: Channel identifier as a :class:`CHANNEL` value.
+        tripped_: ``1`` if the channel has tripped due to overvoltage.
+    """
+
+    _pack_ = 1
+
+    _fields_ = [
+        ("channel_", ctypes.c_int32),
+        ("tripped_", ctypes.c_uint8),
+    ]
 
 class PICO_TRIGGER_STATE(IntEnum):
     """Trigger state values used in :class:`PICO_CONDITION`."""
@@ -642,6 +655,7 @@ __all__ = [
     'PICO_CHANNEL_FLAGS',
     'PICO_CONNECT_PROBE_RANGE',
     'AUXIO_MODE',
+    'PICO_CHANNEL_OVERVOLTAGE_TRIPPED',
     'PICO_TRIGGER_STATE',
     'PICO_STREAMING_DATA_INFO',
     'PICO_STREAMING_DATA_TRIGGER_INFO',

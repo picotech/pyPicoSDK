@@ -234,6 +234,24 @@ class ps6000a(PicoScopeBase):
         self.min_adc_value, self.max_adc_value = super()._get_adc_limits()
         return RESOLUTION(resolution.value)
     
+    def reset_channels_and_report_all_channels_overvoltage_trip_status(self) -> list[PICO_CHANNEL_OVERVOLTAGE_TRIPPED]:
+        """Reset channels and return overvoltage trip status for each.
+        Wraps ``ps6000aResetChannelsAndReportAllChannelsOvervoltageTripStatus``.
+        Returns:
+            list[PICO_CHANNEL_OVERVOLTAGE_TRIPPED]: Trip status for all channels.
+        """
+
+        n_channels = len(CHANNEL_NAMES)
+        status_array = (PICO_CHANNEL_OVERVOLTAGE_TRIPPED * n_channels)()
+        self._call_attr_function(
+            "ResetChannelsAndReportAllChannelsOvervoltageTripStatus",
+            self.handle,
+            status_array,
+            ctypes.c_uint8(n_channels),
+        )
+
+        return list(status_array)
+    
     def no_of_streaming_values(self) -> int:
         """Return the number of values currently available while streaming."""
 
