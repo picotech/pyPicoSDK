@@ -420,6 +420,41 @@ class PICO_CONNECT_PROBE_RANGE(IntEnum):
     D9_BNC_100V = 12
     D9_BNC_200V = 13
 
+class PICO_PROBE_RANGE_INFO(IntEnum):
+    """Probe attenuation identifiers for ``get_scaling_values``."""
+
+    PROBE_NONE_NV = 0
+    X1_PROBE_NV = 1
+    X10_PROBE_NV = 10
+
+
+class PICO_SCALING_FACTORS_VALUES(ctypes.Structure):
+    """Scaling factors for a channel and range."""
+
+    _pack_ = 1
+
+    _fields_ = [
+        ("channel_", ctypes.c_int32),
+        ("range_", ctypes.c_int32),
+        ("offset_", ctypes.c_int16),
+        ("scalingFactor_", ctypes.c_double),
+    ]
+
+
+class PICO_SCALING_FACTORS_FOR_RANGE_TYPES_VALUES(ctypes.Structure):
+    """Scaling factors for a probe range type."""
+
+    _pack_ = 1
+
+    _fields_ = [
+        ("channel_", ctypes.c_int32),
+        ("rangeMin_", ctypes.c_int64),
+        ("rangeMax_", ctypes.c_int64),
+        ("rangeType_", ctypes.c_int32),
+        ("offset_", ctypes.c_int16),
+        ("scalingFactor_", ctypes.c_double),
+    ]
+
 class AUXIO_MODE(IntEnum):
     """Operating modes for the AUX IO connector."""
 
@@ -669,6 +704,9 @@ __all__ = [
     'DIGITAL_PORT_HYSTERESIS',
     'PICO_CHANNEL_FLAGS',
     'PICO_CONNECT_PROBE_RANGE',
+    'PICO_PROBE_RANGE_INFO',
+    'PICO_SCALING_FACTORS_VALUES',
+    'PICO_SCALING_FACTORS_FOR_RANGE_TYPES_VALUES',
     'AUXIO_MODE',
     'PICO_CHANNEL_OVERVOLTAGE_TRIPPED',
     'PICO_TRIGGER_STATE',
