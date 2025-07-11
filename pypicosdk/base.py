@@ -241,6 +241,33 @@ class PicoScopeBase:
                 str: Returns serial, e.g., "JR628/0017".
         """
         return self.get_unit_info(UNIT_INFO.PICO_BATCH_AND_SERIAL)
+
+    def get_accessory_info(self, channel: CHANNEL, info: UNIT_INFO) -> str:
+        """Return accessory details for the given channel.
+        This wraps the driver ``GetAccessoryInfo`` call which retrieves
+        information about any accessory attached to ``channel``.
+        Args:
+            channel: Channel the accessory is connected to.
+            info: Information field requested from :class:`UNIT_INFO`.
+        Returns:
+            str: Information string provided by the driver.
+        """
+
+        string = ctypes.create_string_buffer(16)
+        string_length = ctypes.c_int16(32)
+        required_size = ctypes.c_int16(32)
+
+        self._call_attr_function(
+            "GetAccessoryInfo",
+            self.handle,
+            channel,
+            string,
+            string_length,
+            ctypes.byref(required_size),
+            ctypes.c_uint32(info),
+        )
+
+        return string.value.decode()
     
     def _get_enabled_channel_flags(self) -> int:
         """
