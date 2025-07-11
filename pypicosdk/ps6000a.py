@@ -347,6 +347,17 @@ class ps6000a(PicoScopeBase):
 
         return list(status_array)
     
+    def get_no_of_processed_captures(self) -> int:
+        """Return the number of captures processed in rapid block mode."""
+
+        n_processed = ctypes.c_uint64()
+        self._call_attr_function(
+            "GetNoOfProcessedCaptures",
+            self.handle,
+            ctypes.byref(n_processed),
+        )
+        return n_processed.value
+    
     def get_timebase(self, timebase:int, samples:int, segment:int=0) -> None:
         """
         This function calculates the sampling rate and maximum number of 
