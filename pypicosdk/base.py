@@ -419,6 +419,22 @@ class PicoScopeBase:
             ctypes.byref(max_value)
         )
         return max_value.value
+
+    def set_device_resolution(self, resolution: RESOLUTION) -> None:
+        """Change the oscilloscope's sampling resolution.
+        This wraps the ``SetDeviceResolution`` driver function and updates
+        ``min_adc_value`` and ``max_adc_value`` to match the new resolution.
+        Args:
+            resolution: Desired device resolution from :class:`RESOLUTION`.
+        """
+
+        self._call_attr_function(
+            "SetDeviceResolution",
+            self.handle,
+            resolution,
+        )
+        self.resolution = resolution
+        self.min_adc_value, self.max_adc_value = self._get_adc_limits()
     
     def get_time_axis(self, timebase:int, samples:int) -> list:
         """
