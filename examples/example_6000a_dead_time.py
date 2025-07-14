@@ -38,7 +38,7 @@ SAMPLE_INTERVAL_NS = time_axis[1] - time_axis[0]
 
 dead_times = []
 for prev, curr in zip(trigger_info[:-1], trigger_info[1:]):
-    diff_samples = (curr.timeStampCounter_ - prev.timeStampCounter_) & psdk.TIMESTAMP_COUNTER_MASK
+    diff_samples = (curr["timeStampCounter"] - prev["timeStampCounter"]) & psdk.TIMESTAMP_COUNTER_MASK
     dead_samples = diff_samples - SAMPLES
     dead_times.append(dead_samples * SAMPLE_INTERVAL_NS)
 
