@@ -74,6 +74,23 @@ def _get_lib_path() -> str:
         raise PicoSDKException("macOS is not yet tested and supported")
     else:
         raise PicoSDKException("Unsupported OS")
+    
+def _struct_to_dict(struct_instance: ctypes.Structure, format=False) -> dict:
+    """Takes a ctypes struct and returns the values as a python dict
+
+    Args:
+        struct_instance (ctypes.Structure): ctype structure to convert into dictionary
+
+    Returns:
+        dict: python dictionary of struct values
+    """
+    result = {}
+    for field_name, _ in struct_instance._fields_:
+        if format:
+            result[field_name.replace('_', '')] = getattr(struct_instance, field_name)
+        else:
+            result[field_name] = getattr(struct_instance, field_name)
+    return result
 
 class PicoScopeBase:
     """PicoScope base class including common SDK and python modules and functions"""
@@ -510,6 +527,39 @@ class PicoScopeBase:
         """
         interval = self.get_timebase(timebase, samples)['Interval(ns)']
         return [round(x*interval, 4) for x in range(samples)]
+
+    def get_trigger_info(
+        self,
+        first_segment_index: int = 0,
+        segment_count: int = 1,
+    ) -> list[dict]:
+        """Retrieve trigger timing information for one or more segments.
+
+        Args:
+            first_segment_index: Index of the first memory segment to query.
+            segment_count: Number of consecutive segments starting at
+                ``first_segment_index``.
+
+        Returns:
+            List of dictionaries for each trigger event
+
+        Raises:
+            PicoSDKException: If the function call fails or preconditions are
+                not met.
+        """
+
+        info_array = (PICO_TRIGGER_INFO * segment_count)()
+
+        self._call_attr_function(
+            "GetTriggerInfo",
+            self.handle,
+            ctypes.byref(info_array[0]),
+            ctypes.c_uint64(first_segment_index),
+            ctypes.c_uint64(segment_count),
+        )
+
+        # Convert struct to dictionary
+        return [_struct_to_dict(info, format=True) for info in info_array]
     
     def get_trigger_time_offset(self, time_unit: TIME_UNIT, segment_index: int = 0) -> int:
         """
@@ -549,53 +599,6 @@ class PicoScopeBase:
         time_s = time.value / TIME_UNIT[pico_unit.name]
         return int(time_s * TIME_UNIT[time_unit.name])
 
-
-    def get_trigger_info(
-        self,
-        first_segment_index: int = 0,
-        segment_count: int = 1,
-    ) -> typing.Union[PICO_TRIGGER_INFO, list[PICO_TRIGGER_INFO]]:
-        """Retrieve trigger timing information for one or more segments.
-
-        This method wraps the ``ps6000aGetTriggerInfo`` API call and returns
-        one or more :class:`~pypicosdk.constants.PICO_TRIGGER_INFO` structures.
-        Each structure exposes attributes such as ``status_``, ``triggerTime_``
-        and ``timeUnits_`` (refer to :mod:`pypicosdk.constants` for the full
-        list of fields).  The ``status_`` field is a
-        :class:`~pypicosdk.constants.PICO_STATUS` bit field that may include
-        flags like ``PICO_DEVICE_TIME_STAMP_RESET`` or
-        ``PICO_TRIGGER_TIME_NOT_REQUESTED``. ``timeUnits_`` values are defined
-        by :class:`~pypicosdk.constants.PICO_TIME_UNIT`.
-
-        Args:
-            first_segment_index: Index of the first memory segment to query.
-            segment_count: Number of consecutive segments starting at
-                ``first_segment_index``.
-
-        Returns:
-            If ``segment_count`` is ``1``, a single ``PICO_TRIGGER_INFO``
-            instance is returned. Otherwise a list of ``PICO_TRIGGER_INFO``
-            objects is provided.
-
-        Raises:
-            PicoSDKException: If the function call fails or preconditions are
-                not met.
-        """
-
-        info_array = (PICO_TRIGGER_INFO * segment_count)()
-
-        self._call_attr_function(
-            "GetTriggerInfo",
-            self.handle,
-            ctypes.byref(info_array[0]),
-            ctypes.c_uint64(first_segment_index),
-            ctypes.c_uint64(segment_count),
-        )
-
-        if segment_count == 1:
-            return info_array[0]
-        return list(info_array)
-
     def get_values_trigger_time_offset_bulk(
         self,
         from_segment_index: int,
@@ -603,9 +606,8 @@ class PicoScopeBase:
     ) -> list[tuple[int, PICO_TIME_UNIT]]:
         """Retrieve trigger time offsets for a range of segments.
 
-        This method calls ``ps6000aGetValuesTriggerTimeOffsetBulk`` and
-        returns the trigger time offset and associated time unit for each
-        requested segment.
+        This method returns the trigger time offset and associated 
+        time unit for each requested segment.
 
         Args:
             from_segment_index: Index of the first memory segment to query.
