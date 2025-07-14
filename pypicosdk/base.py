@@ -1042,7 +1042,7 @@ class PicoScopeBase:
         datatype=DATA_TYPE.INT16_T,
         ratio_mode=RATIO_MODE.RAW,
         action=ACTION.CLEAR_ALL | ACTION.ADD,
-    ) -> ctypes.Array | None:
+    ) -> np.ndarray | None:
         """
         Allocates and assigns a data buffer for a specified channel on the 6000A series.
 
@@ -1055,7 +1055,7 @@ class PicoScopeBase:
             action (ACTION, optional): Action to apply to the data buffer (e.g., CLEAR_ALL | ADD).
 
         Returns:
-            ctypes.Array | None: The allocated buffer or ``None`` when clearing existing buffers.
+            np.array | None: The allocated buffer or ``None`` when clearing existing buffers.
 
         Raises:
             PicoSDKException: If an unsupported data type is provided.
@@ -1064,21 +1064,21 @@ class PicoScopeBase:
             buffer = None
             buf_ptr = None
         else:
-            if datatype == DATA_TYPE.INT8_T:
-                ctype = ctypes.c_int8
-            elif datatype == DATA_TYPE.INT16_T:
-                ctype = ctypes.c_int16
-            elif datatype == DATA_TYPE.INT32_T:
-                ctype = ctypes.c_int32
-            elif datatype == DATA_TYPE.INT64_T:
-                ctype = ctypes.c_int64
-            elif datatype == DATA_TYPE.UINT32_T:
-                ctype = ctypes.c_uint32
-            else:
+            # Map to NumPy dtype
+            dtype_map = {
+                DATA_TYPE.INT8_T: np.int8,
+                DATA_TYPE.INT16_T: np.int16,
+                DATA_TYPE.INT32_T: np.int32,
+                DATA_TYPE.INT64_T: np.int64,
+                DATA_TYPE.UINT32_T: np.uint32,
+            }
+
+            np_dtype = dtype_map.get(datatype)
+            if np_dtype is None:
                 raise PicoSDKException("Invalid datatype selected for buffer")
 
-            buffer = (ctype * samples)()
-            buf_ptr = ctypes.byref(buffer)
+            buffer = np.zeros(samples, dtype=np_dtype)
+            buf_ptr = npc.as_ctypes(buffer)
 
         self._call_attr_function(
             "SetDataBuffer",
@@ -1101,31 +1101,49 @@ class PicoScopeBase:
         datatype=DATA_TYPE.INT16_T,
         ratio_mode=RATIO_MODE.AGGREGATE,
         action=ACTION.CLEAR_ALL | ACTION.ADD,
-    ) -> tuple[ctypes.Array, ctypes.Array]:
-        """Allocate and assign max and min data buffers (6000A)."""
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Allocate and assign max and min NumPy-backed data buffers for 6000A series.
 
-        if datatype == DATA_TYPE.INT8_T:
-            ctype = ctypes.c_int8
-        elif datatype == DATA_TYPE.INT16_T:
-            ctype = ctypes.c_int16
-        elif datatype == DATA_TYPE.INT32_T:
-            ctype = ctypes.c_int32
-        elif datatype == DATA_TYPE.INT64_T:
-            ctype = ctypes.c_int64
-        elif datatype == DATA_TYPE.UINT32_T:
-            ctype = ctypes.c_uint32
-        else:
+        Args:
+            channel (int): The channel to associate the buffers with.
+            samples (int): Number of samples to allocate.
+            segment (int, optional): Memory segment to use.
+            datatype (DATA_TYPE, optional): C data type for the buffer (e.g., INT16_T).
+            ratio_mode (RATIO_MODE, optional): Downsampling mode.
+            action (ACTION, optional): Action to apply to the data buffer.
+
+        Returns:
+            tuple[np.ndarray, np.ndarray]: Tuple of (buffer_max, buffer_min) NumPy arrays.
+
+        Raises:
+            PicoSDKException: If an unsupported data type is provided.
+        """
+        # Map to NumPy dtype
+        dtype_map = {
+            DATA_TYPE.INT8_T: np.int8,
+            DATA_TYPE.INT16_T: np.int16,
+            DATA_TYPE.INT32_T: np.int32,
+            DATA_TYPE.INT64_T: np.int64,
+            DATA_TYPE.UINT32_T: np.uint32,
+        }
+
+        np_dtype = dtype_map.get(datatype)
+        if np_dtype is None:
             raise PicoSDKException("Invalid datatype selected for buffer")
 
-        buffer_max = (ctype * samples)()
-        buffer_min = (ctype * samples)()
+        buffer_max = np.zeros(samples, dtype=np_dtype)
+        buffer_min = np.zeros(samples, dtype=np_dtype)
+
+        buf_max_ptr = npc.as_ctypes(buffer_max)
+        buf_min_ptr = npc.as_ctypes(buffer_min)
 
         self._call_attr_function(
             "SetDataBuffers",
             self.handle,
             channel,
-            ctypes.byref(buffer_max),
-            ctypes.byref(buffer_min),
+            buf_max_ptr,
+            buf_min_ptr,
             samples,
             datatype,
             segment,
@@ -1134,6 +1152,7 @@ class PicoScopeBase:
         )
 
         return buffer_max, buffer_min
+
     
     # Run functions
     def run_block_capture(self, timebase, samples, pre_trig_percent=50, segment=0) -> int:
