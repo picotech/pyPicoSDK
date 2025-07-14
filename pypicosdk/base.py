@@ -5,6 +5,9 @@ import platform
 import time
 import typing
 
+import numpy as np
+import numpy.ctypeslib as npc
+
 from .error_list import ERROR_STRING
 from .constants import *
 
