@@ -202,6 +202,7 @@ class PicoScopeBase:
             resolution
         )
         self.resolution = resolution
+        self.set_all_channels_off()
     
     def close_unit(self) -> None:
         """
@@ -832,6 +833,12 @@ class PicoScopeBase:
             channel
         )
         return self._error_handler(status)
+    
+    def set_all_channels_off(self):
+        """Turns all channels off, based on unit number of channels"""
+        channels = self.get_unit_info(UNIT_INFO.PICO_VARIANT_INFO)[1]
+        for channel in range(int(channels)):
+            self.set_channel(channel, enabled=False)
     
     
     def set_simple_trigger(self, channel, threshold_mv, enable=True, direction=TRIGGER_DIR.RISING, delay=0, auto_trigger=0):
