@@ -26,7 +26,20 @@ class PowerSupplyWarning(UserWarning):
 
 
 # General Functions
-def _check_path(location, folders):
+def _check_path(location:str, folders:list) -> str:
+    """Checks a list of folders in a location i.e. ['Pico Technology']
+       in /ProgramFiles/ and returns first full path found
+
+    Args:
+        location (str): Path to check for folders
+        folders (list): List of folders to look for
+
+    Raises:
+        PicoSDKException: If not found, raise an error for user
+
+    Returns:
+        str: Full path of the first located folder
+    """
     for folder in folders:
         path = os.path.join(location, folder)
         if os.path.exists(path):
@@ -37,6 +50,15 @@ def _check_path(location, folders):
 
 
 def _get_lib_path() -> str:
+    """Looks for PicoSDK folder based on OS and returns folder
+       path
+
+    Raises:
+        PicoSDKException: If unsupported OS
+
+    Returns:
+        str: Full path of PicoSDK folder location
+    """
     system = platform.system()
     if system == "Windows":
         program_files = os.environ.get("PROGRAMFILES")
