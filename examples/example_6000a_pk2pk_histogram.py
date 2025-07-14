@@ -28,12 +28,6 @@ scope.open_unit(resolution=psdk.RESOLUTION._12BIT)
 
 # Set channels (inline arguments)
 scope.set_channel(channel=psdk.CHANNEL.A, coupling=psdk.COUPLING.DC, range=psdk.RANGE.mV500)
-
-# Turn off extra channels for full use of bandwidth & resolution
-scope.set_channel(channel=psdk.CHANNEL.B, enabled=0, range=0)
-scope.set_channel(channel=psdk.CHANNEL.C, enabled=0, range=0)
-scope.set_channel(channel=psdk.CHANNEL.D, enabled=0, range=0)
-
 scope.set_simple_trigger(channel=psdk.CHANNEL.A, threshold_mv=200, direction=psdk.TRIGGER_DIR.RISING, auto_trigger_ms=0)
 
 # Setup SigGen
