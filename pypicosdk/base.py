@@ -559,7 +559,7 @@ class PicoScopeBase:
         )
 
         # Convert struct to dictionary
-        return [_struct_to_dict(info, format=Tr) for info in info_array]
+        return [_struct_to_dict(info, format=True) for info in info_array]
     
     def get_trigger_time_offset(self, time_unit: TIME_UNIT, segment_index: int = 0) -> int:
         """
