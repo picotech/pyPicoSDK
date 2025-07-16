@@ -280,7 +280,7 @@ class RATIO_MODE:
         SUM: Mode for summing data.
         TRIGGER_DATA_FOR_TIME_CALCULATION: Mode for calculating trigger data for time-based calculations.
         SEGMENT_HEADER: Mode for segment header data processing.
-        TRIGGER: Trigger mode for event-based data.
+        TRIGGER: Trigger mode for event-based data. If manually setting buffers, TRIGGER will need its own buffer set.
         RAW: Raw data mode, without any processing.
     """
     AGGREGATE = 1
