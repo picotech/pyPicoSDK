@@ -879,10 +879,6 @@ class PicoScopeBase:
     ) -> None:
         """Configure a trigger condition.
 
-        This wraps the PicoSDK ``SetTriggerChannelConditions`` call.  The
-        ``source`` channel is compared against ``state`` and combined with any
-        existing conditions according to ``action``.
-
         Args:
             source (int): Input source as a :class:`CHANNEL` value.
             state (int): Desired state from :class:`PICO_TRIGGER_STATE`.
@@ -910,9 +906,7 @@ class PicoScopeBase:
         aux_output_enable: int = 0,
         auto_trigger_us: int = 0,
     ) -> None:
-        """Configure trigger thresholds for ``channel``.
-
-        This method exposes the PicoSDK ``SetTriggerChannelProperties`` API. All
+        """Configure trigger thresholds for ``channel``. All
         threshold and hysteresis values are specified in ADC counts.
 
         Args:
@@ -950,8 +944,6 @@ class PicoScopeBase:
         threshold_mode: int,
     ) -> None:
         """Specify the trigger direction for ``channel``.
-
-        This method mirrors the PicoSDK ``SetTriggerChannelDirections`` call.
 
         Args:
             channel (int): Channel to configure.
