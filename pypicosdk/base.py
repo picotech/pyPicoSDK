@@ -1114,7 +1114,7 @@ class PicoScopeBase:
             action (ACTION, optional): Action to apply to the data buffer.
 
         Returns:
-            tuple[np.ndarray, np.ndarray]: Tuple of (buffer_max, buffer_min) NumPy arrays.
+            tuple[np.ndarray, np.ndarray]: Tuple of (buffer_min, buffer_max) NumPy arrays.
 
         Raises:
             PicoSDKException: If an unsupported data type is provided.
@@ -1151,7 +1151,7 @@ class PicoScopeBase:
             action,
         )
 
-        return buffer_max, buffer_min
+        return buffer_min, buffer_max
 
     
     # Run functions
