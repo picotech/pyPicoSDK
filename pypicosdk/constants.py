@@ -1,5 +1,6 @@
 from enum import IntEnum
 import ctypes
+from typing import Literal
 
 class UNIT_INFO:
     """
@@ -59,6 +60,9 @@ class RESOLUTION:
     _15BIT = 3
     _16BIT = 4
 
+resolution_literal = Literal['8bit', '10bit', '12bit', '14bit', '15bit', '16bit']
+resolution_map = {'8bit':0, '10bit':10, '12bit':1, '14bit':2, '15bit':3, '16bit':4}
+
 class TRIGGER_DIR:
     """
     Trigger direction constants for configuring PicoScope triggers.
@@ -109,6 +113,39 @@ class WAVEFORM:
     PRBS = 0x00002002
     ARBITRARY = 0x10000000
 
+waveform_literal = Literal[
+    'sine',
+    'square',
+    'triangle',
+    'ramp_up',
+    'ramp_down',
+    'sinc',
+    'gaussian',
+    'half_sine',
+    'dc_voltage',
+    'pwm',
+    'whitenoise',
+    'prbs',
+    'arbitrary'
+]
+
+waveform_map = {
+    'sine':        0x00000011,
+    'square':      0x00000012,
+    'triangle':    0x00000013,
+    'ramp_up':     0x00000014,
+    'ramp_down':   0x00000015,
+    'sinc':        0x00000016,
+    'gaussian':    0x00000017,
+    'half_sine':   0x00000018,
+    'dc_voltage':  0x00000400,
+    'pwm':         0x00001000,
+    'whitenoise':  0x00002001,
+    'prbs':        0x00002002,
+    'arbitrary':   0x10000000
+}
+
+
 class CHANNEL(IntEnum):
     """Constants representing PicoScope trigger and input channels.
 
@@ -138,8 +175,33 @@ class CHANNEL(IntEnum):
     #: Auxiliary trigger input/output.
     TRIGGER_AUX = 1001
 
-
 CHANNEL_NAMES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+
+channel_literal = Literal[
+    'channel_a',
+    'channel_b',
+    'channel_c',
+    'channel_d',
+    'channel_e',
+    'channel_f',
+    'channel_g',
+    'channel_h',
+    'external',
+    'trigger_aux'
+]
+
+channel_map = {
+    'channel_a': 0,
+    'channel_b': 1,
+    'channel_c': 2,
+    'channel_d': 3,
+    'channel_e': 4,
+    'channel_f': 5,
+    'channel_g': 6,
+    'channel_h': 7,
+    'external': 1000,
+    'trigger_aux': 1001
+}
 
 class PICO_CHANNEL_OVERVOLTAGE_TRIPPED(ctypes.Structure):
     """Status flag indicating an overvoltage trip on a channel.
@@ -217,6 +279,11 @@ class RANGE(IntEnum):
     V50 = 11
 
 RANGE_LIST = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000]
+
+range_literal = Literal['10mV', '20mV', '50mV', '100mV', '200mV', '500mV', 
+                        '1V', '2V', '5V', '10V', '20V', '50V']
+range_map = {'10mV':0, '20mV':1, '50mV':2, '100mV':3, '200mV':4, '500mV':5, 
+                        '1V':6, '2V':7, '5V':8, '10V':9, '20V':10, '50V':11}
 
 class BANDWIDTH_CH:
     """
@@ -719,4 +786,13 @@ __all__ = [
     'PICO_THRESHOLD_DIRECTION',
     'PICO_THRESHOLD_MODE',
     'PICO_DIRECTION',
+
+    'channel_literal',
+    'channel_map',
+    'range_literal',
+    'range_map',
+    'resolution_literal',
+    'resolution_map',
+    'waveform_literal',
+    'waveform_map',
 ]
