@@ -8,7 +8,7 @@ class ps6000a(PicoScopeBase):
         super().__init__("ps6000a", *args, **kwargs)
 
 
-    def open_unit(self, serial_number:str=None, resolution:RESOLUTION = 0) -> None:
+    def open_unit(self, serial_number:str=None, resolution:RESOLUTION | resolution_literal=0) -> None:
         """
         Open PicoScope unit.
 
@@ -16,6 +16,10 @@ class ps6000a(PicoScopeBase):
                 serial_number (str, optional): Serial number of device.
                 resolution (RESOLUTION, optional): Resolution of device.
         """
+        # If using Literals, convert to int
+        if resolution in resolution_map:
+            resolution = resolution_map[resolution]
+
         super()._open_unit(serial_number, resolution)
         self.min_adc_value, self.max_adc_value =super()._get_adc_limits()
 
