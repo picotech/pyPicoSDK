@@ -703,7 +703,7 @@ class ps6000a(PicoScopeBase):
         )
     
     def set_data_buffer_for_enabled_channels(self, samples:int, segment:int=0, datatype=DATA_TYPE.INT16_T, 
-                                             ratio_mode=RATIO_MODE.RAW) -> dict:
+                                             ratio_mode=RATIO_MODE.RAW, clear_buffer:bool=True) -> dict:
         """
         Sets data buffers for enabled channels set by picosdk.set_channel()
 
@@ -712,12 +712,14 @@ class ps6000a(PicoScopeBase):
             segment (int): The memory segment index.
             datatype (DATA_TYPE): The data type used for the buffer.
             ratio_mode (RATIO_MODE): The ratio mode (e.g., RAW, AVERAGE).
+            clear_buffer (bool): If True, clear the buffer first
 
         Returns:
             dict: A dictionary mapping each channel to its associated data buffer.
         """
         # Clear the buffer
-        super()._set_data_buffer_ps6000a(0, 0, 0, 0, 0, ACTION.CLEAR_ALL)
+        if clear_buffer == True:
+            super()._set_data_buffer_ps6000a(0, 0, 0, 0, 0, ACTION.CLEAR_ALL)
         channels_buffer = {}
         for channel in self.range:
             channels_buffer[channel] = super()._set_data_buffer_ps6000a(channel, samples, segment, datatype, ratio_mode, action=ACTION.ADD)
