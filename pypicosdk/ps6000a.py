@@ -747,7 +747,7 @@ class ps6000a(PicoScopeBase):
             channels_buffer[channel] = super()._set_data_buffer_ps6000a(channel, samples, segment, datatype, ratio_mode, action=ACTION.ADD)
         return channels_buffer
     
-    def set_siggen(self, frequency:float, pk2pk:float, wave_type:WAVEFORM, offset:float=0.0, duty:float=50) -> dict:
+    def set_siggen(self, frequency:float, pk2pk:float, wave_type:WAVEFORM | waveform_literal, offset:float=0.0, duty:float=50) -> dict:
         """Configures and applies the signal generator settings.
 
         Sets up the signal generator with the specified waveform type, frequency,
@@ -763,6 +763,10 @@ class ps6000a(PicoScopeBase):
         Returns:
             dict: Returns dictionary of the actual achieved values.
         """
+        # Check if typing Literal
+        if wave_type in waveform_map:
+            wave_type = waveform_map[wave_type]
+
         self._siggen_set_waveform(wave_type)
         self._siggen_set_range(pk2pk, offset)
         self._siggen_set_frequency(frequency)
