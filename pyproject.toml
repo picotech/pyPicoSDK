@@ -14,7 +14,7 @@ keywords = [
 ]
 description = "Modern Python wrapper for PicoSDK"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [
     { name = "Pico Technology", email = "support@picotech.com" }
