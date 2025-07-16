@@ -380,8 +380,8 @@ class ps6000a(PicoScopeBase):
     
     def set_channel(
         self,
-        channel: CHANNEL,
-        range: RANGE = RANGE.V1,
+        channel: CHANNEL | channel_literal,
+        range: RANGE | range_literal = RANGE.V1,
         enabled: bool = True,
         coupling: COUPLING = COUPLING.DC,
         offset: float = 0.0,
@@ -403,6 +403,13 @@ class ps6000a(PicoScopeBase):
                 bandwidth (BANDWIDTH_CH, optional): Bandwidth of channel (selected models).
                 probe_scale (float, optional): Probe attenuation factor such as 1 or 10.
         """
+        # Check if typing Literals
+        if channel in channel_map:
+            channel = channel_map[channel]
+        if range in range_map:
+            range = range_map[range]
+        
+        # Add probe scaling
         self.probe_scale[channel] = probe_scale
 
         if enabled:
