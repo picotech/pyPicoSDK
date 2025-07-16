@@ -568,7 +568,14 @@ class ps6000a(PicoScopeBase):
         )
         return list(values)
 
-    def set_simple_trigger(self, channel, threshold_mv=0, enable=True, direction=TRIGGER_DIR.RISING, delay=0, auto_trigger_ms=5_000):
+    def set_simple_trigger(
+            self, 
+            channel:CHANNEL | channel_literal, 
+            threshold_mv=0, 
+            enable=True, 
+            direction:TRIGGER_DIR=TRIGGER_DIR.RISING, 
+            delay=0, 
+            auto_trigger_ms=5_000):
         """
         Sets up a simple trigger from a specified channel and threshold in mV.
 
@@ -585,6 +592,10 @@ class ps6000a(PicoScopeBase):
             >>> scope.set_simple_trigger(channel=psdk.CHANNEL.TRIGGER_AUX)
            
         """
+        # Check if typing Literals
+        if channel in channel_map:
+            channel = channel_map[channel]
+
         auto_trigger_us = auto_trigger_ms * 1000
         return super().set_simple_trigger(channel, threshold_mv, enable, direction, delay, auto_trigger_us)
 
