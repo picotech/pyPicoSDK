@@ -21,9 +21,6 @@ def update_docs():
     update_lines('./docs/docs/index.md', 'pyPicoSDK:', f'pyPicoSDK: {package_version}')
     update_lines('./docs/docs/index.md', 'Docs:', f'Docs: {docs_version}')
 
-def update_setup():
-    update_lines('./setup.py', 'version=', (' '*4) + f'version="{package_version}",')
-
 def update_src():
     update_lines('./pypicosdk/version.py', 'VERSION', f'VERSION = "{package_version}"')
 
@@ -36,7 +33,6 @@ def overwrite_readme():
 
 def update_versions():
     update_docs()
-    update_setup()
     update_src()
     overwrite_readme()
 
