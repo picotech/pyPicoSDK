@@ -8,7 +8,7 @@ class ps6000a(PicoScopeBase):
         super().__init__("ps6000a", *args, **kwargs)
 
 
-    def open_unit(self, serial_number:str=None, resolution:RESOLUTION = 0) -> None:
+    def open_unit(self, serial_number:str=None, resolution:RESOLUTION | resolution_literal=0) -> None:
         """
         Open PicoScope unit.
 
@@ -16,6 +16,10 @@ class ps6000a(PicoScopeBase):
                 serial_number (str, optional): Serial number of device.
                 resolution (RESOLUTION, optional): Resolution of device.
         """
+        # If using Literals, convert to int
+        if resolution in resolution_map:
+            resolution = resolution_map[resolution]
+
         super()._open_unit(serial_number, resolution)
         self.min_adc_value, self.max_adc_value =super()._get_adc_limits()
 
@@ -376,8 +380,8 @@ class ps6000a(PicoScopeBase):
     
     def set_channel(
         self,
-        channel: CHANNEL,
-        range: RANGE = RANGE.V1,
+        channel: CHANNEL | channel_literal,
+        range: RANGE | range_literal = RANGE.V1,
         enabled: bool = True,
         coupling: COUPLING = COUPLING.DC,
         offset: float = 0.0,
@@ -399,6 +403,13 @@ class ps6000a(PicoScopeBase):
                 bandwidth (BANDWIDTH_CH, optional): Bandwidth of channel (selected models).
                 probe_scale (float, optional): Probe attenuation factor such as 1 or 10.
         """
+        # Check if typing Literals
+        if channel in channel_map:
+            channel = channel_map[channel]
+        if range in range_map:
+            range = range_map[range]
+        
+        # Add probe scaling
         self.probe_scale[channel] = probe_scale
 
         if enabled:
@@ -557,7 +568,14 @@ class ps6000a(PicoScopeBase):
         )
         return list(values)
 
-    def set_simple_trigger(self, channel, threshold_mv=0, enable=True, direction=TRIGGER_DIR.RISING, delay=0, auto_trigger_ms=5_000):
+    def set_simple_trigger(
+            self, 
+            channel:CHANNEL | channel_literal, 
+            threshold_mv=0, 
+            enable=True, 
+            direction:TRIGGER_DIR=TRIGGER_DIR.RISING, 
+            delay=0, 
+            auto_trigger_ms=5_000):
         """
         Sets up a simple trigger from a specified channel and threshold in mV.
 
@@ -574,6 +592,10 @@ class ps6000a(PicoScopeBase):
             >>> scope.set_simple_trigger(channel=psdk.CHANNEL.TRIGGER_AUX)
            
         """
+        # Check if typing Literals
+        if channel in channel_map:
+            channel = channel_map[channel]
+
         auto_trigger_us = auto_trigger_ms * 1000
         return super().set_simple_trigger(channel, threshold_mv, enable, direction, delay, auto_trigger_us)
 
@@ -703,7 +725,7 @@ class ps6000a(PicoScopeBase):
         )
     
     def set_data_buffer_for_enabled_channels(self, samples:int, segment:int=0, datatype=DATA_TYPE.INT16_T, 
-                                             ratio_mode=RATIO_MODE.RAW) -> dict:
+                                             ratio_mode=RATIO_MODE.RAW, clear_buffer:bool=True) -> dict:
         """
         Sets data buffers for enabled channels set by picosdk.set_channel()
 
@@ -712,18 +734,20 @@ class ps6000a(PicoScopeBase):
             segment (int): The memory segment index.
             datatype (DATA_TYPE): The data type used for the buffer.
             ratio_mode (RATIO_MODE): The ratio mode (e.g., RAW, AVERAGE).
+            clear_buffer (bool): If True, clear the buffer first
 
         Returns:
             dict: A dictionary mapping each channel to its associated data buffer.
         """
         # Clear the buffer
-        super()._set_data_buffer_ps6000a(0, 0, 0, 0, 0, ACTION.CLEAR_ALL)
+        if clear_buffer == True:
+            super()._set_data_buffer_ps6000a(0, 0, 0, 0, 0, ACTION.CLEAR_ALL)
         channels_buffer = {}
         for channel in self.range:
             channels_buffer[channel] = super()._set_data_buffer_ps6000a(channel, samples, segment, datatype, ratio_mode, action=ACTION.ADD)
         return channels_buffer
     
-    def set_siggen(self, frequency:float, pk2pk:float, wave_type:WAVEFORM, offset:float=0.0, duty:float=50) -> dict:
+    def set_siggen(self, frequency:float, pk2pk:float, wave_type:WAVEFORM | waveform_literal, offset:float=0.0, duty:float=50) -> dict:
         """Configures and applies the signal generator settings.
 
         Sets up the signal generator with the specified waveform type, frequency,
@@ -739,6 +763,10 @@ class ps6000a(PicoScopeBase):
         Returns:
             dict: Returns dictionary of the actual achieved values.
         """
+        # Check if typing Literal
+        if wave_type in waveform_map:
+            wave_type = waveform_map[wave_type]
+
         self._siggen_set_waveform(wave_type)
         self._siggen_set_range(pk2pk, offset)
         self._siggen_set_frequency(frequency)
@@ -758,10 +786,8 @@ class ps6000a(PicoScopeBase):
     ) -> tuple[dict, list]:
         """Perform a complete single block capture.
 
-        When ``ratio_mode`` is ``RATIO_MODE.TRIGGER`` the driver requires a
-        separate buffer to store the trigger samples. This helper allocates an
-        additional buffer internally and reads the trigger data before querying
-        the trigger time offset.
+        When using ``RATIO_MODE.TRIGGER``, this function allocates an
+        additional buffer internally and reads the trigger data.
 
         Args:
             timebase: PicoScope timebase value.
@@ -786,50 +812,24 @@ class ps6000a(PicoScopeBase):
             >>> buffers = scope.run_simple_block_capture(timebase=3, samples=1000)
         """
 
-
-        super()._set_data_buffer_ps6000a(0, 0, 0, 0, 0, ACTION.CLEAR_ALL)
-
+        # Create data buffers. If Ratio Mode is TRIGGER, create a trigger buffer
         if ratio_mode == RATIO_MODE.TRIGGER:
-            trigger_ratio = ratio or 1
-            main_ratio_mode = RATIO_MODE.RAW
-            main_ratio = 0
+            channels_buffer = self.set_data_buffer_for_enabled_channels(samples, segment, datatype, RATIO_MODE.RAW)
+            trigger_buffer = self.set_data_buffer_for_enabled_channels(samples, segment, datatype, ratio_mode, clear_buffer=False)
+            ratio_mode = RATIO_MODE.RAW
         else:
-            trigger_ratio = None
-            main_ratio_mode = ratio_mode
-            main_ratio = ratio
-
-        channels_buffer: dict = {}
-        trigger_buffer: dict | None = {} if trigger_ratio else None
-        for ch in self.range:
-            buf = super()._set_data_buffer_ps6000a(
-                ch,
-                samples,
-                segment,
-                datatype,
-                main_ratio_mode,
-                action=ACTION.ADD,
-            )
-            channels_buffer[ch] = buf
-            if trigger_buffer is not None:
-                tbuf = super()._set_data_buffer_ps6000a(
-                    ch,
-                    samples,
-                    segment,
-                    datatype,
-                    RATIO_MODE.TRIGGER,
-                    action=ACTION.ADD,
-                )
-                trigger_buffer[ch] = tbuf
-
+            channels_buffer = self.set_data_buffer_for_enabled_channels(samples, segment, datatype, ratio_mode)
+            trigger_buffer = None
 
         # Start block capture
         self.run_block_capture(timebase, samples, pre_trig_percent, segment)
 
         # Get values from PicoScope (returning actual samples for time_axis)
-        actual_samples = self.get_values(samples, start_index, segment, main_ratio, main_ratio_mode)
+        actual_samples = self.get_values(samples, start_index, segment, ratio, ratio_mode)
 
+        # Get trigger buffer if applicable
         if trigger_buffer is not None:
-            self.get_values(samples, 0, segment, trigger_ratio, RATIO_MODE.TRIGGER)
+            self.get_values(samples, 0, segment, ratio, RATIO_MODE.TRIGGER)
 
         # Convert from ADC to mV values
         channels_buffer = self.channels_buffer_adc_to_mv(channels_buffer)
