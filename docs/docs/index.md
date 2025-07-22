@@ -1,3 +1,4 @@
+![Image](https://raw.githubusercontent.com/JamesPicoTech/pyPicoSDK/refs/heads/rapid-block/docs/docs/img/pypicosdk-image-400x400.png)
 # Welcome to pyPicoSDK Documentation
 ## Installation
 ### Prerequisites 
