@@ -1354,7 +1354,7 @@ class PicoScopeBase:
         Set duty cycle of SigGen in percentage
 
         Args:
-                Duty cycle (int): Duty cycle in %.
+                duty cycle (int): Duty cycle in %.
         """   
         self._call_attr_function(
             'SigGenWaveformDutyCycle',
