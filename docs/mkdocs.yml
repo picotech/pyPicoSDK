@@ -7,7 +7,18 @@ nav:
   - Home: index.md
   - Reference: 
     - Introduction: ref/introduction.md
-    - PicoScope 6000 (A) Specific Functions: ref/ps6000a.md
+    - PicoScope 6000 (A) Specific Functions:
+      - ref/ps6000a/init.md
+      - ref/ps6000a/setup.md
+      - ref/ps6000a/firmware.md
+      - ref/ps6000a/channel.md
+      - ref/ps6000a/digital.md
+      - ref/ps6000a/trigger.md
+      - ref/ps6000a/siggen.md
+      - ref/ps6000a/buffers.md
+      - ref/ps6000a/captures.md
+      - ref/ps6000a/run.md
+      - ref/ps6000a/retrieval.md
     - General Conversions: ref/conversions.md
     - General Constants: ref/constants.md
   - Development: 
