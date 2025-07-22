@@ -854,7 +854,7 @@ class PicoScopeBase:
             direction (TRIGGER_DIR, optional): Trigger direction (e.g., ``TRIGGER_DIR.RISING``).
             delay (int, optional): Delay in samples after the trigger condition is met before starting capture.
             auto_trigger (int, optional): Timeout in **microseconds** after which data capture proceeds even if no
-                trigger occurs.
+                trigger occurs. If 0, the PicoScope will wait indefintely.
         """
         if channel in self.range:
             threshold_adc = self.mv_to_adc(threshold_mv, self.range[channel], channel)
@@ -1354,7 +1354,7 @@ class PicoScopeBase:
         Set duty cycle of SigGen in percentage
 
         Args:
-                Duty cycle (int): Duty cycle in %.
+                duty cycle (int): Duty cycle in %.
         """   
         self._call_attr_function(
             'SigGenWaveformDutyCycle',
