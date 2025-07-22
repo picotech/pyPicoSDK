@@ -39,4 +39,4 @@ Once tested, try an [example script from github](https://github.com/JamesPicoTec
 ## Version Control
 pyPicoSDK: 0.3.1
 
-Docs: 0.1.6
+Docs: 0.2.0
