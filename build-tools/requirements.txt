@@ -1,0 +1,9 @@
+# Requirements for development
+-e .
+numpy
+pandas
+matplotlib
+
+mkdocs
+mkdocstrings-python
+
