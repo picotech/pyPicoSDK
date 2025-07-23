@@ -818,7 +818,7 @@ class ps6000a(PicoScopeBase):
 
         Returns:
             tuple[dict, list]: Dictionary of channel buffers (in mV) and the time
-            axis in seconds.
+            axis in nano-seconds.
 
         Examples:
             >>> scope.set_channel(CHANNEL.A, RANGE.V1)
@@ -878,7 +878,7 @@ class ps6000a(PicoScopeBase):
 
         Returns:
             tuple[dict, list]: Dictionary of channel buffers (in mV) and the time
-            axis in seconds.
+            axis in nano-seconds.
         """
 
         # Segment set to 0
