@@ -669,17 +669,20 @@ class PicoScopeBase:
         to_segment_index: int,
         down_sample_ratio: int,
         down_sample_ratio_mode: int,
-        overflow: ctypes.c_int16,
     ) -> int:
-        """Retrieve data from multiple memory segments."""
+        """Retrieve data from multiple memory segments.
+        
+        Returns:
+            tuple[int, int] number of samples and overflow value"""
 
         self.is_ready()
-        c_samples = ctypes.c_uint64(no_of_samples)
+        no_samples = ctypes.c_uint64(no_of_samples)
+        overflow = ctypes.c_int16()
         self._call_attr_function(
             "GetValuesBulk",
             self.handle,
             ctypes.c_uint64(start_index),
-            ctypes.byref(c_samples),
+            ctypes.byref(no_samples),
             ctypes.c_uint64(from_segment_index),
             ctypes.c_uint64(to_segment_index),
             ctypes.c_uint64(down_sample_ratio),
@@ -688,7 +691,7 @@ class PicoScopeBase:
         )
         self.over_range = overflow.value
         self.is_over_range()
-        return c_samples.value
+        return no_samples.value, overflow.value
 
     def get_values_bulk_async(
         self,
