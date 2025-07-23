@@ -724,8 +724,15 @@ class ps6000a(PicoScopeBase):
             action,
         )
     
-    def set_data_buffer_for_enabled_channels(self, samples:int, segment:int=0, datatype=DATA_TYPE.INT16_T, 
-                                             ratio_mode=RATIO_MODE.RAW, clear_buffer:bool=True) -> dict:
+    def set_data_buffer_for_enabled_channels(
+            self, 
+            samples:int, 
+            segment:int=0, 
+            datatype=DATA_TYPE.INT16_T,
+            ratio_mode=RATIO_MODE.RAW, 
+            clear_buffer:bool=True,
+            captures:int=0
+        ) -> dict:
         """
         Sets data buffers for enabled channels set by picosdk.set_channel()
 
@@ -735,6 +742,7 @@ class ps6000a(PicoScopeBase):
             datatype (DATA_TYPE): The data type used for the buffer.
             ratio_mode (RATIO_MODE): The ratio mode (e.g., RAW, AVERAGE).
             clear_buffer (bool): If True, clear the buffer first
+            captures: If larger than 0, it will create multiple buffers for RAPID mode.
 
         Returns:
             dict: A dictionary mapping each channel to its associated data buffer.
@@ -742,9 +750,21 @@ class ps6000a(PicoScopeBase):
         # Clear the buffer
         if clear_buffer == True:
             super()._set_data_buffer_ps6000a(0, 0, 0, 0, 0, ACTION.CLEAR_ALL)
+
+        # Create Buffers
         channels_buffer = {}
-        for channel in self.range:
-            channels_buffer[channel] = super()._set_data_buffer_ps6000a(channel, samples, segment, datatype, ratio_mode, action=ACTION.ADD)
+        # Rapid
+        if captures > 0:
+            for channel in self.range:
+                buffer = []
+                for capture_segment in range(captures):
+                    buffer.append(super()._set_data_buffer_ps6000a(channel, samples, segment + capture_segment, datatype, ratio_mode, action=ACTION.ADD))
+                channels_buffer[channel] = buffer
+        # Single
+        else:
+            for channel in self.range:
+                channels_buffer[channel] = super()._set_data_buffer_ps6000a(channel, samples, segment, datatype, ratio_mode, action=ACTION.ADD)
+
         return channels_buffer
     
     def set_siggen(self, frequency:float, pk2pk:float, wave_type:WAVEFORM | waveform_literal, offset:float=0.0, duty:float=50) -> dict:
