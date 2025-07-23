@@ -724,8 +724,15 @@ class ps6000a(PicoScopeBase):
             action,
         )
     
-    def set_data_buffer_for_enabled_channels(self, samples:int, segment:int=0, datatype=DATA_TYPE.INT16_T, 
-                                             ratio_mode=RATIO_MODE.RAW, clear_buffer:bool=True) -> dict:
+    def set_data_buffer_for_enabled_channels(
+            self, 
+            samples:int, 
+            segment:int=0, 
+            datatype=DATA_TYPE.INT16_T,
+            ratio_mode=RATIO_MODE.RAW, 
+            clear_buffer:bool=True,
+            captures:int=0
+        ) -> dict:
         """
         Sets data buffers for enabled channels set by picosdk.set_channel()
 
@@ -735,6 +742,7 @@ class ps6000a(PicoScopeBase):
             datatype (DATA_TYPE): The data type used for the buffer.
             ratio_mode (RATIO_MODE): The ratio mode (e.g., RAW, AVERAGE).
             clear_buffer (bool): If True, clear the buffer first
+            captures: If larger than 0, it will create multiple buffers for RAPID mode.
 
         Returns:
             dict: A dictionary mapping each channel to its associated data buffer.
@@ -742,9 +750,21 @@ class ps6000a(PicoScopeBase):
         # Clear the buffer
         if clear_buffer == True:
             super()._set_data_buffer_ps6000a(0, 0, 0, 0, 0, ACTION.CLEAR_ALL)
+
+        # Create Buffers
         channels_buffer = {}
-        for channel in self.range:
-            channels_buffer[channel] = super()._set_data_buffer_ps6000a(channel, samples, segment, datatype, ratio_mode, action=ACTION.ADD)
+        # Rapid
+        if captures > 0:
+            for channel in self.range:
+                buffer = []
+                for capture_segment in range(captures):
+                    buffer.append(super()._set_data_buffer_ps6000a(channel, samples, segment + capture_segment, datatype, ratio_mode, action=ACTION.ADD))
+                channels_buffer[channel] = buffer
+        # Single
+        else:
+            for channel in self.range:
+                channels_buffer[channel] = super()._set_data_buffer_ps6000a(channel, samples, segment, datatype, ratio_mode, action=ACTION.ADD)
+
         return channels_buffer
     
     def set_siggen(self, frequency:float, pk2pk:float, wave_type:WAVEFORM | waveform_literal, offset:float=0.0, duty:float=50) -> dict:
@@ -786,9 +806,6 @@ class ps6000a(PicoScopeBase):
     ) -> tuple[dict, list]:
         """Perform a complete single block capture.
 
-        When using ``RATIO_MODE.TRIGGER``, this function allocates an
-        additional buffer internally and reads the trigger data.
-
         Args:
             timebase: PicoScope timebase value.
             samples: Number of samples to capture.
@@ -796,11 +813,8 @@ class ps6000a(PicoScopeBase):
             start_index: Starting index in the buffer.
             datatype: Data type to use for the capture buffer.
             ratio: Downsampling ratio.
-            ratio_mode: Downsampling mode. If ``RATIO_MODE.TRIGGER`` is
-                specified, ``ratio`` is forced to ``1`` for the trigger-data
-                retrieval call.
-            pre_trig_percent: Percentage of samples to capture before the
-                trigger.
+            ratio_mode: Downsampling mode.
+            pre_trig_percent: Percentage of samples to capture before the trigger.
 
         Returns:
             tuple[dict, list]: Dictionary of channel buffers (in mV) and the time
@@ -838,95 +852,68 @@ class ps6000a(PicoScopeBase):
         time_axis = self.get_time_axis(timebase, actual_samples)
 
         return channels_buffer, time_axis
-
+    
     def run_simple_rapid_block_capture(
         self,
         timebase: int,
         samples: int,
-        n_captures: int,
+        captures: int,
         start_index: int = 0,
         datatype: DATA_TYPE = DATA_TYPE.INT16_T,
         ratio: int = 0,
         ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
         pre_trig_percent: int = 50,
     ) -> tuple[dict, list]:
-        """Perform a basic rapid block capture.
+        """Run a rapid block capture with X amount of captures/frames/waveforms
 
-        If ``ratio_mode`` is ``RATIO_MODE.TRIGGER`` an additional set of data
-        buffers is used internally to retrieve the trigger samples. The returned
-        waveform data always uses ``RATIO_MODE.RAW``. ``ratio`` is forced to
-        ``1`` for the trigger-data retrieval call when required.
+        Args:
+            timebase: PicoScope timebase value.
+            samples: Number of samples to capture.
+            captures: Number of waveforms to capture.
+            start_index: Starting index in buffer. 
+            datatype: Data type to use for the capture buffer. 
+            ratio: Downsampling ratio. 
+            ratio_mode: Downsampling mode. 
+            pre_trig_percent: Percentage of samples to capture before the trigger. 
+
+        Returns:
+            tuple[dict, list]: Dictionary of channel buffers (in mV) and the time
+            axis in seconds.
         """
 
-        self.memory_segments(n_captures)
-        self.set_no_of_captures(n_captures)
-
-        super()._set_data_buffer_ps6000a(0, 0, 0, 0, 0, ACTION.CLEAR_ALL)
-
-
+        # Segment set to 0
+        segment = 0
+        
+        # Setup memory segments
+        self.memory_segments(captures)
+        self.set_no_of_captures(captures)
+        
+        # Build buffers for data and trigger (if applicable)
         if ratio_mode == RATIO_MODE.TRIGGER:
-            trigger_ratio = ratio or 1
-            main_ratio_mode = RATIO_MODE.RAW
-            main_ratio = 0
+            channels_buffer = self.set_data_buffer_for_enabled_channels(samples, datatype=datatype, ratio_mode=RATIO_MODE.RAW, captures=captures)
+            trigger_buffer = self.set_data_buffer_for_enabled_channels(samples, datatype=datatype, ratio_mode=ratio_mode, clear_buffer=False)
+            ratio_mode = RATIO_MODE.RAW
         else:
-            trigger_ratio = None
-            main_ratio_mode = ratio_mode
-            main_ratio = ratio
+            channels_buffer = self.set_data_buffer_for_enabled_channels(samples, datatype=datatype, ratio_mode=ratio_mode, captures=captures)
+            trigger_buffer = None
 
-        channels_buffer: dict = {ch: [] for ch in self.range}
-        trigger_buffer: dict | None = {ch: [] for ch in self.range} if trigger_ratio else None
-        for segment in range(n_captures):
-            for ch in self.range:
-                buf = super()._set_data_buffer_ps6000a(
-                    ch,
-                    samples,
-                    segment,
-                    datatype,
-                    main_ratio_mode,
-                    action=ACTION.ADD,
-                )
-                channels_buffer[ch].append(buf)
-                if trigger_buffer is not None:
-                    tbuf = super()._set_data_buffer_ps6000a(
-                        ch,
-                        samples,
-                        segment,
-                        datatype,
-                        RATIO_MODE.TRIGGER,
-                        action=ACTION.ADD,
-                    )
-                    trigger_buffer[ch].append(tbuf)
+        # Run block capture
+        self.run_block_capture(timebase, samples, pre_trig_percent)
 
-        self.run_block_capture(timebase, samples, pre_trig_percent, 0)
+        # Return values
+        actual_samples, overflow = self.get_values_bulk(start_index, samples, segment, captures - 1, ratio, ratio_mode)
 
-        overflow = ctypes.c_int16()
-        actual_samples = self.get_values_bulk(
-            start_index,
-            samples,
-            0,
-            n_captures - 1,
-            main_ratio,
-            main_ratio_mode,
-            overflow,
-        )
-
+        # Get trigger values (if applicable)
         if trigger_buffer is not None:
-            self.get_values_bulk(
-                0,
-                samples,
-                0,
-                n_captures - 1,
-                trigger_ratio,
-                RATIO_MODE.TRIGGER,
-                overflow,
-            )
+            self.get_values(samples, 0, 0, ratio, RATIO_MODE.TRIGGER)
 
-        for ch in channels_buffer:
-            for i in range(n_captures):
-                data_list = self.buffer_ctypes_to_list(channels_buffer[ch][i])
-                channels_buffer[ch][i] = self.buffer_adc_to_mv(data_list, ch)
+        # Convert data to mV
+        channels_buffer = self.channels_buffer_adc_to_mv(channels_buffer)
 
+        # Get time axis
         time_axis = self.get_time_axis(timebase, actual_samples)
 
+        # Return data
         return channels_buffer, time_axis
+    
 __all__ = ['ps6000a']

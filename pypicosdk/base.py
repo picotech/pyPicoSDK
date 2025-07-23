@@ -669,17 +669,20 @@ class PicoScopeBase:
         to_segment_index: int,
         down_sample_ratio: int,
         down_sample_ratio_mode: int,
-        overflow: ctypes.c_int16,
     ) -> int:
-        """Retrieve data from multiple memory segments."""
+        """Retrieve data from multiple memory segments.
+        
+        Returns:
+            tuple[int, int] number of samples and overflow value"""
 
         self.is_ready()
-        c_samples = ctypes.c_uint64(no_of_samples)
+        no_samples = ctypes.c_uint64(no_of_samples)
+        overflow = ctypes.c_int16()
         self._call_attr_function(
             "GetValuesBulk",
             self.handle,
             ctypes.c_uint64(start_index),
-            ctypes.byref(c_samples),
+            ctypes.byref(no_samples),
             ctypes.c_uint64(from_segment_index),
             ctypes.c_uint64(to_segment_index),
             ctypes.c_uint64(down_sample_ratio),
@@ -688,7 +691,7 @@ class PicoScopeBase:
         )
         self.over_range = overflow.value
         self.is_over_range()
-        return c_samples.value
+        return no_samples.value, overflow.value
 
     def get_values_bulk_async(
         self,
@@ -787,7 +790,19 @@ class PicoScopeBase:
     def channels_buffer_adc_to_mv(self, channels_buffer: dict) -> dict:
         "Converts dict of multiple channels adc values to millivolts (mV)"
         for channel in channels_buffer:
-            channels_buffer[channel] = self.buffer_adc_to_mv(channels_buffer[channel], channel)
+            # Get channel data (mv range and probe scaling)
+            channel_range_mv = RANGE_LIST[self.range[channel]]
+            channel_scale = self.probe_scale[channel]
+            # Extract data
+            data = channels_buffer[channel]
+
+            # If data is rapid block array
+            if type(data[0]) == np.ndarray:
+                for n, array in enumerate(data):
+                    channels_buffer[channel][n] = ((array / self.max_adc_value) * channel_range_mv) * channel_scale
+            # Else anything else is converted normally
+            else:
+                channels_buffer[channel] = ((data / self.max_adc_value) * channel_range_mv) * channel_scale
         return channels_buffer
     
     def buffer_ctypes_to_list(self, ctypes_list):
