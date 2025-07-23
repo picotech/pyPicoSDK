@@ -27,7 +27,7 @@ TIMEBASE = scope.sample_rate_to_timebase(50, psdk.SAMPLE_RATE.MSPS)
 buffers, time_axis = scope.run_simple_rapid_block_capture(
     timebase=TIMEBASE,
     samples=SAMPLES,
-    n_captures=CAPTURES,
+    captures=CAPTURES,
 )
 
 scope.close_unit()
