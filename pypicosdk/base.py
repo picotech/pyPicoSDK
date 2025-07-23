@@ -790,7 +790,19 @@ class PicoScopeBase:
     def channels_buffer_adc_to_mv(self, channels_buffer: dict) -> dict:
         "Converts dict of multiple channels adc values to millivolts (mV)"
         for channel in channels_buffer:
-            channels_buffer[channel] = self.buffer_adc_to_mv(channels_buffer[channel], channel)
+            # Get channel data (mv range and probe scaling)
+            channel_range_mv = RANGE_LIST[self.range[channel]]
+            channel_scale = self.probe_scale[channel]
+            # Extract data
+            data = channels_buffer[channel]
+
+            # If data is rapid block array
+            if type(data[0]) == np.ndarray:
+                for n, array in enumerate(data):
+                    channels_buffer[channel][n] = ((array / self.max_adc_value) * channel_range_mv) * channel_scale
+            # Else anything else is converted normally
+            else:
+                channels_buffer[channel] = ((data / self.max_adc_value) * channel_range_mv) * channel_scale
         return channels_buffer
     
     def buffer_ctypes_to_list(self, ctypes_list):
