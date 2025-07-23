@@ -806,9 +806,6 @@ class ps6000a(PicoScopeBase):
     ) -> tuple[dict, list]:
         """Perform a complete single block capture.
 
-        When using ``RATIO_MODE.TRIGGER``, this function allocates an
-        additional buffer internally and reads the trigger data.
-
         Args:
             timebase: PicoScope timebase value.
             samples: Number of samples to capture.
@@ -816,11 +813,8 @@ class ps6000a(PicoScopeBase):
             start_index: Starting index in the buffer.
             datatype: Data type to use for the capture buffer.
             ratio: Downsampling ratio.
-            ratio_mode: Downsampling mode. If ``RATIO_MODE.TRIGGER`` is
-                specified, ``ratio`` is forced to ``1`` for the trigger-data
-                retrieval call.
-            pre_trig_percent: Percentage of samples to capture before the
-                trigger.
+            ratio_mode: Downsampling mode.
+            pre_trig_percent: Percentage of samples to capture before the trigger.
 
         Returns:
             tuple[dict, list]: Dictionary of channel buffers (in mV) and the time
