@@ -1,6 +1,7 @@
 <div align="center">
 <img src="https://raw.githubusercontent.com/JamesPicoTech/pyPicoSDK/refs/heads/main/docs/docs/img/pypicosdk-image-400x400.png" alt="Centered Image" />
 </div>
+
 # Welcome to pyPicoSDK Documentation
 ## Installation
 ### Prerequisites 
