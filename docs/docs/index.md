@@ -1,4 +1,6 @@
-![Image](https://raw.githubusercontent.com/JamesPicoTech/pyPicoSDK/refs/heads/rapid-block/docs/docs/img/pypicosdk-image-400x400.png)
+<div align="center">
+<img src="https://raw.githubusercontent.com/JamesPicoTech/pyPicoSDK/refs/heads/main/docs/docs/img/pypicosdk-image-400x400.png" alt="Centered Image" />
+</div>
 # Welcome to pyPicoSDK Documentation
 ## Installation
 ### Prerequisites 
@@ -38,6 +40,6 @@ Once tested, try an [example script from github](https://github.com/JamesPicoTec
 - [PicoScope Support (Compatibility)](https://jamespicotech.github.io/pyPicoSDK/dev/current)
 
 ## Version Control
-pyPicoSDK: 0.3.1
+pyPicoSDK: 0.3.2
 
-Docs: 0.2.0
+Docs: 0.2.1
