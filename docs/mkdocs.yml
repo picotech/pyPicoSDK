@@ -28,6 +28,7 @@ nav:
 
 
 plugins:
+- include-markdown
 - mkdocstrings:
     handlers:
       python:

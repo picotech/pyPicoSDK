@@ -17,24 +17,16 @@ def update_lines(file_path, start_with, replacement_string):
             else:
                 f.write(line)
 
-def update_docs():
-    update_lines('./docs/docs/index.md', 'pyPicoSDK:', f'pyPicoSDK: {package_version}')
-    update_lines('./docs/docs/index.md', 'Docs:', f'Docs: {docs_version}')
+def update_readme():
+    update_lines('./README.md', 'pyPicoSDK:', f'pyPicoSDK: {package_version}')
+    update_lines('./README.md', 'Docs:', f'Docs: {docs_version}')
 
 def update_src():
     update_lines('./pypicosdk/version.py', 'VERSION', f'VERSION = "{package_version}"')
 
-def update_project_toml():
-    update_lines('./pyproject.toml', 'version = ', f'version = "{package_version}"')
-
-def overwrite_readme():
-    shutil.copyfile('./docs/docs/index.md', './README.md')
-
-
 def update_versions():
-    update_docs()
+    update_readme()
     update_src()
-    overwrite_readme()
 
 if __name__ == "__main__":
     update_versions()
