@@ -43,4 +43,4 @@ Once tested, try an [example script from github](https://github.com/JamesPicoTec
 ## Version Control
 pyPicoSDK: 0.3.2
 
-Docs: 0.2.1
+Docs: 0.2.2
