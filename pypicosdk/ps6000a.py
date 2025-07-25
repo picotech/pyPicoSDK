@@ -1,4 +1,5 @@
 import ctypes
+import numpy as np
 from .constants import *
 from .base import PicoSDKException, PicoScopeBase
 
@@ -664,8 +665,15 @@ class ps6000a(PicoScopeBase):
 
         super().set_trigger_channel_directions(channel, direction, threshold_mode)
     
-    def set_data_buffer(self, channel:CHANNEL, samples:int, segment:int=0, datatype:DATA_TYPE=DATA_TYPE.INT16_T,
-                        ratio_mode:RATIO_MODE=RATIO_MODE.RAW, action:ACTION=ACTION.CLEAR_ALL | ACTION.ADD) -> ctypes.Array:
+    def set_data_buffer(
+        self,
+        channel: CHANNEL,
+        samples: int,
+        segment: int = 0,
+        datatype: DATA_TYPE = DATA_TYPE.INT16_T,
+        ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
+        action: ACTION = ACTION.CLEAR_ALL | ACTION.ADD,
+    ) -> np.ndarray | None:
         """
         Tells the driver where to store the data that will be populated when get_values() is called.
         This function works on a single buffer. For aggregation mode, call set_data_buffers instead.
@@ -679,7 +687,7 @@ class ps6000a(PicoScopeBase):
                 action (ACTION, optional): Method to use when creating a buffer.
 
         Returns:
-                ctypes.Array: Array that will be populated when get_values() is called.
+                np.ndarray | None: Numpy array that will be populated when ``get_values`` is called.
         """
         return super()._set_data_buffer_ps6000a(channel, samples, segment, datatype, ratio_mode, action)
 
@@ -691,7 +699,7 @@ class ps6000a(PicoScopeBase):
         datatype: DATA_TYPE = DATA_TYPE.INT16_T,
         ratio_mode: RATIO_MODE = RATIO_MODE.AGGREGATE,
         action: ACTION = ACTION.CLEAR_ALL | ACTION.ADD,
-    ) -> tuple[ctypes.Array, ctypes.Array]:
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Configure both maximum and minimum data buffers for a channel.
 
         Use this when downsampling in aggregation mode or requesting
@@ -711,7 +719,7 @@ class ps6000a(PicoScopeBase):
                 buffers.
 
         Returns:
-            tuple[ctypes.Array, ctypes.Array]: ``(buffer_max, buffer_min)`` that
+            tuple[np.ndarray, np.ndarray]: ``(buffer_max, buffer_min)`` that
             will be populated when :meth:`get_values` is called.
         """
 

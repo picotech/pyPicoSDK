@@ -221,9 +221,11 @@ class PicoScopeBase:
         else:
             self._get_attr_function('CloseUnit')(self.handle)
 
-    def stop(self) -> None: 
-        """
-        This function stops the scope device from sampling data
+    def stop(self) -> None:
+        """Stop data acquisition on the device.
+
+        Returns:
+            None
         """
         self._call_attr_function(
             'Stop',
@@ -671,9 +673,21 @@ class PicoScopeBase:
         down_sample_ratio_mode: int,
     ) -> int:
         """Retrieve data from multiple memory segments.
-        
+
+        Args:
+            start_index: Index within each segment to begin copying from.
+            no_of_samples: Total number of samples to read from each segment.
+            from_segment_index: Index of the first segment to read.
+            to_segment_index: Index of the last segment. If this value is
+                less than ``from_segment_index`` the driver wraps around.
+            down_sample_ratio: Downsampling ratio to apply before copying.
+            down_sample_ratio_mode: Downsampling mode from
+                :class:`RATIO_MODE`.
+
         Returns:
-            tuple[int, int] number of samples and overflow value"""
+            tuple[int, int]: ``(samples, overflow)`` where ``samples`` is the
+            number of samples copied and ``overflow`` is a bit mask of any
+            channels that exceeded their input range.
 
         self.is_ready()
         no_samples = ctypes.c_uint64(no_of_samples)
@@ -704,7 +718,21 @@ class PicoScopeBase:
         lp_data_ready,
         p_parameter,
     ) -> None:
-        """Begin asynchronous retrieval of values from multiple segments."""
+        """Begin asynchronous retrieval of values from multiple segments.
+
+        Args:
+            start_index: Index within each segment to begin copying from.
+            no_of_samples: Number of samples to read from each segment.
+            from_segment_index: Index of the first segment to read.
+            to_segment_index: Index of the last segment in the range.
+            down_sample_ratio: Downsampling ratio to apply before copying.
+            down_sample_ratio_mode: Downsampling mode from
+                :class:`RATIO_MODE`.
+            lp_data_ready: Callback invoked when data is available. The callback
+                signature should be ``callback(handle, status, n_samples,
+                overflow)``.
+            p_parameter: User parameter passed through to ``lp_data_ready``.
+
 
         self._call_attr_function(
             "GetValuesBulkAsync",
@@ -729,7 +757,21 @@ class PicoScopeBase:
         to_segment_index: int,
         overflow: ctypes.c_int16,
     ) -> int:
-        """Retrieve overlapped data from multiple segments."""
+        """Retrieve overlapped data from multiple segments.
+
+        Args:
+            start_index: Index within the circular buffer to begin reading from.
+            no_of_samples: Number of samples to copy from each segment.
+            down_sample_ratio: Downsampling ratio to apply.
+            down_sample_ratio_mode: Downsampling mode from :class:`RATIO_MODE`.
+            from_segment_index: First segment index to read.
+            to_segment_index: Last segment index to read.
+            overflow: ``ctypes.c_int16`` instance that receives any overflow
+                flags.
+
+        Returns:
+            int: Actual number of samples copied from each segment.
+        """
 
         self.is_ready()
         c_samples = ctypes.c_uint64(no_of_samples)
@@ -749,7 +791,10 @@ class PicoScopeBase:
         return c_samples.value
 
     def stop_using_get_values_overlapped(self) -> None:
-        """Terminate overlapped capture mode."""
+        """Terminate overlapped capture mode.
+
+        Call this when overlapped captures are complete to release any
+        resources allocated by :meth:`get_values_overlapped`.
 
         self._call_attr_function(
             "StopUsingGetValuesOverlapped",
