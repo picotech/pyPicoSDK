@@ -688,6 +688,7 @@ class PicoScopeBase:
             tuple[int, int]: ``(samples, overflow)`` where ``samples`` is the
             number of samples copied and ``overflow`` is a bit mask of any
             channels that exceeded their input range.
+        """
 
         self.is_ready()
         no_samples = ctypes.c_uint64(no_of_samples)
@@ -732,7 +733,7 @@ class PicoScopeBase:
                 signature should be ``callback(handle, status, n_samples,
                 overflow)``.
             p_parameter: User parameter passed through to ``lp_data_ready``.
-
+        """
 
         self._call_attr_function(
             "GetValuesBulkAsync",
@@ -757,7 +758,16 @@ class PicoScopeBase:
         to_segment_index: int,
         overflow: ctypes.c_int16,
     ) -> int:
-        """Retrieve overlapped data from multiple segments.
+        """Retrieve overlapped data from multiple segments for block or rapid block mode.
+
+        Call this method **before** :meth:`run_block_capture` to defer the data
+        retrieval request. The driver validates and performs the request when
+        :meth:`run_block_capture` runs, which avoids the extra communication that
+        occurs when calling :meth:`run_block_capture` followed by
+        :meth:`get_values`. After the capture completes you can call
+        :meth:`get_values` again to retrieve additional copies of the data.
+        Stop further captures with :meth:`stop_using_get_values_overlapped` and
+        check progress using :meth:`ps6000a.PicoScope.get_no_of_processed_captures`.
 
         Args:
             start_index: Index within the circular buffer to begin reading from.
@@ -771,6 +781,20 @@ class PicoScopeBase:
 
         Returns:
             int: Actual number of samples copied from each segment.
+
+        Examples:
+            >>> samples = scope.get_values_overlapped(
+            ...     start_index=0,              # read from start of buffer
+            ...     no_of_samples=1024,         # copy 1024 samples
+            ...     down_sample_ratio=1,        # no downsampling
+            ...     down_sample_ratio_mode=RATIO_MODE.RAW,
+            ...     from_segment_index=0,       # first segment only
+            ...     to_segment_index=0,
+            ... )
+            >>> scope.run_block_capture(timebase=1, samples=1024)
+            >>> data = scope.get_values(samples=1024)
+            >>> samples, scope.over_range
+            (1024, 0)
         """
 
         self.is_ready()
@@ -795,6 +819,7 @@ class PicoScopeBase:
 
         Call this when overlapped captures are complete to release any
         resources allocated by :meth:`get_values_overlapped`.
+        """
 
         self._call_attr_function(
             "StopUsingGetValuesOverlapped",
