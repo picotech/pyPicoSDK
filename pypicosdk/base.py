@@ -1366,6 +1366,12 @@ class PicoScopeBase:
         """
         Logs and prints a warning if any channel has been over range.
 
+        The :attr:`over_range` attribute stores a bit mask updated by data
+        retrieval methods like :meth:`get_values` and
+        :meth:`get_values_overlapped`. Calling this method logs a warning if
+        any channel went over range and returns a list of the affected
+        channel names.
+
         Returns:
             list: List of channels that have been over range
         """
