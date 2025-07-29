@@ -16,7 +16,7 @@ def min_value(data):
 def peak_to_peak(data):
     return max_value(data) - min_value(data)
 
-def rise_time(data, time_axis):
+def fall_time(data, time_axis):
     # Calculate lower (10%) and upper (90%) thresholds
     min_val = min_value(data)
     pk_pk = peak_to_peak(data)
@@ -31,17 +31,17 @@ def rise_time(data, time_axis):
     low_index = np.where(data < low)[0]
 
     # Find where a high sample goes to low and how many counts between
-    rise_time_samples = []
-    for i in high_index:
-        if i+1 not in high_index:
+    fall_time_samples = []
+    for i in low_index:
+        if i+1 not in low_index:
             for x in range(1000):
-                if i+x in low_index:
-                    rise_time_samples.append(x+1)
+                if i+x in high_index:
+                    fall_time_samples.append(x+1)
                     break
 
     # Calculate average
-    rise_time_samples = np.array(rise_time_samples)
-    average = rise_time_samples.mean()
+    fall_time_samples = np.array(fall_time_samples)
+    average = fall_time_samples.mean()
 
     # Return sample counts multiplied by time delta
     return average * t
@@ -66,8 +66,8 @@ channel_buffer, time_axis = scope.run_simple_block_capture(TIMEBASE, SAMPLES)
 # Finish with PicoScope
 scope.close_unit()
 
-rise_time_value = rise_time(channel_buffer[psdk.CHANNEL.A], time_axis)
-print(f'Rise time(ns): {rise_time_value}')
+fall_time_value = fall_time(channel_buffer[psdk.CHANNEL.A], time_axis)
+print(f'fall time(ns): {fall_time_value}')
 
 # Plot data to pyplot
 plt.plot(time_axis, channel_buffer[psdk.CHANNEL.A])
