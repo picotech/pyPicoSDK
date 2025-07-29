@@ -1106,6 +1106,422 @@ class PicoScopeBase:
             aux_output_enable,
             auto_trigger_ms * 1000,
         )
+
+    def set_trigger_delay(self, delay: int) -> None:
+        """Delay the trigger by ``delay`` samples.
+        Args:
+            delay: Number of samples to delay the trigger by.
+        """
+
+        self._call_attr_function(
+            "SetTriggerDelay",
+            self.handle,
+            ctypes.c_uint64(delay),
+        )
+
+    def set_trigger_holdoff_counter_by_samples(self, samples: int) -> None:
+        """Set the trigger holdoff period in sample intervals.
+        Args:
+            samples: Number of samples for the holdoff period.
+        """
+
+        self._call_attr_function(
+            "SetTriggerHoldoffCounterBySamples",
+            self.handle,
+            ctypes.c_uint64(samples),
+        )
+
+    def set_trigger_digital_port_properties(
+        self,
+        port: int,
+        directions: list[PICO_DIGITAL_CHANNEL_DIRECTIONS] | None,
+    ) -> None:
+        """Configure digital port trigger directions.
+        Args:
+            port: Digital port identifier.
+            directions: Optional list of channel directions to set. ``None`` to
+                clear existing configuration.
+        """
+
+        if directions:
+            array_type = PICO_DIGITAL_CHANNEL_DIRECTIONS * len(directions)
+            dir_array = array_type(*directions)
+            ptr = dir_array
+            count = len(directions)
+        else:
+            ptr = None
+            count = 0
+
+        self._call_attr_function(
+            "SetTriggerDigitalPortProperties",
+            self.handle,
+            port,
+            ptr,
+            ctypes.c_int16(count),
+        )
+
+    def set_pulse_width_qualifier_properties(
+        self,
+        lower: int,
+        upper: int,
+        pw_type: int,
+    ) -> None:
+        """Configure pulse width qualifier thresholds.
+        Args:
+            lower: Lower bound of the pulse width (inclusive).
+            upper: Upper bound of the pulse width (inclusive).
+            pw_type: Pulse width comparison type.
+        """
+
+        self._call_attr_function(
+            "SetPulseWidthQualifierProperties",
+            self.handle,
+            ctypes.c_uint32(lower),
+            ctypes.c_uint32(upper),
+            pw_type,
+        )
+
+    def set_pulse_width_qualifier_conditions(
+        self,
+        source: int,
+        state: int,
+        action: int = ACTION.CLEAR_ALL | ACTION.ADD,
+    ) -> None:
+        """Configure pulse width qualifier conditions.
+        Args:
+            source: Trigger source channel.
+            state: Trigger state condition.
+            action: Combination of :class:`ACTION` flags controlling how the
+                condition is applied.
+        """
+
+        cond = PICO_CONDITION(source, state)
+
+        self._call_attr_function(
+            "SetPulseWidthQualifierConditions",
+            self.handle,
+            ctypes.byref(cond),
+            ctypes.c_int16(1),
+            action,
+        )
+
+    def set_pulse_width_qualifier_directions(
+        self,
+        channel: int,
+        direction: int,
+        threshold_mode: int,
+    ) -> None:
+        """Set pulse width qualifier direction for ``channel``.
+        Args:
+            channel: Channel identifier.
+            direction: Trigger direction value.
+            threshold_mode: Analog or digital threshold mode.
+        """
+
+        dir_struct = PICO_DIRECTION(channel, direction, threshold_mode)
+
+        self._call_attr_function(
+            "SetPulseWidthQualifierDirections",
+            self.handle,
+            ctypes.byref(dir_struct),
+            ctypes.c_int16(1),
+        )
+
+    def set_pulse_width_digital_port_properties(
+        self,
+        port: int,
+        directions: list[PICO_DIGITAL_CHANNEL_DIRECTIONS] | None,
+    ) -> None:
+        """Configure digital port properties for pulse-width triggering.
+        Args:
+            port: Digital port identifier.
+            directions: Optional list of channel directions to set. ``None`` to
+                clear existing configuration.
+        """
+
+        if directions:
+            array_type = PICO_DIGITAL_CHANNEL_DIRECTIONS * len(directions)
+            dir_array = array_type(*directions)
+            ptr = dir_array
+            count = len(directions)
+        else:
+            ptr = None
+            count = 0
+
+        self._call_attr_function(
+            "SetPulseWidthDigitalPortProperties",
+            self.handle,
+            port,
+            ptr,
+            ctypes.c_int16(count),
+        )
+
+    def query_output_edge_detect(self) -> int:
+        """Query the output edge detect state.
+        Returns:
+            int: ``1`` if edge detection is enabled, otherwise ``0``.
+        """
+
+        state = ctypes.c_int16()
+        self._call_attr_function(
+            "QueryOutputEdgeDetect",
+            self.handle,
+            ctypes.byref(state),
+        )
+        return state.value
+
+    def set_output_edge_detect(self, state: int) -> None:
+        """Enable or disable output edge detect.
+        Args:
+            state: ``1`` to enable edge detection, ``0`` to disable.
+        """
+
+        self._call_attr_function(
+            "SetOutputEdgeDetect",
+            self.handle,
+            ctypes.c_int16(state),
+        )
+
+    def trigger_within_pre_trigger_samples(self, state: int) -> None:
+        """Control trigger positioning relative to pre-trigger samples.
+        Args:
+            state: 0 to enable, 1 to disable
+        """
+
+        self._call_attr_function(
+            "TriggerWithinPreTriggerSamples",
+            self.handle,
+            state,
+        )
+
+    def siggen_clock_manual(self, dac_clock_frequency: float, prescale_ratio: int) -> None:
+        """Manually control the signal generator clock.
+        Args:
+            dac_clock_frequency: Frequency of the DAC clock in Hz.
+            prescale_ratio: Prescale divisor for the DAC clock.
+        """
+
+        self._call_attr_function(
+            "SigGenClockManual",
+            self.handle,
+            ctypes.c_double(dac_clock_frequency),
+            ctypes.c_uint64(prescale_ratio),
+        )
+
+    def siggen_filter(self, filter_state: SIGGEN_FILTER_STATE) -> None:
+        """Enable or disable the signal generator output filter.
+        Args:
+            filter_state: can be set on or off, or put in automatic mode.
+        """
+
+        self._call_attr_function(
+            "SigGenFilter",
+            self.handle,
+            filter_state,
+        )
+
+    def siggen_frequency_limits(
+        self,
+        wave_type: WAVEFORM,
+        num_samples: int,
+        start_frequency: float,
+        sweep_enabled: int,
+        manual_dac_clock_frequency: float | None = None,
+        manual_prescale_ratio: int | None = None,
+    ) -> dict:
+        """Query frequency sweep limits for the signal generator.
+        Args:
+            wave_type: Waveform type.
+            num_samples: Number of samples in the arbitrary waveform buffer.
+            start_frequency: Starting frequency in Hz.
+            sweep_enabled: Whether a sweep is enabled.
+            manual_dac_clock_frequency: Optional manual DAC clock frequency.
+            manual_prescale_ratio: Optional manual DAC prescale ratio.
+        Returns:
+            dict: Frequency limit information with keys ``max_stop_frequency``,
+            ``min_frequency_step``, ``max_frequency_step``, ``min_dwell_time`` and
+            ``max_dwell_time``.
+        """
+
+        c_num_samples = ctypes.c_uint64(num_samples)
+        c_start_freq = ctypes.c_double(start_frequency)
+
+        if manual_dac_clock_frequency is not None:
+            c_manual_clock = ctypes.c_double(manual_dac_clock_frequency)
+            c_manual_clock_ptr = ctypes.byref(c_manual_clock)
+        else:
+            c_manual_clock_ptr = None
+
+        if manual_prescale_ratio is not None:
+            c_prescale = ctypes.c_uint64(manual_prescale_ratio)
+            c_prescale_ptr = ctypes.byref(c_prescale)
+        else:
+            c_prescale_ptr = None
+
+        max_stop = ctypes.c_double()
+        min_step = ctypes.c_double()
+        max_step = ctypes.c_double()
+        min_dwell = ctypes.c_double()
+        max_dwell = ctypes.c_double()
+
+        self._call_attr_function(
+            "SigGenFrequencyLimits",
+            self.handle,
+            wave_type,
+            ctypes.byref(c_num_samples),
+            ctypes.byref(c_start_freq),
+            ctypes.c_int16(sweep_enabled),
+            c_manual_clock_ptr,
+            c_prescale_ptr,
+            ctypes.byref(max_stop),
+            ctypes.byref(min_step),
+            ctypes.byref(max_step),
+            ctypes.byref(min_dwell),
+            ctypes.byref(max_dwell),
+        )
+
+        return {
+            "max_stop_frequency": max_stop.value,
+            "min_frequency_step": min_step.value,
+            "max_frequency_step": max_step.value,
+            "min_dwell_time": min_dwell.value,
+            "max_dwell_time": max_dwell.value,
+        }
+
+    def siggen_limits(self, parameter: SIGGEN_PARAMETER) -> dict:
+        """Query signal generator parameter limits.
+        Args:
+            parameter: Signal generator parameter to query.
+        Returns:
+            dict: Dictionary with keys ``min``, ``max`` and ``step``.
+        """
+
+        min_val = ctypes.c_double()
+        max_val = ctypes.c_double()
+        step = ctypes.c_double()
+        self._call_attr_function(
+            "SigGenLimits",
+            self.handle,
+            parameter,
+            ctypes.byref(min_val),
+            ctypes.byref(max_val),
+            ctypes.byref(step),
+        )
+
+        return {"min": min_val.value, "max": max_val.value, "step": step.value}
+
+    def siggen_frequency_sweep(
+        self,
+        stop_frequency_hz: float,
+        frequency_increment: float,
+        dwell_time_s: float,
+        sweep_type: SWEEP_TYPE,
+    ) -> None:
+        """Configure frequency sweep parameters.
+        Args:
+            stop_frequency_hz: End frequency of the sweep in Hz.
+            frequency_increment: Increment value in Hz.
+            dwell_time_s: Time to dwell at each frequency in seconds.
+            sweep_type: Sweep direction.
+        """
+
+        self._call_attr_function(
+            "SigGenFrequencySweep",
+            self.handle,
+            ctypes.c_double(stop_frequency_hz),
+            ctypes.c_double(frequency_increment),
+            ctypes.c_double(dwell_time_s),
+            sweep_type,
+        )
+
+    def siggen_phase(self, delta_phase: int) -> None:
+        """Set the signal generator phase using ``delta_phase``.
+        
+        The signal generator uses direct digital synthesis (DDS) with a 32-bit phase accumulator that indicates the
+        present location in the waveform. The top bits of the phase accumulator are used as an index into a buffer
+        containing the arbitrary waveform. The remaining bits act as the fractional part of the index, enabling highresolution control of output frequency and allowing the generation of lower frequencies.
+        The signal generator steps through the waveform by adding a deltaPhase value between 1 and
+        phaseAccumulatorSize-1 to the phase accumulator every dacPeriod (= 1/dacFrequency).
+
+        Args:
+            delta_phase: Phase offset to apply.
+        """
+
+        self._call_attr_function(
+            "SigGenPhase",
+            self.handle,
+            ctypes.c_uint64(delta_phase),
+        )
+
+    def siggen_phase_sweep(
+        self,
+        stop_delta_phase: int,
+        delta_phase_increment: int,
+        dwell_count: int,
+        sweep_type: SWEEP_TYPE,
+    ) -> None:
+        """Configure a phase sweep for the signal generator.
+        Args:
+            stop_delta_phase: End phase in DAC counts.
+            delta_phase_increment: Increment value in DAC counts.
+            dwell_count: Number of DAC cycles to dwell at each phase step.
+            sweep_type: Sweep direction.
+        """
+
+        self._call_attr_function(
+            "SigGenPhaseSweep",
+            self.handle,
+            ctypes.c_uint64(stop_delta_phase),
+            ctypes.c_uint64(delta_phase_increment),
+            ctypes.c_uint64(dwell_count),
+            sweep_type,
+        )
+
+    def siggen_pause(self) -> None:
+        """Pause the signal generator."""
+
+        self._call_attr_function("SigGenPause", self.handle)
+
+    def siggen_restart(self) -> None:
+        """Restart the signal generator after a pause."""
+
+        self._call_attr_function("SigGenRestart", self.handle)
+
+    def siggen_software_trigger_control(self, trigger_state: int) -> None:
+        """Control software triggering for the signal generator.
+        Args:
+            trigger_state: ``1`` to enable the software trigger, ``0`` to disable.
+        """
+
+        self._call_attr_function(
+            "SigGenSoftwareTriggerControl",
+            self.handle,
+            trigger_state,
+        )
+
+    def siggen_trigger(
+        self,
+        trigger_type: int,
+        trigger_source: int,
+        cycles: int,
+        auto_trigger_ps: int = 0,
+    ) -> None:
+        """Configure signal generator triggering.
+        Args:
+            trigger_type: Trigger type to use.
+            trigger_source: Source for the trigger.
+            cycles: Number of cycles before the trigger occurs.
+            auto_trigger_ps: Time in picoseconds before auto-triggering.
+        """
+
+        self._call_attr_function(
+            "SigGenTrigger",
+            self.handle,
+            trigger_type,
+            trigger_source,
+            ctypes.c_uint64(cycles),
+            ctypes.c_uint64(auto_trigger_ps),
+        )
     
     def set_data_buffer_for_enabled_channels():
         raise NotImplementedError("Method not yet available for this oscilloscope")

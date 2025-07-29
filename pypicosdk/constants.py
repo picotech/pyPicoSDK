@@ -740,6 +740,107 @@ class PICO_DIRECTION(ctypes.Structure):
         ("thresholdMode_", ctypes.c_int32),
     ]
 
+class PICO_PORT_DIGITAL_CHANNEL(IntEnum):
+    """Digital channel identifiers within a port."""
+
+    CHANNEL0 = 0
+    CHANNEL1 = 1
+    CHANNEL2 = 2
+    CHANNEL3 = 3
+    CHANNEL4 = 4
+    CHANNEL5 = 5
+    CHANNEL6 = 6
+    CHANNEL7 = 7
+
+
+class PICO_DIGITAL_DIRECTION(IntEnum):
+    """Digital trigger direction settings."""
+
+    DONT_CARE = 0
+    DIRECTION_LOW = 1
+    DIRECTION_HIGH = 2
+    DIRECTION_RISING = 3
+    DIRECTION_FALLING = 4
+    DIRECTION_RISING_OR_FALLING = 5
+
+
+class PICO_DIGITAL_CHANNEL_DIRECTIONS(ctypes.Structure):
+    """Structure describing a digital channel direction."""
+
+    _pack_ = 1
+
+    _fields_ = [
+        ("channel_", ctypes.c_int32),
+        ("direction_", ctypes.c_int32),
+    ]
+
+
+class PICO_PULSE_WIDTH_TYPE(IntEnum):
+    """Pulse width qualifier comparison types."""
+
+    PICO_PW_TYPE_NONE = 0
+    PICO_PW_TYPE_LESS_THAN = 1
+    PICO_PW_TYPE_GREATER_THAN = 2
+    PICO_PW_TYPE_IN_RANGE = 3
+    PICO_PW_TYPE_OUT_OF_RANGE = 4
+
+
+class SWEEP_TYPE(IntEnum):
+    """Sweep direction for signal generator."""
+
+    UP = 0
+    DOWN = 1
+    UPDOWN = 2
+    DOWNUP = 3
+
+
+class PICO_SIGGEN_TRIG_TYPE(IntEnum):
+    """Trigger type for the signal generator."""
+
+    PICO_SIGGEN_RISING = 0
+    PICO_SIGGEN_FALLING = 1
+    PICO_SIGGEN_GATE_HIGH = 2
+    PICO_SIGGEN_GATE_LOW = 3
+
+
+class PICO_SIGGEN_TRIG_SOURCE(IntEnum):
+    """Signal generator trigger source options."""
+
+    PICO_SIGGEN_NONE = 0
+    PICO_SIGGEN_SCOPE_TRIG = 1
+    PICO_SIGGEN_AUX_IN = 2
+    PICO_SIGGEN_EXT_IN = 3
+    PICO_SIGGEN_SOFT_TRIG = 4
+    PICO_SIGGEN_TRIGGER_RAW = 5
+
+
+class SIGGEN_FILTER_STATE(IntEnum):
+    """Output filter state for the signal generator."""
+
+    AUTO = 0
+    OFF = 1
+    ON = 2
+
+
+class SIGGEN_PARAMETER(IntEnum):
+    """Parameters that can be queried with :func:`siggen_limits`.
+
+    Attributes:
+        OUTPUT_VOLTS: 0
+        SAMPLE: 1
+        BUFFER_LENGTH: 2
+    """
+
+    OUTPUT_VOLTS = 0
+    SAMPLE = 1
+    BUFFER_LENGTH = 2
+
+
+class TRIGGER_WITHIN_PRE_TRIGGER(IntEnum):
+    """Control for :func:`trigger_within_pre_trigger_samples`."""
+
+    PICO_DISABLE = 0
+    PICO_ARM = 1
 
 # Public names exported by :mod:`pypicosdk.constants` for ``import *`` support.
 # This explicit list helps static analyzers like Pylance discover available
@@ -786,6 +887,16 @@ __all__ = [
     'PICO_THRESHOLD_DIRECTION',
     'PICO_THRESHOLD_MODE',
     'PICO_DIRECTION',
+    'PICO_PORT_DIGITAL_CHANNEL',
+    'PICO_DIGITAL_DIRECTION',
+    'PICO_DIGITAL_CHANNEL_DIRECTIONS',
+    'PICO_PULSE_WIDTH_TYPE',
+    'SWEEP_TYPE',
+    'PICO_SIGGEN_TRIG_TYPE',
+    'PICO_SIGGEN_TRIG_SOURCE',
+    'SIGGEN_FILTER_STATE',
+    'SIGGEN_PARAMETER',
+    'TRIGGER_WITHIN_PRE_TRIGGER',
 
     'channel_literal',
     'channel_map',
