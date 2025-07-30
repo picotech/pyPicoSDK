@@ -775,7 +775,19 @@ class ps6000a(PicoScopeBase):
 
         return channels_buffer
     
-    def set_siggen(self, frequency:float, pk2pk:float, wave_type:WAVEFORM | waveform_literal, offset:float=0.0, duty:float=50) -> dict:
+    def set_siggen(
+            self, 
+            frequency:float, 
+            pk2pk:float, 
+            wave_type:WAVEFORM | waveform_literal, 
+            offset:float=0.0, 
+            duty:float=50,
+            sweep:bool = False,
+            stop_freq:float = None,
+            inc_freq:float = 1,
+            dwell_time:float = 0.001,
+            sweep_type:SWEEP_TYPE = SWEEP_TYPE.UP,
+        ) -> dict:
         """Configures and applies the signal generator settings.
 
         Sets up the signal generator with the specified waveform type, frequency,
@@ -787,6 +799,12 @@ class ps6000a(PicoScopeBase):
             wave_type (WAVEFORM): Waveform type (e.g., WAVEFORM.SINE, WAVEFORM.SQUARE).
             offset (float, optional): Voltage offset in volts (V).
             duty (int or float, optional): Duty cycle as a percentage (0–100).
+            sweep: If True, sweep is enabled, fill in the following:
+            stop_freq: Frequency to stop sweep at in Hertz (Hz). Defaults to 0.
+            inc_freq: Frequency to increment (or step) in hertz (Hz). Defaults to 1 Hz.
+            dwell_time: Time to wait between frequency steps in seconds (s). Defaults to 1 ms.
+            sweep_type: Direction of sweep ``[UP, DOWN, UPDOWN, DOWNUP]``. Defaults to UP.
+
 
         Returns:
             dict: Returns dictionary of the actual achieved values.
@@ -795,11 +813,16 @@ class ps6000a(PicoScopeBase):
         if wave_type in waveform_map:
             wave_type = waveform_map[wave_type]
 
-        self._siggen_set_waveform(wave_type)
-        self._siggen_set_range(pk2pk, offset)
-        self._siggen_set_frequency(frequency)
-        self._siggen_set_duty_cycle(duty)
-        return self._siggen_apply()
+        self.siggen_set_waveform(wave_type)
+        self.siggen_set_range(pk2pk, offset)
+        self.siggen_set_frequency(frequency)
+        self.siggen_set_duty_cycle(duty)
+        if sweep == True:
+            if stop_freq is None:
+                raise PicoSDKException("Sweep SigGen set, but no stop_freq declared.")
+            self.siggen_frequency_sweep(stop_freq, inc_freq, dwell_time, sweep_type)
+            return self.siggen_apply(sweep_enabled=True)
+        return self.siggen_apply()
     
     def run_simple_block_capture(
         self,

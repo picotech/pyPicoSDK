@@ -1806,7 +1806,7 @@ class PicoScopeBase:
         raise NotImplementedError("This method is not yet implemented in this PicoScope")
     
     # Siggen Functions
-    def _siggen_apply(self, enabled=1, sweep_enabled=0, trigger_enabled=0, 
+    def siggen_apply(self, enabled=1, sweep_enabled=0, trigger_enabled=0, 
                      auto_clock_optimise_enabled=0, override_auto_clock_prescale=0) -> dict:
         """
         Sets the signal generator running using parameters previously configured.
@@ -1843,7 +1843,7 @@ class PicoScopeBase:
                 'FreqInc': c_freq_incr.value,
                 'dwelltime': c_dwell_time.value}
     
-    def _siggen_set_frequency(self, frequency:float) -> None:
+    def siggen_set_frequency(self, frequency:float) -> None:
         """
         Set frequency of SigGen in Hz.
 
@@ -1856,7 +1856,7 @@ class PicoScopeBase:
             ctypes.c_double(frequency)
         )
 
-    def _siggen_set_duty_cycle(self, duty:float) -> None:
+    def siggen_set_duty_cycle(self, duty:float) -> None:
         """
         Set duty cycle of SigGen in percentage
 
@@ -1869,7 +1869,7 @@ class PicoScopeBase:
             ctypes.c_double(duty)
         )
     
-    def _siggen_set_range(self, pk2pk:float, offset:float=0.0):
+    def siggen_set_range(self, pk2pk:float, offset:float=0.0):
         """
         Set mV range of SigGen (6000A).
 
@@ -1884,7 +1884,7 @@ class PicoScopeBase:
             ctypes.c_double(offset)
         )
     
-    def _siggen_set_waveform(self, wave_type: WAVEFORM):
+    def siggen_set_waveform(self, wave_type: WAVEFORM):
         """
         Set waveform type for SigGen (6000A).
 
