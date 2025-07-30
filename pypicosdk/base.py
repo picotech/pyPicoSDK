@@ -1899,19 +1899,32 @@ class PicoScopeBase:
         buffer_ptr = buffer.ctypes.data_as(ctypes.POINTER(ctypes.c_int16))
         return buffer_ptr, buffer_len
     
-    def siggen_set_waveform(self, wave_type: WAVEFORM):
+    def siggen_set_waveform(
+            self, 
+            wave_type: WAVEFORM,
+            buffer:np.ndarray|None = None
+        ) -> None:
         """
-        Set waveform type for SigGen (6000A).
+        Set waveform type for SigGen (6000A). If arbitrary mode is selected,
+        a buffer of ADC samples is needed.
 
         Args:
                 wave_type (WAVEFORM): Waveform type i.e. WAVEFORM.SINE.
+                buffer: np.array buffer to be used in WAVEFORM.ARBITRARY mode.
         """
+        # Arbitrary buffer creation
+        buffer_len = None
+        buffer_ptr = None
+        if wave_type is WAVEFORM.ARBITRARY:
+            buffer_ptr, buffer_len = self._siggen_get_buffer_args(buffer)
+        
+
         self._call_attr_function(
             'SigGenWaveform',
             self.handle,
             wave_type,
-            None,
-            None
+            buffer_ptr,
+            buffer_len
         )
 
     def set_siggen(self, *args):
