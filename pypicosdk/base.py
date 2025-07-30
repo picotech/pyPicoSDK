@@ -1883,6 +1883,21 @@ class PicoScopeBase:
             ctypes.c_double(pk2pk),
             ctypes.c_double(offset)
         )
+
+    def _siggen_get_buffer_args(self, buffer:np.ndarray) -> tuple[ctypes.POINTER, int]:
+        """
+        Takes a np buffer and returns a ctypes compatible pointer and buffer length.
+
+        Args:
+            buffer (np.ndarray): numpy buffer of data (between -32767 and +32767)
+
+        Returns:
+            tuple[ctypes.POINTER, int]: Buffer pointer and buffer length
+        """
+        buffer_len = buffer.size
+        buffer = np.asanyarray(buffer, dtype=np.int16)
+        buffer_ptr = buffer.ctypes.data_as(ctypes.POINTER(ctypes.c_int16))
+        return buffer_ptr, buffer_len
     
     def siggen_set_waveform(self, wave_type: WAVEFORM):
         """
