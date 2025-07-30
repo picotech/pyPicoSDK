@@ -775,6 +775,58 @@ class ps6000a(PicoScopeBase):
 
         return channels_buffer
     
+    def set_siggen_awg(
+            self, 
+            frequency:float, 
+            pk2pk:float, 
+            buffer:np.ndarray|list,
+            offset:float=0.0, 
+            duty:float=50,
+            sweep:bool = False,
+            stop_freq:float = None,
+            inc_freq:float = 1,
+            dwell_time:float = 0.001,
+            sweep_type:SWEEP_TYPE = SWEEP_TYPE.UP,
+        ) -> dict:   
+        """
+        Arbitrary Waveform Generation - Generates a signal from a given buffer. 
+
+        Sets up the signal generator with a specified frequency, amplitude (peak-to-peak), 
+        offset, and duty cycle.
+
+        If sweep is enabled and the sweep-related args are given, the SigGen will sweep.
+
+        Args:
+            frequency (float): Signal frequency in hertz (Hz).
+            pk2pk (float): Peak-to-peak voltage in volts (V).
+            buffer (np.ndarray | list): _description_
+            offset (float, optional): Voltage offset in volts (V). Defaults to 0.0.
+            duty (float, optional): Duty cycle as a percentage (0–100). Defaults to 50.
+            sweep (bool, optional): If True, sweep is enabled, fill in the following:
+            stop_freq (float, optional): Frequency to stop sweep at in Hertz (Hz). Defaults to None.
+            inc_freq (float, optional): Frequency to increment (or step) in hertz (Hz). Defaults to 1.
+            dwell_time (float, optional): Time to wait between frequency steps in seconds (s). Defaults to 0.001.
+            sweep_type (SWEEP_TYPE, optional): Direction of sweep ``[UP, DOWN, UPDOWN, DOWNUP]``. Defaults to UP.
+
+        Raises:
+            PicoSDKException: _description_
+
+        Returns:
+            dict: _description_
+        """
+
+        self.siggen_set_waveform(WAVEFORM.ARBITRARY, buffer=buffer)
+        self.siggen_set_range(pk2pk, offset)
+        self.siggen_set_frequency(frequency)
+        self.siggen_set_duty_cycle(duty)
+        if sweep == True:
+            if stop_freq is None:
+                raise PicoSDKException("Sweep SigGen set, but no stop_freq declared.")
+            self.siggen_frequency_sweep(stop_freq, inc_freq, dwell_time, sweep_type)
+            return self.siggen_apply(sweep_enabled=True)
+        return self.siggen_apply()
+
+    
     def set_siggen(
             self, 
             frequency:float, 
@@ -793,6 +845,8 @@ class ps6000a(PicoScopeBase):
         Sets up the signal generator with the specified waveform type, frequency,
         amplitude (peak-to-peak), offset, and duty cycle.
 
+        If sweep is enabled and the sweep-related args are given, the SigGen will sweep.
+
         Args:
             frequency (float): Signal frequency in hertz (Hz).
             pk2pk (float): Peak-to-peak voltage in volts (V).
@@ -800,7 +854,7 @@ class ps6000a(PicoScopeBase):
             offset (float, optional): Voltage offset in volts (V).
             duty (int or float, optional): Duty cycle as a percentage (0–100).
             sweep: If True, sweep is enabled, fill in the following:
-            stop_freq: Frequency to stop sweep at in Hertz (Hz). Defaults to 0.
+            stop_freq: Frequency to stop sweep at in Hertz (Hz). Defaults to None.
             inc_freq: Frequency to increment (or step) in hertz (Hz). Defaults to 1 Hz.
             dwell_time: Time to wait between frequency steps in seconds (s). Defaults to 1 ms.
             sweep_type: Direction of sweep ``[UP, DOWN, UPDOWN, DOWNUP]``. Defaults to UP.
