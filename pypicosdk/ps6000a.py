@@ -793,6 +793,8 @@ class ps6000a(PicoScopeBase):
         Sets up the signal generator with the specified waveform type, frequency,
         amplitude (peak-to-peak), offset, and duty cycle.
 
+        If sweep is enabled and the sweep-related args are given, the SigGen will sweep.
+
         Args:
             frequency (float): Signal frequency in hertz (Hz).
             pk2pk (float): Peak-to-peak voltage in volts (V).
@@ -800,7 +802,7 @@ class ps6000a(PicoScopeBase):
             offset (float, optional): Voltage offset in volts (V).
             duty (int or float, optional): Duty cycle as a percentage (0–100).
             sweep: If True, sweep is enabled, fill in the following:
-            stop_freq: Frequency to stop sweep at in Hertz (Hz). Defaults to 0.
+            stop_freq: Frequency to stop sweep at in Hertz (Hz). Defaults to None.
             inc_freq: Frequency to increment (or step) in hertz (Hz). Defaults to 1 Hz.
             dwell_time: Time to wait between frequency steps in seconds (s). Defaults to 1 ms.
             sweep_type: Direction of sweep ``[UP, DOWN, UPDOWN, DOWNUP]``. Defaults to UP.
