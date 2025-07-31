@@ -40,7 +40,8 @@ scope.set_pulse_width_trigger(
 )
 
 # Run capture and retrieve data
-channel_buffer, time_axis = scope.run_simple_block_capture(TIMEBASE, SAMPLES)
+pre_trig = 0.5
+channel_buffer, time_axis = scope.run_simple_block_capture(TIMEBASE, SAMPLES, pre_trig_percent=pre_trig*100)
 
 # Close PicoScope connection
 scope.close_unit()
@@ -49,7 +50,7 @@ scope.close_unit()
 plt.plot(time_axis, channel_buffer[psdk.CHANNEL.A])
 
 # Draw trigger line on graph
-plt.axvline(time_axis[int(SAMPLES/2)], color='r')
+plt.axvline(time_axis[int(SAMPLES*(pre_trig))], color='r')
 plt.xlabel("Time (ns)")
 plt.ylabel("Amplitude (mV)")
 plt.grid(True)
