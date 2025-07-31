@@ -1048,27 +1048,35 @@ class PicoScopeBase:
 
     def set_trigger_channel_directions(
         self,
-        channel: int,
-        direction: int,
-        threshold_mode: int,
+        channel: CHANNEL | list,
+        direction: THRESHOLD_DIRECTION | list,
+        threshold_mode: THRESHOLD_MODE | list,
     ) -> None:
-        """Specify the trigger direction for ``channel``.
+        """
+        Specify the trigger direction for ``channel``. 
+        If multiple directions are needed, channel, direction and threshold_mode 
+        can be given a list of values.
 
         Args:
-            channel (int): Channel to configure.
-            direction (int): Direction value from
-                :class:`PICO_THRESHOLD_DIRECTION`.
-            threshold_mode (int): Threshold mode from
-                :class:`PICO_THRESHOLD_MODE`.
+            channel (CHANNEL | list): Single or list of channels to configure.
+            direction (THRESHOLD_DIRECTION | list): Single or list of directions to configure.
+            threshold_mode (THRESHOLD_MODE | list): Single or list of threshold modes to configure.
         """
 
-        dir_struct = PICO_DIRECTION(channel, direction, threshold_mode)
+        if type(channel) == list:
+            dir_len = len(channel)
+            dir_struct = (PICO_DIRECTION * dir_len)()
+            for i in range(dir_len):
+                dir_struct[i] = PICO_DIRECTION(channel[i], direction[i], threshold_mode[i])
+        else:
+            dir_len = 1
+            dir_struct = PICO_DIRECTION(channel, direction, threshold_mode)
 
         self._call_attr_function(
             "SetTriggerChannelDirections",
             self.handle,
             ctypes.byref(dir_struct),
-            ctypes.c_int16(1),
+            ctypes.c_int16(dir_len),
         )
 
     def set_advanced_trigger(
@@ -1235,19 +1243,29 @@ class PicoScopeBase:
         threshold_mode: int,
     ) -> None:
         """Set pulse width qualifier direction for ``channel``.
-        Args:
-            channel: Channel identifier.
-            direction: Trigger direction value.
-            threshold_mode: Analog or digital threshold mode.
-        """
+        If multiple directions are needed, channel, direction and threshold_mode 
+        can be given a list of values.
 
-        dir_struct = PICO_DIRECTION(channel, direction, threshold_mode)
+        Args:
+            channel (CHANNEL | list): Single or list of channels to configure.
+            direction (THRESHOLD_DIRECTION | list): Single or list of directions to configure.
+            threshold_mode (THRESHOLD_MODE | list): Single or list of threshold modes to configure.
+        """
+        if type(channel) == list:
+            dir_len = len(channel)
+            dir_struct = (PICO_DIRECTION * dir_len)()
+            for i in range(dir_len):
+                print(channel[i], direction[i], threshold_mode[i])
+                dir_struct[i] = PICO_DIRECTION(channel[i], direction[i], threshold_mode[i])
+        else:
+            dir_len = 1
+            dir_struct = PICO_DIRECTION(channel, direction, threshold_mode)
 
         self._call_attr_function(
             "SetPulseWidthQualifierDirections",
             self.handle,
             ctypes.byref(dir_struct),
-            ctypes.c_int16(1),
+            ctypes.c_int16(dir_len),
         )
 
     def set_pulse_width_digital_port_properties(
