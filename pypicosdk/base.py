@@ -884,6 +884,28 @@ class PicoScopeBase:
         for channel in channels_buffer:
             channels_buffer[channel] = self.buffer_ctypes_to_list(channels_buffer[channel])
         return channels_buffer
+    
+    def _thr_hyst_mv_to_adc(
+            self,
+            channel,
+            threshold_upper_mv,
+            threshold_lower_mv,
+            hysteresis_upper_mv,
+            hysteresis_lower_mv
+    ) -> tuple[int, int, int, int]:
+        if channel in self.range:
+            upper_adc = self.mv_to_adc(threshold_upper_mv, self.range[channel], channel)
+            lower_adc = self.mv_to_adc(threshold_lower_mv, self.range[channel], channel)
+            hyst_upper_adc = self.mv_to_adc(hysteresis_upper_mv, self.range[channel], channel)
+            hyst_lower_adc = self.mv_to_adc(hysteresis_lower_mv, self.range[channel], channel)
+        else:
+            upper_adc = int(threshold_upper_mv)
+            lower_adc = int(threshold_lower_mv)
+            hyst_upper_adc = int(hysteresis_upper_mv)
+            hyst_lower_adc = int(hysteresis_lower_mv)
+
+        return upper_adc, lower_adc, hyst_upper_adc, hyst_lower_adc
+        
 
     # Set methods for PicoScope configuration    
     def _change_power_source(self, state: POWER_SOURCE) -> 0:
@@ -956,97 +978,6 @@ class PicoScopeBase:
             auto_trigger
         )
 
-    def set_trigger_channel_conditions(
-        self,
-        source: int,
-        state: int,
-        action: int = ACTION.CLEAR_ALL | ACTION.ADD,
-    ) -> None:
-        """Configure a trigger condition.
-
-        Args:
-            source (int): Input source as a :class:`CHANNEL` value.
-            state (int): Desired state from :class:`PICO_TRIGGER_STATE`.
-            action (int, optional): How to apply this condition relative to any
-                previous configuration. Defaults to ``ACTION.CLEAR_ALL | ACTION.ADD``.
-        """
-
-        cond = PICO_CONDITION(source, state)
-
-        self._call_attr_function(
-            "SetTriggerChannelConditions",
-            self.handle,
-            ctypes.byref(cond),
-            ctypes.c_int16(1),
-            action,
-        )
-
-    def set_trigger_channel_properties(
-        self,
-        threshold_upper: int,
-        hysteresis_upper: int,
-        threshold_lower: int,
-        hysteresis_lower: int,
-        channel: int,
-        aux_output_enable: int = 0,
-        auto_trigger_us: int = 0,
-    ) -> None:
-        """Configure trigger thresholds for ``channel``. All
-        threshold and hysteresis values are specified in ADC counts.
-
-        Args:
-            threshold_upper (int): Upper trigger level.
-            hysteresis_upper (int): Hysteresis for ``threshold_upper``.
-            threshold_lower (int): Lower trigger level.
-            hysteresis_lower (int): Hysteresis for ``threshold_lower``.
-            channel (int): Target channel as a :class:`CHANNEL` value.
-            aux_output_enable (int, optional): Auxiliary output flag.
-            auto_trigger_us (int, optional): Auto-trigger timeout in
-                microseconds. ``0`` waits indefinitely.
-        """
-
-        prop = PICO_TRIGGER_CHANNEL_PROPERTIES(
-            threshold_upper,
-            hysteresis_upper,
-            threshold_lower,
-            hysteresis_lower,
-            channel,
-        )
-
-        self._call_attr_function(
-            "SetTriggerChannelProperties",
-            self.handle,
-            ctypes.byref(prop),
-            ctypes.c_int16(1),
-            ctypes.c_int16(aux_output_enable),
-            ctypes.c_uint32(auto_trigger_us),
-        )
-
-    def set_trigger_channel_directions(
-        self,
-        channel: int,
-        direction: int,
-        threshold_mode: int,
-    ) -> None:
-        """Specify the trigger direction for ``channel``.
-
-        Args:
-            channel (int): Channel to configure.
-            direction (int): Direction value from
-                :class:`PICO_THRESHOLD_DIRECTION`.
-            threshold_mode (int): Threshold mode from
-                :class:`PICO_THRESHOLD_MODE`.
-        """
-
-        dir_struct = PICO_DIRECTION(channel, direction, threshold_mode)
-
-        self._call_attr_function(
-            "SetTriggerChannelDirections",
-            self.handle,
-            ctypes.byref(dir_struct),
-            ctypes.c_int16(1),
-        )
-
     def set_advanced_trigger(
         self,
         channel: int,
@@ -1084,18 +1015,15 @@ class PicoScopeBase:
             action: Action flag for ``set_trigger_channel_conditions``.
         """
 
-        if channel in self.range:
-            upper_adc = self.mv_to_adc(threshold_upper_mv, self.range[channel], channel)
-            lower_adc = self.mv_to_adc(threshold_lower_mv, self.range[channel], channel)
-            hyst_upper_adc = self.mv_to_adc(hysteresis_upper_mv, self.range[channel], channel)
-            hyst_lower_adc = self.mv_to_adc(hysteresis_lower_mv, self.range[channel], channel)
-        else:
-            upper_adc = int(threshold_upper_mv)
-            lower_adc = int(threshold_lower_mv)
-            hyst_upper_adc = int(hysteresis_upper_mv)
-            hyst_lower_adc = int(hysteresis_lower_mv)
+        upper_adc, lower_adc, hyst_upper_adc, hyst_lower_adc = self._thr_hyst_mv_to_adc(
+            channel,
+            threshold_upper_mv,
+            threshold_lower_mv,
+            hysteresis_upper_mv,
+            hysteresis_lower_mv
+        )
 
-        self.set_trigger_channel_conditions(channel, state, action)
+        self.set_trigger_channel_conditions([(channel, state)], action)
         self.set_trigger_channel_directions(channel, direction, threshold_mode)
         self.set_trigger_channel_properties(
             upper_adc,
@@ -1183,25 +1111,27 @@ class PicoScopeBase:
 
     def set_pulse_width_qualifier_conditions(
         self,
-        source: int,
-        state: int,
+        conditions: list[tuple[CHANNEL, TRIGGER_STATE]],
         action: int = ACTION.CLEAR_ALL | ACTION.ADD,
     ) -> None:
-        """Configure pulse width qualifier conditions.
-        Args:
-            source: Trigger source channel.
-            state: Trigger state condition.
-            action: Combination of :class:`ACTION` flags controlling how the
-                condition is applied.
-        """
+        """Configure a pulse width qualifier condition.
 
-        cond = PICO_CONDITION(source, state)
+        Args:
+            conditions (list[tuple[CHANNEL, TRIGGER_STATE]]): 
+                A list of tuples describing the CHANNEL and TRIGGER_STATE for that channel
+            action (int, optional): Action to apply this condition relateive to any previous
+                condition. Defaults to ACTION.CLEAR_ALL | ACTION.ADD.
+        """
+        cond_len = len(conditions)
+        cond_array = (PICO_CONDITION * cond_len)()
+        for i, (source, state) in enumerate(conditions):
+            cond_array[i] = PICO_CONDITION(source, state)
 
         self._call_attr_function(
             "SetPulseWidthQualifierConditions",
             self.handle,
-            ctypes.byref(cond),
-            ctypes.c_int16(1),
+            ctypes.byref(cond_array),
+            ctypes.c_int16(cond_len),
             action,
         )
 
@@ -1254,6 +1184,116 @@ class PicoScopeBase:
             port,
             ptr,
             ctypes.c_int16(count),
+        )
+
+    def set_pulse_width_trigger(
+        self,
+        channel:CHANNEL,
+        timebase:int,
+        samples:int,
+        direction:THRESHOLD_DIRECTION,
+        pulse_width_type:PULSE_WIDTH_TYPE,
+        time_upper=0,
+        time_upper_units:TIME_UNIT=TIME_UNIT.US,
+        time_lower=0,
+        time_lower_units:TIME_UNIT=TIME_UNIT.US,
+        threshold_upper_mv:float=0.0,
+        threshold_lower_mv:float=0.0,
+        hysteresis_upper_mv: float = 0.0,
+        hysteresis_lower_mv: float = 0.0,
+        trig_dir:THRESHOLD_DIRECTION=None,
+        threshold_mode:THRESHOLD_MODE = THRESHOLD_MODE.LEVEL,
+        auto_trigger_us=0
+    ) -> None: 
+        """
+        Configures a pulse width trigger using a specified channel and timing parameters.
+
+        This method sets up a trigger condition where a pulse on the specified channel 
+        must be within or outside a defined pulse width window. The trigger logic uses 
+        both level thresholds and pulse width qualifiers to define the trigger behavior.
+
+        Args:
+            channel (CHANNEL): The input channel on which to apply the pulse width trigger.
+            timebase (int): The timebase index to determine sampling interval.
+            samples (int): The number of samples to be captured (used to resolve timing).
+            direction (THRESHOLD_DIRECTION): Pulse polarity to trigger on (e.g. RISING or FALLING).
+            pulse_width_type (PULSE_WIDTH_TYPE): Type of pulse width qualifier (e.g. GREATER_THAN).
+            time_upper (float, optional): Upper time bound for pulse width. Default is 0 (disabled).
+            time_upper_units (TIME_UNIT, optional): Units for `time_upper`. Default is microseconds.
+            time_lower (float, optional): Lower time bound for pulse width. Default is 0 (disabled).
+            time_lower_units (TIME_UNIT, optional): Units for `time_lower`. Default is microseconds.
+            threshold_upper_mv (float, optional): Upper voltage threshold in millivolts. Default is 0.0 mV.
+            threshold_lower_mv (float, optional): Lower voltage threshold in millivolts. Default is 0.0 mV.
+            hysteresis_upper_mv (float, optional): Hysteresis for upper threshold in mV. Default is 0.0 mV.
+            hysteresis_lower_mv (float, optional): Hysteresis for lower threshold in mV. Default is 0.0 mV.
+            trig_dir (THRESHOLD_DIRECTION, optional): Trigger direction for the initial pulse.
+                If None, inferred as opposite of `direction`. Default is None.
+            threshold_mode (THRESHOLD_MODE, optional): Specifies whether thresholds are in level or window mode. 
+                Default is LEVEL.
+            auto_trigger_us (int, optional): Time in microseconds after which an automatic trigger occurs. 
+                Default is 0 (disabled).
+        """
+        
+        # If no times are set, raise an error.
+        if time_upper == 0 and time_lower == 0:
+            raise PicoSDKException('No time_upper or time_lower bounds specified for Pulse Width Trigger')
+        
+        self.set_trigger_channel_conditions(
+            conditions=[
+                (channel, TRIGGER_STATE.TRUE),
+                (CHANNEL.PULSE_WIDTH_SOURCE, TRIGGER_STATE.TRUE)
+            ]
+        )
+
+        # If no trigger direction is specified, use the oppsite direction, otherwise raise an error
+        if trig_dir is None:
+            if direction is THRESHOLD_DIRECTION.RISING: trig_dir = THRESHOLD_DIRECTION.FALLING
+            elif direction is THRESHOLD_DIRECTION.FALLING: trig_dir = THRESHOLD_DIRECTION.RISING
+            else:
+                raise PicoSDKException('THRESHOLD_DIRECTION for trig_dir has not been specified')
+            
+        self.set_trigger_channel_directions(
+            channel=channel,
+            direction=trig_dir,
+            threshold_mode=threshold_mode
+        )
+
+        upper_adc, lower_adc, hyst_upper_adc, hyst_lower_adc = self._thr_hyst_mv_to_adc(
+            channel,
+            threshold_upper_mv,
+            threshold_lower_mv,
+            hysteresis_upper_mv,
+            hysteresis_lower_mv
+        )
+
+        self.set_trigger_channel_properties(
+            threshold_upper=upper_adc, hysteresis_upper=hyst_upper_adc, 
+            threshold_lower=lower_adc, hysteresis_lower=hyst_lower_adc, 
+            channel=channel,
+            auto_trigger_us=auto_trigger_us
+        )
+
+        # Determine actual sample interval from the selected timebase
+        interval_ns = self.get_timebase(timebase, samples)["Interval(ns)"]
+        sample_interval_s = interval_ns / 1e9
+        
+        # Convert pulse width threshold to samples
+        pw_upper = int((time_upper / time_upper_units) / sample_interval_s)
+        pw_lower = int((time_lower / time_lower_units) / sample_interval_s)
+
+        # Configure pulse width qualifier
+        self.set_pulse_width_qualifier_properties(
+            lower=pw_lower,
+            upper=pw_upper,
+            pw_type=pulse_width_type,
+        )
+        self.set_pulse_width_qualifier_conditions(
+            [(channel, TRIGGER_STATE.TRUE)]
+        )
+        self.set_pulse_width_qualifier_directions(
+            channel=channel,
+            direction=direction,
+            threshold_mode=threshold_mode,
         )
 
     def query_output_edge_detect(self) -> int:

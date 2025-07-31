@@ -21,9 +21,9 @@ scope.set_channel(channel=psdk.CHANNEL.A, range=psdk.RANGE.V1)
 # Threshold parameters are ignored; AUX triggers at 1.25 V
 scope.set_advanced_trigger(
     channel=psdk.CHANNEL.TRIGGER_AUX,
-    state=psdk.PICO_TRIGGER_STATE.TRUE,
-    direction=psdk.PICO_THRESHOLD_DIRECTION.PICO_RISING,
-    threshold_mode=psdk.PICO_THRESHOLD_MODE.PICO_LEVEL,
+    state=psdk.TRIGGER_STATE.TRUE,
+    direction=psdk.THRESHOLD_DIRECTION.RISING,
+    threshold_mode=psdk.THRESHOLD_MODE.LEVEL,
     threshold_upper_mv=0,
     threshold_lower_mv=0,
 )
