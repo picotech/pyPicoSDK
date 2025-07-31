@@ -602,23 +602,30 @@ class ps6000a(PicoScopeBase):
 
     def set_trigger_channel_conditions(
         self,
-        source: int,
-        state: int,
+        conditions: list[tuple[CHANNEL, TRIGGER_STATE]],
         action: int = ACTION.CLEAR_ALL | ACTION.ADD,
     ) -> None:
-        """Configure a trigger condition using ``ps6000aSetTriggerChannelConditions``.
-
-        This method mirrors :meth:`PicoScopeBase.set_trigger_channel_conditions` while
-        documenting the underlying API call specific to the 6000A series.
+        """Configure a trigger condition.
 
         Args:
-            source: Input source for the condition as a :class:`CHANNEL` value.
-            state: Desired trigger state from :class:`PICO_TRIGGER_STATE`.
-            action: How to combine the condition with any existing configuration.
-                Defaults to ``ACTION.CLEAR_ALL | ACTION.ADD``.
+            conditions (list[tuple[CHANNEL, TRIGGER_STATE]]): 
+                A list of tuples describing the CHANNEL and TRIGGER_STATE for that channel
+            action (int, optional): Action to apply this condition relateive to any previous
+                condition. Defaults to ACTION.CLEAR_ALL | ACTION.ADD.
         """
 
-        super().set_trigger_channel_conditions(source, state, action)
+        cond_len = len(conditions)
+        cond_array = (PICO_CONDITION * cond_len)()
+        for i, (source, state) in enumerate(conditions):
+            cond_array[i] = PICO_CONDITION(source, state)
+
+        self._call_attr_function(
+            "SetTriggerChannelConditions",
+            self.handle,
+            ctypes.byref(cond_array),
+            ctypes.c_int16(cond_len),
+            action,
+        )
 
     def set_trigger_channel_properties(
         self,
@@ -630,29 +637,35 @@ class ps6000a(PicoScopeBase):
         aux_output_enable: int = 0,
         auto_trigger_us: int = 0,
     ) -> None:
-        """Configure channel thresholds using ``ps6000aSetTriggerChannelProperties``.
-
-        This method mirrors :meth:`PicoScopeBase.set_trigger_channel_properties` while
-        documenting the underlying 6000A API call.
+        """Configure trigger thresholds for ``channel``. All
+        threshold and hysteresis values are specified in ADC counts.
 
         Args:
-            threshold_upper: ADC value for the upper trigger level.
-            hysteresis_upper: Hysteresis for ``threshold_upper`` in ADC counts.
-            threshold_lower: ADC value for the lower trigger level.
-            hysteresis_lower: Hysteresis for ``threshold_lower`` in ADC counts.
-            channel: Channel these settings apply to.
-            aux_output_enable: Optional auxiliary output flag.
-            auto_trigger_us: Auto-trigger timeout in microseconds.
+            threshold_upper (int): Upper trigger level.
+            hysteresis_upper (int): Hysteresis for ``threshold_upper``.
+            threshold_lower (int): Lower trigger level.
+            hysteresis_lower (int): Hysteresis for ``threshold_lower``.
+            channel (int): Target channel as a :class:`CHANNEL` value.
+            aux_output_enable (int, optional): Auxiliary output flag.
+            auto_trigger_us (int, optional): Auto-trigger timeout in
+                microseconds. ``0`` waits indefinitely.
         """
 
-        super().set_trigger_channel_properties(
+        prop = PICO_TRIGGER_CHANNEL_PROPERTIES(
             threshold_upper,
             hysteresis_upper,
             threshold_lower,
             hysteresis_lower,
             channel,
-            aux_output_enable,
-            auto_trigger_us,
+        )
+
+        self._call_attr_function(
+            "SetTriggerChannelProperties",
+            self.handle,
+            ctypes.byref(prop),
+            ctypes.c_int16(1),
+            ctypes.c_int16(aux_output_enable),
+            ctypes.c_uint32(auto_trigger_us),
         )
 
     def set_trigger_channel_directions(
@@ -661,10 +674,25 @@ class ps6000a(PicoScopeBase):
         direction: int,
         threshold_mode: int,
     ) -> None:
-        """Configure channel directions using ``ps6000aSetTriggerChannelDirections``."""
+        """Specify the trigger direction for ``channel``.
 
-        super().set_trigger_channel_directions(channel, direction, threshold_mode)
-    
+        Args:
+            channel (int): Channel to configure.
+            direction (int): Direction value from
+                :class:`PICO_THRESHOLD_DIRECTION`.
+            threshold_mode (int): Threshold mode from
+                :class:`PICO_THRESHOLD_MODE`.
+        """
+
+        dir_struct = PICO_DIRECTION(channel, direction, threshold_mode)
+
+        self._call_attr_function(
+            "SetTriggerChannelDirections",
+            self.handle,
+            ctypes.byref(dir_struct),
+            ctypes.c_int16(1),
+        )
+
     def set_data_buffer(
         self,
         channel: CHANNEL,

@@ -15,9 +15,9 @@ scope.set_channel(channel=psdk.CHANNEL.A, coupling=psdk.COUPLING.DC, range=psdk.
 # Configure an advanced trigger on Channel A at 200 mV
 scope.set_advanced_trigger(
     channel=psdk.CHANNEL.A,
-    state=psdk.PICO_TRIGGER_STATE.TRUE,
-    direction=psdk.PICO_THRESHOLD_DIRECTION.PICO_RISING,
-    threshold_mode=psdk.PICO_THRESHOLD_MODE.PICO_LEVEL,
+    state=psdk.TRIGGER_STATE.TRUE,
+    direction=psdk.THRESHOLD_DIRECTION.RISING,
+    threshold_mode=psdk.THRESHOLD_MODE.LEVEL,
     threshold_upper_mv=200,
     threshold_lower_mv=200,
 )

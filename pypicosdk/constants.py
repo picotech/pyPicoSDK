@@ -174,6 +174,9 @@ class CHANNEL(IntEnum):
 
     #: Auxiliary trigger input/output.
     TRIGGER_AUX = 1001
+    
+    PULSE_WIDTH_SOURCE = 0x10000000
+    PICO_DIGITAL_SOURCE = 0x10000001
 
 CHANNEL_NAMES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 
@@ -551,7 +554,7 @@ class PICO_CHANNEL_OVERVOLTAGE_TRIPPED(ctypes.Structure):
         ("tripped_", ctypes.c_uint8),
     ]
 
-class PICO_TRIGGER_STATE(IntEnum):
+class TRIGGER_STATE(IntEnum):
     """Trigger state values used in :class:`PICO_CONDITION`."""
 
     #: Channel is ignored when evaluating trigger conditions.
@@ -694,33 +697,33 @@ class PICO_CONDITION(ctypes.Structure):
     ]
 
 
-class PICO_THRESHOLD_DIRECTION(IntEnum):
+class THRESHOLD_DIRECTION(IntEnum):
     """Enumerates trigger threshold directions used with :class:`PICO_DIRECTION`."""
 
-    PICO_ABOVE = 0
-    PICO_BELOW = 1
-    PICO_RISING = 2
-    PICO_FALLING = 3
-    PICO_RISING_OR_FALLING = 4
-    PICO_ABOVE_LOWER = 5
-    PICO_BELOW_LOWER = 6
-    PICO_RISING_LOWER = 7
-    PICO_FALLING_LOWER = 8
-    PICO_INSIDE = PICO_ABOVE
-    PICO_OUTSIDE = PICO_BELOW
-    PICO_ENTER = PICO_RISING
-    PICO_EXIT = PICO_FALLING
-    PICO_ENTER_OR_EXIT = PICO_RISING_OR_FALLING
-    PICO_POSITIVE_RUNT = 9
-    PICO_NEGATIVE_RUNT = 10
-    PICO_NONE = PICO_RISING
+    ABOVE = 0
+    BELOW = 1
+    RISING = 2
+    FALLING = 3
+    RISING_OR_FALLING = 4
+    ABOVE_LOWER = 5
+    BELOW_LOWER = 6
+    RISING_LOWER = 7
+    FALLING_LOWER = 8
+    INSIDE = ABOVE
+    OUTSIDE = BELOW
+    ENTER = RISING
+    EXIT = FALLING
+    ENTER_OR_EXIT = RISING_OR_FALLING
+    POSITIVE_RUNT = 9
+    NEGATIVE_RUNT = 10
+    NONE = RISING
 
 
-class PICO_THRESHOLD_MODE(IntEnum):
+class THRESHOLD_MODE(IntEnum):
     """Threshold operation mode values used in :class:`PICO_DIRECTION`."""
 
-    PICO_LEVEL = 0
-    PICO_WINDOW = 1
+    LEVEL = 0
+    WINDOW = 1
 
 
 class PICO_DIRECTION(ctypes.Structure):
@@ -775,14 +778,14 @@ class PICO_DIGITAL_CHANNEL_DIRECTIONS(ctypes.Structure):
     ]
 
 
-class PICO_PULSE_WIDTH_TYPE(IntEnum):
+class PULSE_WIDTH_TYPE(IntEnum):
     """Pulse width qualifier comparison types."""
 
-    PICO_PW_TYPE_NONE = 0
-    PICO_PW_TYPE_LESS_THAN = 1
-    PICO_PW_TYPE_GREATER_THAN = 2
-    PICO_PW_TYPE_IN_RANGE = 3
-    PICO_PW_TYPE_OUT_OF_RANGE = 4
+    NONE = 0
+    LESS_THAN = 1
+    GREATER_THAN = 2
+    IN_RANGE = 3
+    OUT_OF_RANGE = 4
 
 
 class SWEEP_TYPE(IntEnum):
@@ -877,20 +880,20 @@ __all__ = [
     'PICO_SCALING_FACTORS_FOR_RANGE_TYPES_VALUES',
     'AUXIO_MODE',
     'PICO_CHANNEL_OVERVOLTAGE_TRIPPED',
-    'PICO_TRIGGER_STATE',
+    'TRIGGER_STATE',
     'PICO_STREAMING_DATA_INFO',
     'PICO_STREAMING_DATA_TRIGGER_INFO',
     'PICO_TRIGGER_INFO',
     'TIMESTAMP_COUNTER_MASK',
     'PICO_TRIGGER_CHANNEL_PROPERTIES',
     'PICO_CONDITION',
-    'PICO_THRESHOLD_DIRECTION',
-    'PICO_THRESHOLD_MODE',
+    'THRESHOLD_DIRECTION',
+    'THRESHOLD_MODE',
     'PICO_DIRECTION',
     'PICO_PORT_DIGITAL_CHANNEL',
     'PICO_DIGITAL_DIRECTION',
     'PICO_DIGITAL_CHANNEL_DIRECTIONS',
-    'PICO_PULSE_WIDTH_TYPE',
+    'PULSE_WIDTH_TYPE',
     'SWEEP_TYPE',
     'PICO_SIGGEN_TRIG_TYPE',
     'PICO_SIGGEN_TRIG_SOURCE',
