@@ -978,6 +978,107 @@ class PicoScopeBase:
             auto_trigger
         )
 
+    def set_trigger_channel_conditions(
+        self,
+        conditions: list[tuple[CHANNEL, TRIGGER_STATE]],
+        action: int = ACTION.CLEAR_ALL | ACTION.ADD,
+    ) -> None:
+        """Configure a trigger condition.
+
+        Args:
+            conditions (list[tuple[CHANNEL, TRIGGER_STATE]]): 
+                A list of tuples describing the CHANNEL and TRIGGER_STATE for that channel
+            action (int, optional): Action to apply this condition relateive to any previous
+                condition. Defaults to ACTION.CLEAR_ALL | ACTION.ADD.
+        """
+
+        cond_len = len(conditions)
+        cond_array = (PICO_CONDITION * cond_len)()
+        for i, (source, state) in enumerate(conditions):
+            cond_array[i] = PICO_CONDITION(source, state)
+
+        self._call_attr_function(
+            "SetTriggerChannelConditions",
+            self.handle,
+            ctypes.byref(cond_array),
+            ctypes.c_int16(cond_len),
+            action,
+        )
+
+    def set_trigger_channel_properties(
+        self,
+        threshold_upper: int,
+        hysteresis_upper: int,
+        threshold_lower: int,
+        hysteresis_lower: int,
+        channel: int,
+        aux_output_enable: int = 0,
+        auto_trigger_us: int = 0,
+    ) -> None:
+        """Configure trigger thresholds for ``channel``. All
+        threshold and hysteresis values are specified in ADC counts.
+
+        Args:
+            threshold_upper (int): Upper trigger level.
+            hysteresis_upper (int): Hysteresis for ``threshold_upper``.
+            threshold_lower (int): Lower trigger level.
+            hysteresis_lower (int): Hysteresis for ``threshold_lower``.
+            channel (int): Target channel as a :class:`CHANNEL` value.
+            aux_output_enable (int, optional): Auxiliary output flag.
+            auto_trigger_us (int, optional): Auto-trigger timeout in
+                microseconds. ``0`` waits indefinitely.
+        """
+
+        prop = PICO_TRIGGER_CHANNEL_PROPERTIES(
+            threshold_upper,
+            hysteresis_upper,
+            threshold_lower,
+            hysteresis_lower,
+            channel,
+        )
+
+        self._call_attr_function(
+            "SetTriggerChannelProperties",
+            self.handle,
+            ctypes.byref(prop),
+            ctypes.c_int16(1),
+            ctypes.c_int16(aux_output_enable),
+            ctypes.c_uint32(auto_trigger_us),
+        )
+
+    def set_trigger_channel_directions(
+        self,
+        channel: CHANNEL | list,
+        direction: THRESHOLD_DIRECTION | list,
+        threshold_mode: THRESHOLD_MODE | list,
+    ) -> None:
+        """
+        Specify the trigger direction for ``channel``. 
+        If multiple directions are needed, channel, direction and threshold_mode 
+        can be given a list of values.
+
+        Args:
+            channel (CHANNEL | list): Single or list of channels to configure.
+            direction (THRESHOLD_DIRECTION | list): Single or list of directions to configure.
+            threshold_mode (THRESHOLD_MODE | list): Single or list of threshold modes to configure.
+        """
+
+        if type(channel) == list:
+            dir_len = len(channel)
+            dir_struct = (PICO_DIRECTION * dir_len)()
+            for i in range(dir_len):
+                dir_struct[i] = PICO_DIRECTION(channel[i], direction[i], threshold_mode[i])
+        else:
+            dir_len = 1
+            dir_struct = PICO_DIRECTION(channel, direction, threshold_mode)
+
+        self._call_attr_function(
+            "SetTriggerChannelDirections",
+            self.handle,
+            ctypes.byref(dir_struct),
+            ctypes.c_int16(dir_len),
+        )
+
     def set_advanced_trigger(
         self,
         channel: int,
@@ -1142,19 +1243,29 @@ class PicoScopeBase:
         threshold_mode: int,
     ) -> None:
         """Set pulse width qualifier direction for ``channel``.
-        Args:
-            channel: Channel identifier.
-            direction: Trigger direction value.
-            threshold_mode: Analog or digital threshold mode.
-        """
+        If multiple directions are needed, channel, direction and threshold_mode 
+        can be given a list of values.
 
-        dir_struct = PICO_DIRECTION(channel, direction, threshold_mode)
+        Args:
+            channel (CHANNEL | list): Single or list of channels to configure.
+            direction (THRESHOLD_DIRECTION | list): Single or list of directions to configure.
+            threshold_mode (THRESHOLD_MODE | list): Single or list of threshold modes to configure.
+        """
+        if type(channel) == list:
+            dir_len = len(channel)
+            dir_struct = (PICO_DIRECTION * dir_len)()
+            for i in range(dir_len):
+                print(channel[i], direction[i], threshold_mode[i])
+                dir_struct[i] = PICO_DIRECTION(channel[i], direction[i], threshold_mode[i])
+        else:
+            dir_len = 1
+            dir_struct = PICO_DIRECTION(channel, direction, threshold_mode)
 
         self._call_attr_function(
             "SetPulseWidthQualifierDirections",
             self.handle,
             ctypes.byref(dir_struct),
-            ctypes.c_int16(1),
+            ctypes.c_int16(dir_len),
         )
 
     def set_pulse_width_digital_port_properties(

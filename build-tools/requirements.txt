@@ -4,6 +4,10 @@ numpy
 pandas
 matplotlib
 
-mkdocs
-mkdocstrings-python
+mkdocs >= 1.6
+mkdocstrings-python >= 1.16
+mkdocs-autorefs >= 1.4
+
+build
+pytest
 
