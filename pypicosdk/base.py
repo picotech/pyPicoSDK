@@ -1015,18 +1015,15 @@ class PicoScopeBase:
             action: Action flag for ``set_trigger_channel_conditions``.
         """
 
-        if channel in self.range:
-            upper_adc = self.mv_to_adc(threshold_upper_mv, self.range[channel], channel)
-            lower_adc = self.mv_to_adc(threshold_lower_mv, self.range[channel], channel)
-            hyst_upper_adc = self.mv_to_adc(hysteresis_upper_mv, self.range[channel], channel)
-            hyst_lower_adc = self.mv_to_adc(hysteresis_lower_mv, self.range[channel], channel)
-        else:
-            upper_adc = int(threshold_upper_mv)
-            lower_adc = int(threshold_lower_mv)
-            hyst_upper_adc = int(hysteresis_upper_mv)
-            hyst_lower_adc = int(hysteresis_lower_mv)
+        upper_adc, lower_adc, hyst_upper_adc, hyst_lower_adc = self._thr_hyst_mv_to_adc(
+            channel,
+            threshold_upper_mv,
+            threshold_lower_mv,
+            hysteresis_upper_mv,
+            hysteresis_lower_mv
+        )
 
-        self.set_trigger_channel_conditions(channel, state, action)
+        self.set_trigger_channel_conditions([(channel, state)], action)
         self.set_trigger_channel_directions(channel, direction, threshold_mode)
         self.set_trigger_channel_properties(
             upper_adc,
@@ -1204,10 +1201,40 @@ class PicoScopeBase:
         threshold_lower_mv:float=0.0,
         hysteresis_upper_mv: float = 0.0,
         hysteresis_lower_mv: float = 0.0,
+        trig_dir:THRESHOLD_DIRECTION=None,
         threshold_mode:THRESHOLD_MODE = THRESHOLD_MODE.LEVEL,
         auto_trigger_us=0
     ) -> None: 
+        """
+        Configures a pulse width trigger using a specified channel and timing parameters.
+
+        This method sets up a trigger condition where a pulse on the specified channel 
+        must be within or outside a defined pulse width window. The trigger logic uses 
+        both level thresholds and pulse width qualifiers to define the trigger behavior.
+
+        Args:
+            channel (CHANNEL): The input channel on which to apply the pulse width trigger.
+            timebase (int): The timebase index to determine sampling interval.
+            samples (int): The number of samples to be captured (used to resolve timing).
+            direction (THRESHOLD_DIRECTION): Pulse polarity to trigger on (e.g. RISING or FALLING).
+            pulse_width_type (PULSE_WIDTH_TYPE): Type of pulse width qualifier (e.g. GREATER_THAN).
+            time_upper (float, optional): Upper time bound for pulse width. Default is 0 (disabled).
+            time_upper_units (TIME_UNIT, optional): Units for `time_upper`. Default is microseconds.
+            time_lower (float, optional): Lower time bound for pulse width. Default is 0 (disabled).
+            time_lower_units (TIME_UNIT, optional): Units for `time_lower`. Default is microseconds.
+            threshold_upper_mv (float, optional): Upper voltage threshold in millivolts. Default is 0.0 mV.
+            threshold_lower_mv (float, optional): Lower voltage threshold in millivolts. Default is 0.0 mV.
+            hysteresis_upper_mv (float, optional): Hysteresis for upper threshold in mV. Default is 0.0 mV.
+            hysteresis_lower_mv (float, optional): Hysteresis for lower threshold in mV. Default is 0.0 mV.
+            trig_dir (THRESHOLD_DIRECTION, optional): Trigger direction for the initial pulse.
+                If None, inferred as opposite of `direction`. Default is None.
+            threshold_mode (THRESHOLD_MODE, optional): Specifies whether thresholds are in level or window mode. 
+                Default is LEVEL.
+            auto_trigger_us (int, optional): Time in microseconds after which an automatic trigger occurs. 
+                Default is 0 (disabled).
+        """
         
+        # If no times are set, raise an error.
         if time_upper == 0 and time_lower == 0:
             raise PicoSDKException('No time_upper or time_lower bounds specified for Pulse Width Trigger')
         
@@ -1218,9 +1245,16 @@ class PicoScopeBase:
             ]
         )
 
+        # If no trigger direction is specified, use the oppsite direction, otherwise raise an error
+        if trig_dir is None:
+            if direction is THRESHOLD_DIRECTION.RISING: trig_dir = THRESHOLD_DIRECTION.FALLING
+            elif direction is THRESHOLD_DIRECTION.FALLING: trig_dir = THRESHOLD_DIRECTION.RISING
+            else:
+                raise PicoSDKException('THRESHOLD_DIRECTION for trig_dir has not been specified')
+            
         self.set_trigger_channel_directions(
             channel=channel,
-            direction=THRESHOLD_DIRECTION.FALLING,
+            direction=trig_dir,
             threshold_mode=threshold_mode
         )
 
