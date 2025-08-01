@@ -162,11 +162,6 @@ class PicoScopeBase:
             # raise an exception as callers may poll until data is ready.
             if status == 407:  # PICO_WAITING_FOR_DATA_BUFFERS
                 return
-            # Streaming related status codes indicate no new data is ready.
-            # These should not be treated as fatal errors and simply signal
-            # the caller to try again later.
-            if status in [28672, 28673, 28674]:
-                return
             self.close_unit()
             raise PicoSDKException(error_code)
         return
