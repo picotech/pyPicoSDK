@@ -1928,6 +1928,36 @@ class PicoScopeBase:
         self.is_over_range()
         return total_samples.value
 
+    def get_streaming_latest_values(
+        self,
+        channel,
+        ratio_mode,
+        data_type
+    ):
+        info = PICO_STREAMING_DATA_INFO(
+            channel_ = channel,
+            mode_ = ratio_mode,
+            type_ = data_type,
+        )
+        trigger = PICO_STREAMING_DATA_TRIGGER_INFO()
+
+        status = self._call_attr_function(
+            "GetStreamingLatestValues",
+            self.handle,
+            ctypes.byref(info),
+            1,
+            ctypes.byref(trigger)
+        )
+        return {
+            'status': status,
+            'no of samples': info.noOfSamples_,
+            'Buffer index': info.bufferIndex_,
+            'start index': info.startIndex_,
+            'overflowed?': info.overflow_,
+            'triggered at': trigger.triggerAt_,
+            'triggered?': trigger.triggered_,
+            'auto stopped?': trigger.autoStop_,
+        }
     
     def is_over_range(self) -> list:
         """
