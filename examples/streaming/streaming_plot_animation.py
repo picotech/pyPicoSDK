@@ -25,14 +25,14 @@ timebase = 4
 samples = int(1E9)
 streaming_samples = 250
 interval = 20
-display_samples = 10_000
+display_samples = 1000
 unit = psdk.TIME_UNIT.NS
 pico_unit = psdk.PICO_TIME_UNIT.NS
 channel = psdk.CHANNEL.A
 
 
 fig = plt.figure() 
-axis = plt.axes(xlim =(0, 100), 
+axis = plt.axes(xlim =(0, display_samples), 
                 ylim =(-32000, 32000)) 
 x = np.arange(display_samples)  # Predefined x-data of length 10
 line, = axis.plot(x, np.zeros_like(x), lw=2)  # Initialize with zeros
