@@ -116,7 +116,6 @@ def main():
     th = threading.Thread(target=streaming_thread, args=[stream])
     th.start()
 
-    # time.sleep(5)
     anim = FuncAnimation(fig, animate, frames=500, fargs=(stream, ), interval=20, blit=True)
     plt.show()
 
@@ -124,9 +123,6 @@ def main():
     th.join()
 
     scope.close_unit()
-
-    # plt.plot(stream.np_array)
-    # plt.show()
 
 
 if __name__ == '__main__':
