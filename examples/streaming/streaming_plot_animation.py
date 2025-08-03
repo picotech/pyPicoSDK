@@ -14,6 +14,7 @@ Threading:
 
 
 import pypicosdk as psdk
+from pypicosdk.streaming import StreamingScope
 from matplotlib import pyplot as plt
 from matplotlib.animation import FuncAnimation
 import numpy as np
@@ -45,93 +46,11 @@ def setup_scope():
     scope.set_simple_trigger(channel=psdk.CHANNEL.A, threshold_mv=0)
     return scope
 
-class StreamingScope:
-    def __init__(self, scope:psdk.ps6000a):
-        self.scope = scope
-        self.stop_bool = False  # Bool to stop streaming while loop
-        self.result_array = 'append'    # Format to save data
-
-    def config_streaming(
-            self, 
-            channel, 
-            samples, 
-            interval, 
-            time_units,
-            max_buffer_size,
-            pre_trig_samples=0,
-            post_trig_samples=250,
-            ratio=0,
-            ratio_mode=psdk.RATIO_MODE.RAW,
-            data_type=psdk.DATA_TYPE.INT16_T,
-        ):
-        # Streaming settings 
-        self.channel = channel
-        self.samples = samples
-        self.pre_trig_samples = pre_trig_samples
-        self.post_trig_samples = post_trig_samples
-        self.interval = interval
-        self.time_units = time_units
-        self.ratio = ratio
-        self.ratio_mode = ratio_mode
-        self.data_type = data_type
-
-        # python buffer setup
-        self.info_list = [] # List of info retrieved from each buffer
-        self.buffer_array = np.zeros(shape=max_buffer_size)  # Main sample buffer
-        self.max_buffer_size = max_buffer_size # Maximum size of buffer before overwriting
-
-    def run_streaming(self):
-        self.buffer_index = 0
-        self.stop_bool = False
-        # Setup empty variables for streaming
-        # Setup initial buffer for streaming
-        self.buffer = self.scope.set_data_buffer(self.channel, self.samples, segment=0)
-        # start streaming
-        self.scope.run_streaming(
-            sample_interval=self.interval,
-            time_units=self.time_units,
-            max_pre_trigger_samples=self.pre_trig_samples,
-            max_post_trigger_samples=self.post_trig_samples,
-            auto_stop=0,
-            ratio=self.ratio,
-            ratio_mode=self.ratio_mode
-        )
-    
-    def get_streaming_loop(self):
-        info = self.scope.get_streaming_latest_values(
-            channel=self.channel,
-            ratio_mode=self.ratio_mode,
-            data_type=self.data_type
-        )
-        n_samples = info['no of samples']
-        start_index = info['start index']
-        # If buffer isn't empty, add data to array
-        if n_samples > 0:
-            # Add the new buffer to the buffer array and take end chunk
-            self.buffer_array = np.concatenate([self.buffer_array] + [self.buffer[start_index:start_index+n_samples]])[-self.max_buffer_size:] 
-        # If buffer full, create new buffer
-        if info['status'] == 407:
-            self.buffer = (self.buffer_index + 1) % 2 # Switch between buffer segment index 0*samples and 1*samples
-            self.buffer = self.scope.set_data_buffer(self.channel, self.samples, segment=self.buffer_index*self.samples, action=psdk.ACTION.ADD)
-
-    def run_streaming_while(self, stop=True):
-        self.run_streaming()
-        while not self.stop_bool:
-            self.get_streaming_loop()
-
-    def run_streaming_for(self, n_times):
-        self.run_streaming()
-        for i in range(n_times):
-            self.get_streaming_loop()
-
-    def stop(self):
-        self.stop_bool = True
-
 def streaming_thread(stream:StreamingScope):
     stream.run_streaming_while()
 
 def animate(frame, stream:StreamingScope):
-    data = stream.buffer_array[-display_samples:]
+    data = stream.buffer_array
     line.set_ydata(data)
     return line,
 
