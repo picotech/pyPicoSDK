@@ -711,8 +711,8 @@ class PicoScopeBase:
         to_segment_index: int,
         down_sample_ratio: int,
         down_sample_ratio_mode: int,
-        lp_data_ready,
-        p_parameter,
+        lp_data_ready:ctypes.POINTER,
+        p_parameter:ctypes.POINTER,
     ) -> None:
         """Begin asynchronous retrieval of values from multiple segments.
 
