@@ -162,11 +162,6 @@ class PicoScopeBase:
             # raise an exception as callers may poll until data is ready.
             if status == 407:  # PICO_WAITING_FOR_DATA_BUFFERS
                 return
-            # Streaming related status codes indicate no new data is ready.
-            # These should not be treated as fatal errors and simply signal
-            # the caller to try again later.
-            if status in [28672, 28673, 28674]:
-                return
             self.close_unit()
             raise PicoSDKException(error_code)
         return
@@ -716,8 +711,8 @@ class PicoScopeBase:
         to_segment_index: int,
         down_sample_ratio: int,
         down_sample_ratio_mode: int,
-        lp_data_ready,
-        p_parameter,
+        lp_data_ready:ctypes.POINTER,
+        p_parameter:ctypes.POINTER,
     ) -> None:
         """Begin asynchronous retrieval of values from multiple segments.
 
@@ -1863,8 +1858,8 @@ class PicoScopeBase:
             self.handle,
             ctypes.byref(c_sample_interval),
             time_units,
-            max_pre_trigger_samples,
-            max_post_trigger_samples,
+            int(max_pre_trigger_samples),
+            int(max_post_trigger_samples),
             auto_stop,
             ratio,
             ratio_mode,
@@ -1928,6 +1923,36 @@ class PicoScopeBase:
         self.is_over_range()
         return total_samples.value
 
+    def get_streaming_latest_values(
+        self,
+        channel,
+        ratio_mode,
+        data_type
+    ):
+        info = PICO_STREAMING_DATA_INFO(
+            channel_ = channel,
+            mode_ = ratio_mode,
+            type_ = data_type,
+        )
+        trigger = PICO_STREAMING_DATA_TRIGGER_INFO()
+
+        status = self._call_attr_function(
+            "GetStreamingLatestValues",
+            self.handle,
+            ctypes.byref(info),
+            1,
+            ctypes.byref(trigger)
+        )
+        return {
+            'status': status,
+            'no of samples': info.noOfSamples_,
+            'Buffer index': info.bufferIndex_,
+            'start index': info.startIndex_,
+            'overflowed?': info.overflow_,
+            'triggered at': trigger.triggerAt_,
+            'triggered?': trigger.triggered_,
+            'auto stopped?': trigger.autoStop_,
+        }
     
     def is_over_range(self) -> list:
         """
