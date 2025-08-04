@@ -21,6 +21,7 @@ nav:
       - ref/ps6000a/retrieval.md
     - General Conversions: ref/conversions.md
     - General Constants: ref/constants.md
+    - ref/streaming.md
   - Development: 
     - Changelog: dev/changelog.md
     - Current Support: dev/current.md
