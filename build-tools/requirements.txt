@@ -6,7 +6,7 @@ matplotlib
 
 mkdocs >= 1.6
 mkdocstrings-python >= 1.16
-mkdocs-autorefs >= 1.4
+include-markdown-plugin >= 7.1.6
 
 build
 pytest
