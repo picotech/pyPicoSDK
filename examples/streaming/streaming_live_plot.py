@@ -22,7 +22,6 @@ import threading
 import time
 
 # Capture configuration
-timebase = 4
 samples = int(1E9)
 streaming_samples = 250
 interval = 20

@@ -4,7 +4,6 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 # Capture configuration
-timebase = 4
 samples = int(1E9)
 streaming_samples = 250
 interval = 4
