@@ -399,8 +399,8 @@ class PicoScopeBase:
         """
         time_interval_ns = ctypes.c_float()
         max_samples = ctypes.c_int32()
-        attr_function = getattr(self.dll, self._unit_prefix_n + 'GetTimeBase2')
-        status = attr_function(
+        status = self._call_attr_function(
+            'GetTimeBase2',
             self.handle,
             timebase,
             samples,
@@ -408,7 +408,6 @@ class PicoScopeBase:
             ctypes.byref(max_samples),
             segment
         )
-        self._error_handler(status)
         return {"Interval(ns)": time_interval_ns.value, 
                 "Samples":          max_samples.value}
     
