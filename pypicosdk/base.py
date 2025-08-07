@@ -309,33 +309,6 @@ class PicoScopeBase:
 
         return string.value.decode()
     
-    def get_accessory_info(self, channel: CHANNEL, info: UNIT_INFO) -> str:
-        """Return accessory details for the given channel.
-        This wraps the driver ``GetAccessoryInfo`` call which retrieves
-        information about any accessory attached to ``channel``.
-        Args:
-            channel: Channel the accessory is connected to.
-            info: Information field requested from :class:`UNIT_INFO`.
-        Returns:
-            str: Information string provided by the driver.
-        """
-
-        string = ctypes.create_string_buffer(16)
-        string_length = ctypes.c_int16(32)
-        required_size = ctypes.c_int16(32)
-
-        self._call_attr_function(
-            "GetAccessoryInfo",
-            self.handle,
-            channel,
-            string,
-            string_length,
-            ctypes.byref(required_size),
-            ctypes.c_uint32(info),
-        )
-
-        return string.value.decode()
-    
     def _get_enabled_channel_flags(self) -> int:
         """
         Returns integer of enabled channels as a binary code.
@@ -426,8 +399,8 @@ class PicoScopeBase:
         """
         time_interval_ns = ctypes.c_float()
         max_samples = ctypes.c_int32()
-        attr_function = getattr(self.dll, self._unit_prefix_n + 'GetTimeBase2')
-        status = attr_function(
+        status = self._call_attr_function(
+            'GetTimeBase2',
             self.handle,
             timebase,
             samples,
@@ -435,7 +408,6 @@ class PicoScopeBase:
             ctypes.byref(max_samples),
             segment
         )
-        self._error_handler(status)
         return {"Interval(ns)": time_interval_ns.value, 
                 "Samples":          max_samples.value}
     
