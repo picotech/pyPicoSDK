@@ -42,6 +42,8 @@ plugins:
           inherited_members: true
           members_order: alphabetical
           separate_signature: false
+          extensions:
+          - griffe_inherited_docstrings
           
 extra_css:
 - css/mkdocstrings.css
