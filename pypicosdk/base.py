@@ -1,8 +1,6 @@
 import ctypes
 import os
 import warnings
-import platform
-import time
 import typing
 
 import numpy as np
@@ -10,90 +8,8 @@ import numpy.ctypeslib as npc
 
 from .error_list import ERROR_STRING
 from .constants import *
+from .common import *
 
-
-class PicoSDKNotFoundException(Exception):
-    pass
-
-
-class PicoSDKException(Exception):
-    pass
-
-
-class OverrangeWarning(UserWarning):
-    pass
-
-
-class PowerSupplyWarning(UserWarning):
-    pass
-
-
-# General Functions
-def _check_path(location:str, folders:list) -> str:
-    """Checks a list of folders in a location i.e. ['Pico Technology']
-       in /ProgramFiles/ and returns first full path found
-
-    Args:
-        location (str): Path to check for folders
-        folders (list): List of folders to look for
-
-    Raises:
-        PicoSDKException: If not found, raise an error for user
-
-    Returns:
-        str: Full path of the first located folder
-    """
-    for folder in folders:
-        path = os.path.join(location, folder)
-        if os.path.exists(path):
-            return path
-    raise PicoSDKException(
-        "No PicoSDK or PicoScope 7 drivers installed, get them from http://picotech.com/downloads"
-    )
-
-
-def _get_lib_path() -> str:
-    """Looks for PicoSDK folder based on OS and returns folder
-       path
-
-    Raises:
-        PicoSDKException: If unsupported OS
-
-    Returns:
-        str: Full path of PicoSDK folder location
-    """
-    system = platform.system()
-    if system == "Windows":
-        program_files = os.environ.get("PROGRAMFILES")
-        checklist = [
-            'Pico Technology\\SDK\\lib',
-            'Pico Technology\\PicoScope 7 T&M Stable',
-            'Pico Technology\\PicoScope 7 T&M Early Access'
-        ]
-        return _check_path(program_files, checklist)
-    elif system == "Linux":
-        return _check_path('opt', 'picoscope')
-    elif system == "Darwin":
-        raise PicoSDKException("macOS is not yet tested and supported")
-    else:
-        raise PicoSDKException("Unsupported OS")
-    
-def _struct_to_dict(struct_instance: ctypes.Structure, format=False) -> dict:
-    """Takes a ctypes struct and returns the values as a python dict
-
-    Args:
-        struct_instance (ctypes.Structure): ctype structure to convert into dictionary
-
-    Returns:
-        dict: python dictionary of struct values
-    """
-    result = {}
-    for field_name, _ in struct_instance._fields_:
-        if format:
-            result[field_name.replace('_', '')] = getattr(struct_instance, field_name)
-        else:
-            result[field_name] = getattr(struct_instance, field_name)
-    return result
 
 class PicoScopeBase:
     """PicoScope base class including common SDK and python modules and functions"""
@@ -123,6 +39,7 @@ class PicoScopeBase:
 
     def __del__(self):
         self.close_unit()
+
 
     # General Functions
     def _get_attr_function(self, function_name: str) -> ctypes.CDLL:
@@ -181,8 +98,9 @@ class PicoScopeBase:
         self._error_handler(status)
         return status
 
+
     # General PicoSDK functions    
-    def _open_unit(self, serial_number:int=None, resolution:RESOLUTION=0) -> None:
+    def open_unit(self, serial_number:int=None, resolution:RESOLUTION=0) -> None:
         """
         Opens PicoScope unit.
 
@@ -239,16 +157,87 @@ class PicoScopeBase:
         """
 
         ready = ctypes.c_int16()
-        attr_function = getattr(self.dll, self._unit_prefix_n + "IsReady")
         while True:
-            status = attr_function(
+            status = self._call_attr_function(
+                "IsReady",
                 self.handle, 
                 ctypes.byref(ready)
             )
-            self._error_handler(status)
             if ready.value != 0:
                 break
     
+    def ping_unit(self) -> bool:
+        """Check that the device is still connected.
+        This wraps ``ps6000aPingUnit`` which verifies communication with
+        the PicoScope. If the call succeeds the method returns ``True``.
+        Returns:
+            bool: ``True`` if the unit responded.
+        """
+
+        status = self._call_attr_function("PingUnit", self.handle)
+        return status == 0
+    
+    def check_for_update(self, n_infos: int = 8) -> tuple[list, bool]:
+        """Query whether a firmware update is available for the device.
+        Args:
+            n_infos: Size of the firmware information buffer.
+        Returns:
+            tuple[list, bool]: ``(firmware_info, updates_required)`` where
+                ``firmware_info`` is a list of :class:`PICO_FIRMWARE_INFO`
+                structures and ``updates_required`` indicates whether any
+                firmware components require updating.
+        """
+
+        info_array = (PICO_FIRMWARE_INFO * n_infos)()
+        n_returned = ctypes.c_int16(n_infos)
+        updates_required = ctypes.c_uint16()
+        self._call_attr_function(
+            "CheckForUpdate",
+            self.handle,
+            info_array,
+            ctypes.byref(n_returned),
+            ctypes.byref(updates_required),
+        )
+
+        return list(info_array)[: n_returned.value], bool(updates_required.value)
+
+    def start_firmware_update(self, progress=None) -> None:
+        """Begin installing any available firmware update.
+        Args:
+            progress: Optional callback ``(handle, percent)`` that receives
+                progress updates as the firmware is written.
+        """
+
+        CALLBACK = ctypes.CFUNCTYPE(None, ctypes.c_int16, ctypes.c_uint16)
+        cb = CALLBACK(progress) if progress else None
+        self._call_attr_function(
+            "StartFirmwareUpdate",
+            self.handle,
+            cb,
+        )
+
+    def memory_segments(self, n_segments: int) -> int:
+        """Configure the number of memory segments.
+
+        This wraps the ``ps6000aMemorySegments`` API call.
+
+        Args:
+            n_segments: Desired number of memory segments.
+
+        Returns:
+            int: Number of samples available in each segment.
+        """
+
+        max_samples = ctypes.c_uint64()
+        self._call_attr_function(
+            "MemorySegments",
+            self.handle,
+            ctypes.c_uint64(n_segments),
+            ctypes.byref(max_samples),
+        )
+        return max_samples.value
+    
+
     # Get information from PicoScope
     def get_unit_info(self, unit_info: UNIT_INFO) -> str:
         """
@@ -272,6 +261,24 @@ class PicoScopeBase:
             ctypes.c_uint32(unit_info)
         )
         return string.value.decode()
+
+    def _get_scaling_values(self, n_channels: int = 8) -> list[PICO_SCALING_FACTORS_VALUES]:
+        """Return probe scaling factors for each channel.
+        Args:
+            n_channels: Number of channel entries to retrieve.
+        Returns:
+            list[PICO_SCALING_FACTORS_VALUES]: Scaling factors for ``n_channels`` channels.
+        """
+
+        array_type = PICO_SCALING_FACTORS_VALUES * n_channels
+        values = array_type()
+        self._call_attr_function(
+            "GetScalingValues",
+            self.handle,
+            values,
+            ctypes.c_int16(n_channels),
+        )
+        return list(values)
     
     def get_unit_serial(self) -> str:
         """
@@ -282,33 +289,6 @@ class PicoScopeBase:
         """
         return self.get_unit_info(UNIT_INFO.PICO_BATCH_AND_SERIAL)
 
-    def get_accessory_info(self, channel: CHANNEL, info: UNIT_INFO) -> str:
-        """Return accessory details for the given channel.
-        This wraps the driver ``GetAccessoryInfo`` call which retrieves
-        information about any accessory attached to ``channel``.
-        Args:
-            channel: Channel the accessory is connected to.
-            info: Information field requested from :class:`UNIT_INFO`.
-        Returns:
-            str: Information string provided by the driver.
-        """
-
-        string = ctypes.create_string_buffer(16)
-        string_length = ctypes.c_int16(32)
-        required_size = ctypes.c_int16(32)
-
-        self._call_attr_function(
-            "GetAccessoryInfo",
-            self.handle,
-            channel,
-            string,
-            string_length,
-            ctypes.byref(required_size),
-            ctypes.c_uint32(info),
-        )
-
-        return string.value.decode()
-    
     def _get_enabled_channel_flags(self) -> int:
         """
         Returns integer of enabled channels as a binary code.
@@ -350,11 +330,7 @@ class PicoScopeBase:
         )
         return {"timebase": timebase.value, "actual_sample_interval": time_interval.value}
     
-    def get_timebase(timebase, samples):
-        # Override for PicoScopeBase
-        raise NotImplementedError("Method not yet available for this oscilloscope")
-    
-    def _get_timebase(self, timebase: int, samples: int, segment:int=0) -> dict:
+    def get_timebase(self, timebase: int, samples: int, segment:int=0) -> dict:
         """
         This function calculates the sampling rate and maximum number of 
         samples for a given timebase under the specified conditions.
@@ -369,8 +345,8 @@ class PicoScopeBase:
         """
         time_interval_ns = ctypes.c_double()
         max_samples = ctypes.c_uint64()
-        attr_function = getattr(self.dll, self._unit_prefix_n + 'GetTimebase')
-        status = attr_function(
+        status = self._call_attr_function(
+            'GetTimebase',
             self.handle,
             timebase,
             samples,
@@ -378,7 +354,6 @@ class PicoScopeBase:
             ctypes.byref(max_samples),
             segment
         )
-        self._error_handler(status)
         return {"Interval(ns)": time_interval_ns.value, 
                 "Samples":          max_samples.value}
     
@@ -444,31 +419,6 @@ class PicoScopeBase:
         interval_s = interval / unit
         return self.get_nearest_sampling_interval(interval_s)["timebase"]
     
-    def _get_adc_limits(self) -> tuple:
-        """
-        Gets the ADC limits for specified devices.
-
-        Currently tested on: 6000a.
-
-        Returns:
-                tuple: (minimum value, maximum value)
-
-        Raises:
-                PicoSDKException: If device hasn't been initialized.
-        """
-        if self.resolution is None:
-            raise PicoSDKException("Device has not been initialized, use open_unit()")
-        min_value = ctypes.c_int32()
-        max_value = ctypes.c_int32()
-        self._call_attr_function(
-            'GetAdcLimits',
-            self.handle,
-            self.resolution,
-            ctypes.byref(min_value),
-            ctypes.byref(max_value)
-        )
-        return min_value.value, max_value.value
-    
     def _get_maximum_adc_value(self) -> int:
         """
         Gets the ADC limits for specified devices.
@@ -500,39 +450,6 @@ class PicoScopeBase:
         """
         interval = self.get_timebase(timebase, samples)['Interval(ns)']
         return [round(x*interval, 4) for x in range(samples)]
-
-    def get_trigger_info(
-        self,
-        first_segment_index: int = 0,
-        segment_count: int = 1,
-    ) -> list[dict]:
-        """Retrieve trigger timing information for one or more segments.
-
-        Args:
-            first_segment_index: Index of the first memory segment to query.
-            segment_count: Number of consecutive segments starting at
-                ``first_segment_index``.
-
-        Returns:
-            List of dictionaries for each trigger event
-
-        Raises:
-            PicoSDKException: If the function call fails or preconditions are
-                not met.
-        """
-
-        info_array = (PICO_TRIGGER_INFO * segment_count)()
-
-        self._call_attr_function(
-            "GetTriggerInfo",
-            self.handle,
-            ctypes.byref(info_array[0]),
-            ctypes.c_uint64(first_segment_index),
-            ctypes.c_uint64(segment_count),
-        )
-
-        # Convert struct to dictionary
-        return [_struct_to_dict(info, format=True) for info in info_array]
     
     def get_trigger_time_offset(self, time_unit: TIME_UNIT, segment_index: int = 0) -> int:
         """
@@ -675,46 +592,6 @@ class PicoScopeBase:
         self.is_over_range()
         return no_samples.value, overflow.value
 
-    def get_values_bulk_async(
-        self,
-        start_index: int,
-        no_of_samples: int,
-        from_segment_index: int,
-        to_segment_index: int,
-        down_sample_ratio: int,
-        down_sample_ratio_mode: int,
-        lp_data_ready:ctypes.POINTER,
-        p_parameter:ctypes.POINTER,
-    ) -> None:
-        """Begin asynchronous retrieval of values from multiple segments.
-
-        Args:
-            start_index: Index within each segment to begin copying from.
-            no_of_samples: Number of samples to read from each segment.
-            from_segment_index: Index of the first segment to read.
-            to_segment_index: Index of the last segment in the range.
-            down_sample_ratio: Downsampling ratio to apply before copying.
-            down_sample_ratio_mode: Downsampling mode from
-                :class:`RATIO_MODE`.
-            lp_data_ready: Callback invoked when data is available. The callback
-                signature should be ``callback(handle, status, n_samples,
-                overflow)``.
-            p_parameter: User parameter passed through to ``lp_data_ready``.
-        """
-
-        self._call_attr_function(
-            "GetValuesBulkAsync",
-            self.handle,
-            ctypes.c_uint64(start_index),
-            ctypes.c_uint64(no_of_samples),
-            ctypes.c_uint64(from_segment_index),
-            ctypes.c_uint64(to_segment_index),
-            ctypes.c_uint64(down_sample_ratio),
-            down_sample_ratio_mode,
-            lp_data_ready,
-            p_parameter,
-        )
-
     def get_values_overlapped(
         self,
         start_index: int,
@@ -781,20 +658,69 @@ class PicoScopeBase:
         self.is_over_range()
         return c_samples.value
 
-    def stop_using_get_values_overlapped(self) -> None:
-        """Terminate overlapped capture mode.
-
-        Call this when overlapped captures are complete to release any
-        resources allocated by :meth:`get_values_overlapped`.
+    def get_device_resolution(self) -> RESOLUTION:
+        """Return the currently configured resolution.
+        Returns:
+            :class:`RESOLUTION`: Device resolution.
         """
 
+        resolution = ctypes.c_int32()
         self._call_attr_function(
-            "StopUsingGetValuesOverlapped",
+            "GetDeviceResolution",
             self.handle,
+            ctypes.byref(resolution),
         )
-
-
+        self.resolution = RESOLUTION(resolution.value)
+        self.min_adc_value, self.max_adc_value = self.get_adc_limits()
+        return RESOLUTION(resolution.value)
     
+    def no_of_streaming_values(self) -> int:
+        """Return the number of values currently available while streaming."""
+
+        count = ctypes.c_uint64()
+        self._call_attr_function(
+            "NoOfStreamingValues",
+            self.handle,
+            ctypes.byref(count),
+        )
+        return count.value
+    
+    def get_no_of_processed_captures(self) -> int:
+        """Return the number of captures processed in rapid block mode."""
+
+        n_processed = ctypes.c_uint64()
+        self._call_attr_function(
+            "GetNoOfProcessedCaptures",
+            self.handle,
+            ctypes.byref(n_processed),
+        )
+        return n_processed.value
+    
+    def get_minimum_timebase_stateless(self) -> dict:
+        """Return the fastest timebase available for the current setup.
+        Queries ``ps6000aGetMinimumTimebaseStateless`` using the enabled
+        channels and current device resolution.
+        Returns:
+            dict: ``{"timebase": int, "time_interval": float}`` where
+            ``time_interval`` is the sample period in seconds.
+        """
+
+        timebase = ctypes.c_uint32()
+        time_interval = ctypes.c_double()
+        self._call_attr_function(
+            "GetMinimumTimebaseStateless",
+            self.handle,
+            self._get_enabled_channel_flags(),
+            ctypes.byref(timebase),
+            ctypes.byref(time_interval),
+            self.resolution,
+        )
+        return {
+            "timebase": timebase.value,
+            "time_interval": time_interval.value,
+        }
+
+
     # Data conversion ADC/mV & ctypes/int 
     def mv_to_adc(self, mv: float, channel_range: int, channel: typing.Optional[CHANNEL] = None) -> int:
         """
@@ -888,38 +814,29 @@ class PicoScopeBase:
             state
         )
 
-    def _set_channel_on(self, channel, range, coupling=COUPLING.DC, offset=0.0, bandwidth=BANDWIDTH_CH.FULL):
-        """Sets a channel to ON at a specified range (6000E)"""
-        self.range[channel] = range
-        attr_function = getattr(self.dll, self._unit_prefix_n + 'SetChannelOn')
-        status = attr_function(
+    def set_device_resolution(self, resolution: RESOLUTION) -> None:
+        """Configure the ADC resolution using ``ps6000aSetDeviceResolution``.
+        Args:
+            resolution: Desired resolution as a :class:`RESOLUTION` value.
+        """
+
+        self._call_attr_function(
+            "SetDeviceResolution",
             self.handle,
-            channel,
-            coupling,
-            range,
-            ctypes.c_double(offset),
-            bandwidth
+            resolution,
         )
-        return self._error_handler(status)
-    
-    def _set_channel_off(self, channel):
-        """Sets a channel to OFF (6000E)"""
-        attr_function = getattr(self.dll, self._unit_prefix_n + 'SetChannelOff')
-        status = attr_function(
-            self.handle, 
-            channel
-        )
-        return self._error_handler(status)
-    
+        self.resolution = resolution
+        self.min_adc_value, self.max_adc_value = self.get_adc_limits()
+
     def set_all_channels_off(self):
         """Turns all channels off, based on unit number of channels"""
         channels = self.get_unit_info(UNIT_INFO.PICO_VARIANT_INFO)[1]
         for channel in range(int(channels)):
             self.set_channel(channel, enabled=False)
     
-    
     def set_simple_trigger(self, channel, threshold_mv, enable=True, direction=TRIGGER_DIR.RISING, delay=0, auto_trigger=0):
-        """Configure a simple edge trigger.
+        """
+        Sets up a simple trigger from a specified channel and threshold in mV.
 
         Args:
             channel (int): The input channel to apply the trigger to.
@@ -929,6 +846,10 @@ class PicoScopeBase:
             delay (int, optional): Delay in samples after the trigger condition is met before starting capture.
             auto_trigger (int, optional): Timeout in **microseconds** after which data capture proceeds even if no
                 trigger occurs. If 0, the PicoScope will wait indefintely.
+        
+        Examples:
+            When using TRIGGER_AUX, threshold is fixed to 1.25 V
+            >>> scope.set_simple_trigger(channel=psdk.CHANNEL.TRIGGER_AUX)
         """
         if channel in self.range:
             threshold_adc = self.mv_to_adc(threshold_mv, self.range[channel], channel)
@@ -1115,47 +1036,6 @@ class PicoScopeBase:
             ctypes.c_uint64(delay),
         )
 
-    def set_trigger_holdoff_counter_by_samples(self, samples: int) -> None:
-        """Set the trigger holdoff period in sample intervals.
-        Args:
-            samples: Number of samples for the holdoff period.
-        """
-
-        self._call_attr_function(
-            "SetTriggerHoldoffCounterBySamples",
-            self.handle,
-            ctypes.c_uint64(samples),
-        )
-
-    def set_trigger_digital_port_properties(
-        self,
-        port: int,
-        directions: list[PICO_DIGITAL_CHANNEL_DIRECTIONS] | None,
-    ) -> None:
-        """Configure digital port trigger directions.
-        Args:
-            port: Digital port identifier.
-            directions: Optional list of channel directions to set. ``None`` to
-                clear existing configuration.
-        """
-
-        if directions:
-            array_type = PICO_DIGITAL_CHANNEL_DIRECTIONS * len(directions)
-            dir_array = array_type(*directions)
-            ptr = dir_array
-            count = len(directions)
-        else:
-            ptr = None
-            count = 0
-
-        self._call_attr_function(
-            "SetTriggerDigitalPortProperties",
-            self.handle,
-            port,
-            ptr,
-            ctypes.c_int16(count),
-        )
-
     def set_pulse_width_qualifier_properties(
         self,
         lower: int,
@@ -1201,67 +1081,6 @@ class PicoScopeBase:
             ctypes.byref(cond_array),
             ctypes.c_int16(cond_len),
             action,
-        )
-
-    def set_pulse_width_qualifier_directions(
-        self,
-        channel: int,
-        direction: int,
-        threshold_mode: int,
-    ) -> None:
-        """Set pulse width qualifier direction for ``channel``.
-        If multiple directions are needed, channel, direction and threshold_mode 
-        can be given a list of values.
-
-        Args:
-            channel (CHANNEL | list): Single or list of channels to configure.
-            direction (THRESHOLD_DIRECTION | list): Single or list of directions to configure.
-            threshold_mode (THRESHOLD_MODE | list): Single or list of threshold modes to configure.
-        """
-        if type(channel) == list:
-            dir_len = len(channel)
-            dir_struct = (PICO_DIRECTION * dir_len)()
-            for i in range(dir_len):
-                print(channel[i], direction[i], threshold_mode[i])
-                dir_struct[i] = PICO_DIRECTION(channel[i], direction[i], threshold_mode[i])
-        else:
-            dir_len = 1
-            dir_struct = PICO_DIRECTION(channel, direction, threshold_mode)
-
-        self._call_attr_function(
-            "SetPulseWidthQualifierDirections",
-            self.handle,
-            ctypes.byref(dir_struct),
-            ctypes.c_int16(dir_len),
-        )
-
-    def set_pulse_width_digital_port_properties(
-        self,
-        port: int,
-        directions: list[PICO_DIGITAL_CHANNEL_DIRECTIONS] | None,
-    ) -> None:
-        """Configure digital port properties for pulse-width triggering.
-        Args:
-            port: Digital port identifier.
-            directions: Optional list of channel directions to set. ``None`` to
-                clear existing configuration.
-        """
-
-        if directions:
-            array_type = PICO_DIGITAL_CHANNEL_DIRECTIONS * len(directions)
-            dir_array = array_type(*directions)
-            ptr = dir_array
-            count = len(directions)
-        else:
-            ptr = None
-            count = 0
-
-        self._call_attr_function(
-            "SetPulseWidthDigitalPortProperties",
-            self.handle,
-            port,
-            ptr,
-            ctypes.c_int16(count),
         )
 
     def set_pulse_width_trigger(
@@ -1400,252 +1219,50 @@ class PicoScopeBase:
             ctypes.c_int16(state),
         )
 
-    def trigger_within_pre_trigger_samples(self, state: int) -> None:
-        """Control trigger positioning relative to pre-trigger samples.
-        Args:
-            state: 0 to enable, 1 to disable
+    def set_data_buffer_for_enabled_channels(
+            self, 
+            samples:int, 
+            segment:int=0, 
+            datatype=DATA_TYPE.INT16_T,
+            ratio_mode=RATIO_MODE.RAW, 
+            clear_buffer:bool=True,
+            captures:int=0
+        ) -> dict:
         """
+        Sets data buffers for enabled channels set by picosdk.set_channel()
 
-        self._call_attr_function(
-            "TriggerWithinPreTriggerSamples",
-            self.handle,
-            state,
-        )
-
-    def siggen_clock_manual(self, dac_clock_frequency: float, prescale_ratio: int) -> None:
-        """Manually control the signal generator clock.
         Args:
-            dac_clock_frequency: Frequency of the DAC clock in Hz.
-            prescale_ratio: Prescale divisor for the DAC clock.
-        """
+            samples (int): The sample buffer or size to allocate.
+            segment (int): The memory segment index.
+            datatype (DATA_TYPE): The data type used for the buffer.
+            ratio_mode (RATIO_MODE): The ratio mode (e.g., RAW, AVERAGE).
+            clear_buffer (bool): If True, clear the buffer first
+            captures: If larger than 0, it will create multiple buffers for RAPID mode.
 
-        self._call_attr_function(
-            "SigGenClockManual",
-            self.handle,
-            ctypes.c_double(dac_clock_frequency),
-            ctypes.c_uint64(prescale_ratio),
-        )
-
-    def siggen_filter(self, filter_state: SIGGEN_FILTER_STATE) -> None:
-        """Enable or disable the signal generator output filter.
-        Args:
-            filter_state: can be set on or off, or put in automatic mode.
-        """
-
-        self._call_attr_function(
-            "SigGenFilter",
-            self.handle,
-            filter_state,
-        )
-
-    def siggen_frequency_limits(
-        self,
-        wave_type: WAVEFORM,
-        num_samples: int,
-        start_frequency: float,
-        sweep_enabled: int,
-        manual_dac_clock_frequency: float | None = None,
-        manual_prescale_ratio: int | None = None,
-    ) -> dict:
-        """Query frequency sweep limits for the signal generator.
-        Args:
-            wave_type: Waveform type.
-            num_samples: Number of samples in the arbitrary waveform buffer.
-            start_frequency: Starting frequency in Hz.
-            sweep_enabled: Whether a sweep is enabled.
-            manual_dac_clock_frequency: Optional manual DAC clock frequency.
-            manual_prescale_ratio: Optional manual DAC prescale ratio.
         Returns:
-            dict: Frequency limit information with keys ``max_stop_frequency``,
-            ``min_frequency_step``, ``max_frequency_step``, ``min_dwell_time`` and
-            ``max_dwell_time``.
+            dict: A dictionary mapping each channel to its associated data buffer.
         """
+        # Clear the buffer
+        if clear_buffer == True:
+            self.set_data_buffer(0, 0, 0, 0, 0, ACTION.CLEAR_ALL)
 
-        c_num_samples = ctypes.c_uint64(num_samples)
-        c_start_freq = ctypes.c_double(start_frequency)
-
-        if manual_dac_clock_frequency is not None:
-            c_manual_clock = ctypes.c_double(manual_dac_clock_frequency)
-            c_manual_clock_ptr = ctypes.byref(c_manual_clock)
+        # Create Buffers
+        channels_buffer = {}
+        # Rapid
+        if captures > 0:
+            for channel in self.range:
+                buffer = []
+                for capture_segment in range(captures):
+                    buffer.append(self.set_data_buffer(channel, samples, segment + capture_segment, datatype, ratio_mode, action=ACTION.ADD))
+                channels_buffer[channel] = buffer
+        # Single
         else:
-            c_manual_clock_ptr = None
+            for channel in self.range:
+                channels_buffer[channel] = self.set_data_buffer(channel, samples, segment, datatype, ratio_mode, action=ACTION.ADD)
 
-        if manual_prescale_ratio is not None:
-            c_prescale = ctypes.c_uint64(manual_prescale_ratio)
-            c_prescale_ptr = ctypes.byref(c_prescale)
-        else:
-            c_prescale_ptr = None
-
-        max_stop = ctypes.c_double()
-        min_step = ctypes.c_double()
-        max_step = ctypes.c_double()
-        min_dwell = ctypes.c_double()
-        max_dwell = ctypes.c_double()
-
-        self._call_attr_function(
-            "SigGenFrequencyLimits",
-            self.handle,
-            wave_type,
-            ctypes.byref(c_num_samples),
-            ctypes.byref(c_start_freq),
-            ctypes.c_int16(sweep_enabled),
-            c_manual_clock_ptr,
-            c_prescale_ptr,
-            ctypes.byref(max_stop),
-            ctypes.byref(min_step),
-            ctypes.byref(max_step),
-            ctypes.byref(min_dwell),
-            ctypes.byref(max_dwell),
-        )
-
-        return {
-            "max_stop_frequency": max_stop.value,
-            "min_frequency_step": min_step.value,
-            "max_frequency_step": max_step.value,
-            "min_dwell_time": min_dwell.value,
-            "max_dwell_time": max_dwell.value,
-        }
-
-    def siggen_limits(self, parameter: SIGGEN_PARAMETER) -> dict:
-        """Query signal generator parameter limits.
-        Args:
-            parameter: Signal generator parameter to query.
-        Returns:
-            dict: Dictionary with keys ``min``, ``max`` and ``step``.
-        """
-
-        min_val = ctypes.c_double()
-        max_val = ctypes.c_double()
-        step = ctypes.c_double()
-        self._call_attr_function(
-            "SigGenLimits",
-            self.handle,
-            parameter,
-            ctypes.byref(min_val),
-            ctypes.byref(max_val),
-            ctypes.byref(step),
-        )
-
-        return {"min": min_val.value, "max": max_val.value, "step": step.value}
-
-    def siggen_frequency_sweep(
-        self,
-        stop_frequency_hz: float,
-        frequency_increment: float,
-        dwell_time_s: float,
-        sweep_type: SWEEP_TYPE,
-    ) -> None:
-        """Configure frequency sweep parameters.
-        Args:
-            stop_frequency_hz: End frequency of the sweep in Hz.
-            frequency_increment: Increment value in Hz.
-            dwell_time_s: Time to dwell at each frequency in seconds.
-            sweep_type: Sweep direction.
-        """
-
-        self._call_attr_function(
-            "SigGenFrequencySweep",
-            self.handle,
-            ctypes.c_double(stop_frequency_hz),
-            ctypes.c_double(frequency_increment),
-            ctypes.c_double(dwell_time_s),
-            sweep_type,
-        )
-
-    def siggen_phase(self, delta_phase: int) -> None:
-        """Set the signal generator phase using ``delta_phase``.
-        
-        The signal generator uses direct digital synthesis (DDS) with a 32-bit phase accumulator that indicates the
-        present location in the waveform. The top bits of the phase accumulator are used as an index into a buffer
-        containing the arbitrary waveform. The remaining bits act as the fractional part of the index, enabling highresolution control of output frequency and allowing the generation of lower frequencies.
-        The signal generator steps through the waveform by adding a deltaPhase value between 1 and
-        phaseAccumulatorSize-1 to the phase accumulator every dacPeriod (= 1/dacFrequency).
-
-        Args:
-            delta_phase: Phase offset to apply.
-        """
-
-        self._call_attr_function(
-            "SigGenPhase",
-            self.handle,
-            ctypes.c_uint64(delta_phase),
-        )
-
-    def siggen_phase_sweep(
-        self,
-        stop_delta_phase: int,
-        delta_phase_increment: int,
-        dwell_count: int,
-        sweep_type: SWEEP_TYPE,
-    ) -> None:
-        """Configure a phase sweep for the signal generator.
-        Args:
-            stop_delta_phase: End phase in DAC counts.
-            delta_phase_increment: Increment value in DAC counts.
-            dwell_count: Number of DAC cycles to dwell at each phase step.
-            sweep_type: Sweep direction.
-        """
-
-        self._call_attr_function(
-            "SigGenPhaseSweep",
-            self.handle,
-            ctypes.c_uint64(stop_delta_phase),
-            ctypes.c_uint64(delta_phase_increment),
-            ctypes.c_uint64(dwell_count),
-            sweep_type,
-        )
-
-    def siggen_pause(self) -> None:
-        """Pause the signal generator."""
-
-        self._call_attr_function("SigGenPause", self.handle)
-
-    def siggen_restart(self) -> None:
-        """Restart the signal generator after a pause."""
-
-        self._call_attr_function("SigGenRestart", self.handle)
-
-    def siggen_software_trigger_control(self, trigger_state: int) -> None:
-        """Control software triggering for the signal generator.
-        Args:
-            trigger_state: ``1`` to enable the software trigger, ``0`` to disable.
-        """
-
-        self._call_attr_function(
-            "SigGenSoftwareTriggerControl",
-            self.handle,
-            trigger_state,
-        )
-
-    def siggen_trigger(
-        self,
-        trigger_type: int,
-        trigger_source: int,
-        cycles: int,
-        auto_trigger_ps: int = 0,
-    ) -> None:
-        """Configure signal generator triggering.
-        Args:
-            trigger_type: Trigger type to use.
-            trigger_source: Source for the trigger.
-            cycles: Number of cycles before the trigger occurs.
-            auto_trigger_ps: Time in picoseconds before auto-triggering.
-        """
-
-        self._call_attr_function(
-            "SigGenTrigger",
-            self.handle,
-            trigger_type,
-            trigger_source,
-            ctypes.c_uint64(cycles),
-            ctypes.c_uint64(auto_trigger_ps),
-        )
+        return channels_buffer
     
-    def set_data_buffer_for_enabled_channels():
-        raise NotImplementedError("Method not yet available for this oscilloscope")
-    
-    
-    def _set_data_buffer_ps6000a(
+    def set_data_buffer(
         self,
         channel,
         samples,
@@ -1704,7 +1321,7 @@ class PicoScopeBase:
         )
         return buffer
 
-    def _set_data_buffers_ps6000a(
+    def set_data_buffers(
         self,
         channel,
         samples,
@@ -1766,6 +1383,129 @@ class PicoScopeBase:
 
     
     # Run functions
+    def run_simple_block_capture(
+        self,
+        timebase: int,
+        samples: int,
+        segment: int = 0,
+        start_index: int = 0,
+        datatype: DATA_TYPE = DATA_TYPE.INT16_T,
+        ratio: int = 0,
+        ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
+        pre_trig_percent: int = 50,
+    ) -> tuple[dict, list]:
+        """Perform a complete single block capture.
+
+        Args:
+            timebase: PicoScope timebase value.
+            samples: Number of samples to capture.
+            segment: Memory segment index to use.
+            start_index: Starting index in the buffer.
+            datatype: Data type to use for the capture buffer.
+            ratio: Downsampling ratio.
+            ratio_mode: Downsampling mode.
+            pre_trig_percent: Percentage of samples to capture before the trigger.
+
+        Returns:
+            tuple[dict, list]: Dictionary of channel buffers (in mV) and the time
+            axis in nano-seconds.
+
+        Examples:
+            >>> scope.set_channel(CHANNEL.A, RANGE.V1)
+            >>> scope.set_simple_trigger(CHANNEL.A, threshold_mv=500)
+            >>> buffers = scope.run_simple_block_capture(timebase=3, samples=1000)
+        """
+
+        # Create data buffers. If Ratio Mode is TRIGGER, create a trigger buffer
+        if ratio_mode == RATIO_MODE.TRIGGER:
+            channels_buffer = self.set_data_buffer_for_enabled_channels(samples, segment, datatype, RATIO_MODE.RAW)
+            trigger_buffer = self.set_data_buffer_for_enabled_channels(samples, segment, datatype, ratio_mode, clear_buffer=False)
+            ratio_mode = RATIO_MODE.RAW
+        else:
+            channels_buffer = self.set_data_buffer_for_enabled_channels(samples, segment, datatype, ratio_mode)
+            trigger_buffer = None
+
+        # Start block capture
+        self.run_block_capture(timebase, samples, pre_trig_percent, segment)
+
+        # Get values from PicoScope (returning actual samples for time_axis)
+        actual_samples = self.get_values(samples, start_index, segment, ratio, ratio_mode)
+
+        # Get trigger buffer if applicable
+        if trigger_buffer is not None:
+            self.get_values(samples, 0, segment, ratio, RATIO_MODE.TRIGGER)
+
+        # Convert from ADC to mV values
+        channels_buffer = self.channels_buffer_adc_to_mv(channels_buffer)
+
+        # Generate the time axis based on actual samples and timebase
+        time_axis = self.get_time_axis(timebase, actual_samples)
+
+        return channels_buffer, time_axis
+    
+    def run_simple_rapid_block_capture(
+        self,
+        timebase: int,
+        samples: int,
+        captures: int,
+        start_index: int = 0,
+        datatype: DATA_TYPE = DATA_TYPE.INT16_T,
+        ratio: int = 0,
+        ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
+        pre_trig_percent: int = 50,
+    ) -> tuple[dict, list]:
+        """Run a rapid block capture with X amount of captures/frames/waveforms
+
+        Args:
+            timebase: PicoScope timebase value.
+            samples: Number of samples to capture.
+            captures: Number of waveforms to capture.
+            start_index: Starting index in buffer. 
+            datatype: Data type to use for the capture buffer. 
+            ratio: Downsampling ratio. 
+            ratio_mode: Downsampling mode. 
+            pre_trig_percent: Percentage of samples to capture before the trigger. 
+
+        Returns:
+            tuple[dict, list]: Dictionary of channel buffers (in mV) and the time
+            axis in nano-seconds.
+        """
+
+        # Segment set to 0
+        segment = 0
+        
+        # Setup memory segments
+        self.memory_segments(captures)
+        self.set_no_of_captures(captures)
+        
+        # Build buffers for data and trigger (if applicable)
+        if ratio_mode == RATIO_MODE.TRIGGER:
+            channels_buffer = self.set_data_buffer_for_enabled_channels(samples, datatype=datatype, ratio_mode=RATIO_MODE.RAW, captures=captures)
+            trigger_buffer = self.set_data_buffer_for_enabled_channels(samples, datatype=datatype, ratio_mode=ratio_mode, clear_buffer=False)
+            ratio_mode = RATIO_MODE.RAW
+        else:
+            channels_buffer = self.set_data_buffer_for_enabled_channels(samples, datatype=datatype, ratio_mode=ratio_mode, captures=captures)
+            trigger_buffer = None
+
+        # Run block capture
+        self.run_block_capture(timebase, samples, pre_trig_percent)
+
+        # Return values
+        actual_samples, overflow = self.get_values_bulk(start_index, samples, segment, captures - 1, ratio, ratio_mode)
+
+        # Get trigger values (if applicable)
+        if trigger_buffer is not None:
+            self.get_values(samples, 0, 0, ratio, RATIO_MODE.TRIGGER)
+
+        # Convert data to mV
+        channels_buffer = self.channels_buffer_adc_to_mv(channels_buffer)
+
+        # Get time axis
+        time_axis = self.get_time_axis(timebase, actual_samples)
+
+        # Return data
+        return channels_buffer, time_axis
+
     def run_block_capture(self, timebase, samples, pre_trig_percent=50, segment=0) -> int:
         """
         Runs a block capture using the specified timebase and number of samples.
@@ -1948,135 +1688,5 @@ class PicoScopeBase:
                 OverrangeWarning
             )
         return over_range_channels
-        
-    
-    def run_simple_block_capture(self) -> dict:
-        raise NotImplementedError("This method is not yet implemented in this PicoScope")
-    
-    # Siggen Functions
-    def siggen_apply(self, enabled=1, sweep_enabled=0, trigger_enabled=0, 
-                     auto_clock_optimise_enabled=0, override_auto_clock_prescale=0) -> dict:
-        """
-        Sets the signal generator running using parameters previously configured.
 
-        Args:
-                enabled (int, optional): SigGen Enabled, 
-                sweep_enabled (int, optional): Sweep Enabled,
-                trigger_enabled (int, optional): SigGen trigger enabled,
-                auto_clock_optimise_enabled (int, optional): Auto Clock Optimisation,
-                override_auto_clock_prescale (int, optional): Override Clock Prescale,
-
-        Returns:
-                dict: Returns dictionary of the actual achieved values.
-        """
-        c_frequency = ctypes.c_double()
-        c_stop_freq = ctypes.c_double()
-        c_freq_incr = ctypes.c_double()
-        c_dwell_time = ctypes.c_double()
-        self._call_attr_function(
-            'SigGenApply',
-            self.handle,
-            enabled,
-            sweep_enabled,
-            trigger_enabled,
-            auto_clock_optimise_enabled,
-            override_auto_clock_prescale,
-            ctypes.byref(c_frequency),
-            ctypes.byref(c_stop_freq),
-            ctypes.byref(c_freq_incr),
-            ctypes.byref(c_dwell_time)
-        )
-        return {'Freq': c_frequency.value,
-                'StopFreq': c_stop_freq.value,
-                'FreqInc': c_freq_incr.value,
-                'dwelltime': c_dwell_time.value}
-    
-    def siggen_set_frequency(self, frequency:float) -> None:
-        """
-        Set frequency of SigGen in Hz.
-
-        Args:
-                frequency (int): Frequency in Hz.
-        """   
-        self._call_attr_function(
-            'SigGenFrequency',
-            self.handle,
-            ctypes.c_double(frequency)
-        )
-
-    def siggen_set_duty_cycle(self, duty:float) -> None:
-        """
-        Set duty cycle of SigGen in percentage
-
-        Args:
-                duty cycle (int): Duty cycle in %.
-        """   
-        self._call_attr_function(
-            'SigGenWaveformDutyCycle',
-            self.handle,
-            ctypes.c_double(duty)
-        )
-    
-    def siggen_set_range(self, pk2pk:float, offset:float=0.0):
-        """
-        Set mV range of SigGen (6000A).
-
-        Args:
-                pk2pk (int): Peak to peak of signal in volts (V).
-                offset (int, optional): Offset of signal in volts (V).
-        """      
-        self._call_attr_function(
-            'SigGenRange',
-            self.handle,
-            ctypes.c_double(pk2pk),
-            ctypes.c_double(offset)
-        )
-
-    def _siggen_get_buffer_args(self, buffer:np.ndarray) -> tuple[ctypes.POINTER, int]:
-        """
-        Takes a np buffer and returns a ctypes compatible pointer and buffer length.
-
-        Args:
-            buffer (np.ndarray): numpy buffer of data (between -32767 and +32767)
-
-        Returns:
-            tuple[ctypes.POINTER, int]: Buffer pointer and buffer length
-        """
-        buffer_len = buffer.size
-        buffer = np.asanyarray(buffer, dtype=np.int16)
-        buffer_ptr = buffer.ctypes.data_as(ctypes.POINTER(ctypes.c_int16))
-        return buffer_ptr, buffer_len
-    
-    def siggen_set_waveform(
-            self, 
-            wave_type: WAVEFORM,
-            buffer:np.ndarray|None = None
-        ) -> None:
-        """
-        Set waveform type for SigGen (6000A). If arbitrary mode is selected,
-        a buffer of ADC samples is needed.
-
-        Args:
-                wave_type (WAVEFORM): Waveform type i.e. WAVEFORM.SINE.
-                buffer: np.array buffer to be used in WAVEFORM.ARBITRARY mode.
-        """
-        # Arbitrary buffer creation
-        buffer_len = None
-        buffer_ptr = None
-        if wave_type is WAVEFORM.ARBITRARY:
-            buffer_ptr, buffer_len = self._siggen_get_buffer_args(buffer)
-        
-
-        self._call_attr_function(
-            'SigGenWaveform',
-            self.handle,
-            wave_type,
-            buffer_ptr,
-            buffer_len
-        )
-
-    def set_siggen(self, *args):
-        raise NotImplementedError("Method not yet available for this oscilloscope")
-
-
-__all__ = ['PicoSDKNotFoundException', 'PicoSDKException', 'OverrangeWarning', 'PowerSupplyWarning', 'PicoScopeBase']
+__all__ = ['PicoScopeBase']
