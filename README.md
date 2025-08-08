@@ -41,6 +41,6 @@ Once tested, try an [example script from github](https://github.com/JamesPicoTec
 - [PicoScope Support (Compatibility)](https://jamespicotech.github.io/pyPicoSDK/dev/current)
 
 ## Version Control
-pyPicoSDK: 1.0.1
+pyPicoSDK: 1.1.0
 
 Docs: 0.2.4
