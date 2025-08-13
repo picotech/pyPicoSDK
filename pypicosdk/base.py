@@ -1372,6 +1372,7 @@ class PicoScopeBase:
         segment: int = 0,
         start_index: int = 0,
         datatype: DATA_TYPE = DATA_TYPE.INT16_T,
+        conv_to_mv:bool = True,
         ratio: int = 0,
         ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
         pre_trig_percent: int = 50,
@@ -1384,6 +1385,8 @@ class PicoScopeBase:
             segment: Memory segment index to use.
             start_index: Starting index in the buffer.
             datatype: Data type to use for the capture buffer.
+            conv_to_mv: If True, function will return a float mV array.
+                If False, function will return a ADC array specified by datatype arg.
             ratio: Downsampling ratio.
             ratio_mode: Downsampling mode.
             pre_trig_percent: Percentage of samples to capture before the trigger.
@@ -1418,7 +1421,8 @@ class PicoScopeBase:
             self.get_values(samples, 0, segment, ratio, RATIO_MODE.TRIGGER)
 
         # Convert from ADC to mV values
-        channels_buffer = self.channels_buffer_adc_to_mv(channels_buffer)
+        if conv_to_mv:
+            channels_buffer = self.channels_buffer_adc_to_mv(channels_buffer)
 
         # Generate the time axis based on actual samples and timebase
         time_axis = self.get_time_axis(timebase, actual_samples)
@@ -1432,6 +1436,7 @@ class PicoScopeBase:
         captures: int,
         start_index: int = 0,
         datatype: DATA_TYPE = DATA_TYPE.INT16_T,
+        conv_to_mv: bool = True,
         ratio: int = 0,
         ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
         pre_trig_percent: int = 50,
@@ -1444,6 +1449,8 @@ class PicoScopeBase:
             captures: Number of waveforms to capture.
             start_index: Starting index in buffer. 
             datatype: Data type to use for the capture buffer. 
+            conv_to_mv: If True, function will return a float mV array.
+                If False, function will return a ADC array specified by datatype arg.
             ratio: Downsampling ratio. 
             ratio_mode: Downsampling mode. 
             pre_trig_percent: Percentage of samples to capture before the trigger. 
@@ -1480,7 +1487,8 @@ class PicoScopeBase:
             self.get_values(samples, 0, 0, ratio, RATIO_MODE.TRIGGER)
 
         # Convert data to mV
-        channels_buffer = self.channels_buffer_adc_to_mv(channels_buffer)
+        if conv_to_mv:
+            channels_buffer = self.channels_buffer_adc_to_mv(channels_buffer)
 
         # Get time axis
         time_axis = self.get_time_axis(timebase, actual_samples)
