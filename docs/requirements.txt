@@ -1,0 +1,4 @@
+mkdocs
+mkdocstrings-python
+mkdocs-include-markdown-plugin
+griffe-inherited-docstrings
