@@ -28,7 +28,7 @@ jobs:
 
     - name: Install dependancies
       run: |
-        pip install mkdocs mkdocstrings-python mkdocs-include-markdown-plugin
+        pip install -r docs/requirements.txt
 
     - name: Setup git
       run: |
