@@ -49,6 +49,7 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
         self.resolution = resolution
         self.set_all_channels_off()
         self.min_adc_value, self.max_adc_value =super().get_adc_limits()
+        self.n_channels = self.get_variant_details()['NumberOfAnalogueChannels']
 
         return usb_power_struct
 
@@ -214,7 +215,27 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
             brightness,
         )
 
-    def set_led_colours(self, led:led_channel_l, hue:int, saturation:int) -> None:
+    def set_all_led_colours(self, hue:int|led_colours_l, saturation:int=100) -> None:
+        """
+        Sets all LED's on the PicoScope to a single colour
+
+        Args:
+            hue (int | str): Colour as a hue in [0-359] or a 
+                basic colour from the following:
+                ['red', 'green', 'blue', 'yellow', 'pink']
+
+            saturation (int, optional): Saturation of the colour [0-100]. Defaults to 100.
+        """
+        led_list = list(led_channel_m.keys())
+        led_list = led_list[:self.n_channels] + led_list[-2:]
+        self.set_led_colours(led_list, [hue] * len(led_list), [saturation] * len(led_list))
+
+    def set_led_colours(
+            self, 
+            led:led_channel_l | list[led_channel_l], 
+            hue:int | led_colours_l | list[int] | list[led_colours_l], 
+            saturation:int | list[int]
+        ) -> None:
         """Sets the colour of the selected LED using HUE and Saturation
 
         It will not take affect until one of the following 
@@ -225,22 +246,53 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
          - siggen_apply()
 
         Args:
-            led (str): The selected LED. Must be one of these values:
+            led (str|list[str]): The selected LED. Must be one or a list of these values:
                 `'A'`, `'B'`, `'C'`, `'D'`, `'E'`, `'F'`, `'G'`, `'H'`, `'AWG'`, `'AUX'`.
-            hue (int): Hue of the LED, [0-359].
-            saturation (int): Saturation of the LED, [0-100].
+            hue (int|list[int]): Colour as a hue in [0-359] or a 
+                basic colour from the following:
+                ['red', 'green', 'blue', 'yellow', 'pink']
+            saturation (int|list[int]): Saturation of the LED, [0-100].
         """
-        self.set_led_states(led, "on")
-        led = led_channel_m[led]
-        led_struct = PICO_LED_COLOUR_PROPERTIES(led, hue, saturation)
+        # if isinstance(hue, str):
+        #     hue = led_colours_m[hue]
+
+        if not isinstance(led, list):
+            led = [led]
+            hue = [hue]
+            saturation = [saturation]
+        
+        if isinstance(hue[0], str):
+            hue = [led_colours_m[i] for i in hue]
+
+        array_len = len(led)
+        array_struct = (PICO_LED_COLOUR_PROPERTIES * array_len)()
+
+        for i in range(array_len):
+            array_struct[i] = PICO_LED_COLOUR_PROPERTIES(
+                led_channel_m[led[i]],
+                hue[i],
+                saturation[i]
+            )
+
         self._call_attr_function(
             "SetLedColours",
             self.handle,
-            led_struct,
-            1,
+            ctypes.byref(array_struct),
+            array_len,
         )
+    
+    def set_all_led_states(self,state:str|led_state_l):
+        """
+        Sets the state of all LED's on the PicoScope.
 
-    def set_led_states(self, led:str|led_channel_l, state:str|led_state_l):
+        Args:
+            state (str): ['auto', 'on', 'off']
+        """
+        led_list = list(led_channel_m.keys())
+        led_list = led_list[:self.n_channels] + led_list[-2:]
+        self.set_led_states(led_list, [state] * len(led_list))
+
+    def set_led_states(self, led:str|led_channel_l|list[led_channel_l], state:str|led_state_l|list[led_state_l]):
         """
         Sets the state for a selected LED. Between default behaviour (auto),
         on or off.
@@ -250,12 +302,22 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
                 `'A'`, `'B'`, `'C'`, `'D'`, `'E'`, `'F'`, `'G'`, `'H'`, `'AWG'`, `'AUX'`.
             state (str): State of selected LED: `'auto'`, `'off'`, `'on'`.
         """
-        led = led_channel_m[led]
-        state = led_state_m[state]
-        struct = PICO_LED_STATE_PROPERTIES(led, state)
+        if not isinstance(led, list):
+            led = [led]
+            state = [state]
+
+        array_len = len(led)
+        array_struct = (PICO_LED_STATE_PROPERTIES * array_len)()
+
+        for i in range(array_len):
+            array_struct[i] = PICO_LED_STATE_PROPERTIES(
+                led_channel_m[led[i]],
+                led_state_m[state[i]]
+            )
+
         self._call_attr_function(
             'SetLedStates',
             self.handle,
-            struct, 
-            1
+            ctypes.byref(array_struct), 
+            ctypes.c_uint32(array_len)
         )
