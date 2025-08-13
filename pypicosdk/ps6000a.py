@@ -1,4 +1,5 @@
 import ctypes
+from typing import override
 
 from .constants import *
 from .common import PicoSDKException
@@ -8,9 +9,12 @@ from .shared.ps6000a_ps4000a import shared_4000a_6000a
 
 class ps6000a(PicoScopeBase, shared_ps6000a_psospa, shared_4000a_6000a):
     """PicoScope 6000 (A) API specific functions"""
+
+    @override
     def __init__(self, *args, **kwargs):
         super().__init__("ps6000a", *args, **kwargs)
 
+    @override
     def open_unit(self, serial_number:str=None, resolution:RESOLUTION | resolution_literal=0) -> None:
         # If using Literals, convert to int
         if resolution in resolution_map:
@@ -84,6 +88,7 @@ class ps6000a(PicoScopeBase, shared_ps6000a_psospa, shared_4000a_6000a):
 
         return string.value.decode()
 
+    @override
     def set_simple_trigger(
             self, 
             channel:CHANNEL | channel_literal, 
