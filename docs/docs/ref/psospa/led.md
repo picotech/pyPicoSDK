@@ -3,13 +3,8 @@
 The LED's on the 3000E are controllable via hue, saturation and brightness. To control them these rules need to be met:
 
 - To control each LED `set_led_states([led], 'on')` must be called first per LED. 
-<!-- - For both `set_led_brightness()` and `set_led_colours()`, on of the following commands needs to be ran to apply the settings:
-    - `run_block_capture()`
-    - `run_streaming()`
-    - `set_aux_io_mode()`
-    - `siggen_apply()` -->
 
-Here is an example of changing Channel A and Channel B to red and green, respectively:
+Here is an example of the three different methods of changing the LEDs
 ```
 import pypicosdk as psdk
 import time
@@ -17,14 +12,15 @@ import time
 scope = psdk.psospa()
 scope.open_unit()
 
+# Set channel A to red (hue=0, sat=100)
 scope.set_led_states('A', 'on')
 scope.set_led_colours('A', 0, 100)
 time.sleep(2)
-# OR 
+# OR set A, B and C to red, green and blue (sat=100)
 scope.set_led_states(['A', 'B', 'C'], ['on', 'on', 'on'])
 scope.set_led_colours(['A', 'B', 'C'], ['red', 'green', 'blue'], [100, 100, 100])
 time.sleep(2)
-# or 
+# or set all LEDs to pink.
 scope.set_all_led_states('on')
 scope.set_all_led_colours('pink')
 
