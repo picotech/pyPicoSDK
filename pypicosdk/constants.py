@@ -206,6 +206,32 @@ channel_map = {
     'trigger_aux': 1001
 }
 
+led_channel_l = Literal[
+    'A', 
+    'B',
+    'C',
+    'D',
+    'E',
+    'F',
+    'G',
+    'H',
+    'AWG',
+    'AUX',
+]
+
+led_channel_m = {
+    'A':0, 
+    'B':1,
+    'C':2,
+    'D':3,
+    'E':4,
+    'F':5,
+    'G':6,
+    'H':7,
+    'AWG':0x10000,
+    'AUX':0x20000,
+}
+
 class PICO_CHANNEL_OVERVOLTAGE_TRIPPED(ctypes.Structure):
     """Status flag indicating an overvoltage trip on a channel.
     Attributes:
@@ -566,6 +592,65 @@ class TRIGGER_STATE(IntEnum):
     #: Condition must be false for the channel.
     FALSE = 2
 
+class PICO_USB_POWER_DELIVERY(ctypes.Structure):
+    """
+    Structure representing USB Power Delivery status information for a single USB port.
+
+    This structure provides detailed information about the USB Power Delivery
+    contract and status for a USB port, including voltage, current limits,
+    connection state, and attached device type.
+
+    Attributes:
+        valid_ (ctypes.c_uint8):
+            Indicates whether the power delivery data is valid (non-zero if valid).
+        busVoltagemV_ (ctypes.c_uint32):
+            The bus voltage in millivolts.
+        rpCurrentLimitmA_ (ctypes.c_uint32):
+            The current limit for the Rp resistor in milliamps.
+        partnerConnected_ (ctypes.c_uint8):
+            Indicates if a partner device is connected (non-zero if connected).
+        ccPolarity_ (ctypes.c_uint8):
+            The polarity of the CC (Configuration Channel) line.
+        attachedDevice_ (ctypes.c_uint8):
+            The type of device attached (corresponds to PICO_USB_POWER_DELIVERY_DEVICE_TYPE).
+        contractExists_ (ctypes.c_uint8):
+            Indicates whether a power contract exists (non-zero if yes).
+        currentPdo_ (ctypes.c_uint32):
+            The current Power Data Object (PDO) index.
+        currentRdo_ (ctypes.c_uint32):
+            The current Request Data Object (RDO) index.
+    """
+    _pack_ = 1
+
+    _fields_ = [
+        ("valid_", ctypes.c_uint8),
+        ("busVoltagemV_", ctypes.c_uint32),
+        ("rpCurrentLimitmA_", ctypes.c_uint32),
+        ("partnerConnected_", ctypes.c_uint8),
+        ("ccPolarity_", ctypes.c_uint8),
+        ("attachedDevice_", ctypes.c_uint8),
+        ("contractExists_", ctypes.c_uint8),
+        ("currentPdo_", ctypes.c_uint32),
+        ("currentRdo_", ctypes.c_uint32),
+    ]
+
+class PICO_USB_POWER_DETAILS(ctypes.Structure):
+    """
+    Structure describing USB power details for a PicoScope device.
+
+    Attributes:
+        dataPort_ (PICO_USB_POWER_DELIVERY):
+            USB power delivery details related to the device's data port.
+        powerPort_ (PICO_USB_POWER_DELIVERY):
+            USB power delivery details related to the device's power port.
+    """
+    _pack_ = 1
+
+    _fields_ = [
+        ("dataPort_", PICO_USB_POWER_DELIVERY),
+        ("powerPort_", PICO_USB_POWER_DELIVERY),
+    ]
+
 
 class PICO_STREAMING_DATA_INFO(ctypes.Structure):
     """Structure describing streaming data buffer information."""
@@ -845,6 +930,33 @@ class TRIGGER_WITHIN_PRE_TRIGGER(IntEnum):
     PICO_DISABLE = 0
     PICO_ARM = 1
 
+
+# LED Structures
+class PICO_LED_COLOUR_PROPERTIES(ctypes.Structure):
+    """This structure is used with psospaSetLedColours() to define 
+    the color for one LED using hue and saturation (HSV) values 
+    for the color."""
+
+    _pack_ = 1
+
+    _fields_ = [
+        ("led_", ctypes.c_uint32),
+        ("hue_", ctypes.c_uint16),
+        ("saturation_", ctypes.c_uint8),
+    ]
+
+class PICO_LED_STATE_PROPERTIES(ctypes.Structure):
+    """This structure is used with set_led_states() to define the 
+    state for one LED."""
+    _pack_ = 1
+    _fields_ = [
+        ("led_", ctypes.c_uint32),
+        ("state_", ctypes.c_int8),
+    ]
+
+led_state_l = Literal['auto', 'off', 'on']
+led_state_m = {'auto': -1, 'off': 0, 'on': 1}
+
 # Public names exported by :mod:`pypicosdk.constants` for ``import *`` support.
 # This explicit list helps static analyzers like Pylance discover available
 # attributes when the parent package re-exports ``pypicosdk.constants`` using
@@ -881,6 +993,8 @@ __all__ = [
     'AUXIO_MODE',
     'PICO_CHANNEL_OVERVOLTAGE_TRIPPED',
     'TRIGGER_STATE',
+    'PICO_USB_POWER_DELIVERY',
+    'PICO_USB_POWER_DETAILS',
     'PICO_STREAMING_DATA_INFO',
     'PICO_STREAMING_DATA_TRIGGER_INFO',
     'PICO_TRIGGER_INFO',
@@ -900,9 +1014,15 @@ __all__ = [
     'SIGGEN_FILTER_STATE',
     'SIGGEN_PARAMETER',
     'TRIGGER_WITHIN_PRE_TRIGGER',
+    'PICO_LED_COLOUR_PROPERTIES',
+    'PICO_LED_STATE_PROPERTIES',
 
     'channel_literal',
     'channel_map',
+    'led_channel_l',
+    'led_channel_m',
+    'led_state_l',
+    'led_state_m',
     'range_literal',
     'range_map',
     'resolution_literal',

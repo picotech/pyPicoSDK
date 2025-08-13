@@ -5,6 +5,7 @@ from . import constants as _constants
 from .constants import *
 from .version import VERSION
 from .ps6000a import ps6000a
+from .psospa import psospa
 from .base import PicoScopeBase
 from .common import (
     PicoSDKException, 
@@ -17,7 +18,7 @@ def get_all_enumerated_units() -> tuple[int, list[str]]:
     """Enumerate all supported PicoScope units."""
     n_units = 0
     unit_serial: list[str] = []
-    for scope in [ps6000a()]:
+    for scope in [ps6000a(), psospa()]:
         units = scope.get_enumerated_units()
         n_units += units[0]
         unit_serial += units[1].split(',')
@@ -65,5 +66,6 @@ __all__ = list(_constants.__all__) + [
     'get_all_enumerated_units',
     'export_to_csv',
     'ps6000a',
-    'VERSION'
+    'psospa',
+    'VERSION',
 ]
