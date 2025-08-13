@@ -13,7 +13,4 @@ For reference on these DLL's and their C implementation, go to [https://www.pico
 ### Does my PicoScope use ps6000a() or ps6000()?
 The PicoScope (A) drivers are the latest generation of drivers from Pico Technology. If you have a PicoScope with a letter designation higher than the following, you will need to use the (A) class and drivers:
 
- - PicoScope 3000**D**
  - PicoScope 6000**E**
-
-[Click here to see the current support for these wrappers.](../dev/current.md/)
