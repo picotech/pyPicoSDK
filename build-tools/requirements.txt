@@ -4,11 +4,6 @@ numpy
 pandas
 matplotlib
 
-mkdocs >= 1.6
-mkdocstrings-python >= 1.16
-mkdocs-include-markdown-plugin
-griffe-inherited-docstrings
-
 build
 pytest
 
