@@ -7,7 +7,7 @@ nav:
   - Home: index.md
   - Reference: 
     - Introduction: ref/introduction.md
-    - PicoScope 6000 (A) Specific Functions:
+    - PicoScope 6000E (A) Specific Functions:
       - ref/ps6000a/init.md
       - ref/ps6000a/setup.md
       - ref/ps6000a/firmware.md
@@ -19,6 +19,19 @@ nav:
       - ref/ps6000a/captures.md
       - ref/ps6000a/run.md
       - ref/ps6000a/retrieval.md
+    - PicoScope 3000E (psospa) Specific Functions:
+      - ref/psospa/init.md
+      - ref/psospa/setup.md
+      - ref/psospa/firmware.md
+      - ref/psospa/channel.md
+      - ref/psospa/digital.md
+      - ref/psospa/trigger.md
+      - ref/psospa/siggen.md
+      - ref/psospa/buffers.md
+      - ref/psospa/captures.md
+      - ref/psospa/run.md
+      - ref/psospa/retrieval.md
+      - ref/psospa/led.md
     - General Conversions: ref/conversions.md
     - General Constants: ref/constants.md
     - ref/streaming.md
