@@ -948,7 +948,7 @@ class PICO_LED_COLOUR_PROPERTIES(ctypes.Structure):
 class PICO_LED_STATE_PROPERTIES(ctypes.Structure):
     """This structure is used with set_led_states() to define the 
     state for one LED."""
-    _pack_ = 1
+    # _pack_ = 8
     _fields_ = [
         ("led_", ctypes.c_uint32),
         ("state_", ctypes.c_int8),
@@ -956,6 +956,9 @@ class PICO_LED_STATE_PROPERTIES(ctypes.Structure):
 
 led_state_l = Literal['auto', 'off', 'on']
 led_state_m = {'auto': -1, 'off': 0, 'on': 1}
+
+led_colours_l = Literal['red', 'green', 'blue', 'yellow', 'pink']
+led_colours_m = {'red': 0, 'green': 100, 'blue': 244, 'yellow': 61, 'pink':306}
 
 # Public names exported by :mod:`pypicosdk.constants` for ``import *`` support.
 # This explicit list helps static analyzers like Pylance discover available
@@ -1023,6 +1026,8 @@ __all__ = [
     'led_channel_m',
     'led_state_l',
     'led_state_m',
+    'led_colours_l',
+    'led_colours_m',
     'range_literal',
     'range_map',
     'resolution_literal',
