@@ -33,14 +33,18 @@ The output should be similar to:
 
 Once tested, try an [example script from github](https://github.com/JamesPicoTech/pyPicoSDK) to get started.
 
+## Compatibility
+Current PicoScope support:
+- PicoScope 6000E (ps6000a drivers)
+- PicoScope 3000E (psospa drivers)
+
 ## Useful links and references
 - [Documentation & Reference](https://jamespicotech.github.io/pyPicoSDK/)
 - [GitHub Repo (with examples)](https://github.com/JamesPicoTech/pyPicoSDK)
 - [pypi (src repo)](https://pypi.org/project/pypicosdk/)
 - [pypi-nightly (dev repo)](https://pypi.org/project/pypicosdk-nightly/)
-- [PicoScope Support (Compatibility)](https://jamespicotech.github.io/pyPicoSDK/dev/current)
 
 ## Version Control
-pyPicoSDK: 1.1.0
+pyPicoSDK: 1.2.0
 
-Docs: 0.2.4
+Docs: 0.3.0

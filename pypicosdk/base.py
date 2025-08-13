@@ -262,24 +262,6 @@ class PicoScopeBase:
         )
         return string.value.decode()
 
-    def _get_scaling_values(self, n_channels: int = 8) -> list[PICO_SCALING_FACTORS_VALUES]:
-        """Return probe scaling factors for each channel.
-        Args:
-            n_channels: Number of channel entries to retrieve.
-        Returns:
-            list[PICO_SCALING_FACTORS_VALUES]: Scaling factors for ``n_channels`` channels.
-        """
-
-        array_type = PICO_SCALING_FACTORS_VALUES * n_channels
-        values = array_type()
-        self._call_attr_function(
-            "GetScalingValues",
-            self.handle,
-            values,
-            ctypes.c_int16(n_channels),
-        )
-        return list(values)
-    
     def get_unit_serial(self) -> str:
         """
         Get and return batch and serial of unit.
