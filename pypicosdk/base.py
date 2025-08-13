@@ -431,7 +431,8 @@ class PicoScopeBase:
             list: List of time values in nano-seconds
         """
         interval = self.get_timebase(timebase, samples)['Interval(ns)']
-        return [round(x*interval, 4) for x in range(samples)]
+        return np.round(np.arange(samples) * interval, 4)
+
     
     def get_trigger_time_offset(self, time_unit: TIME_UNIT, segment_index: int = 0) -> int:
         """
@@ -1501,7 +1502,7 @@ class PicoScopeBase:
         ratio: int = 0,
         ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
         pre_trig_percent: int = 50,
-    ) -> tuple[dict, list]:
+    ) -> tuple[dict, np.ndarray]:
         """Perform a complete single block capture.
 
         Args:
@@ -1518,7 +1519,7 @@ class PicoScopeBase:
 
         Returns:
             tuple[dict, list]: Dictionary of channel buffers (in mV) and the time
-            axis in nano-seconds.
+            axis in nano-seconds (numpy array).
 
         Examples:
             >>> scope.set_channel(CHANNEL.A, RANGE.V1)
@@ -1565,7 +1566,7 @@ class PicoScopeBase:
         ratio: int = 0,
         ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
         pre_trig_percent: int = 50,
-    ) -> tuple[dict, list]:
+    ) -> tuple[dict, np.ndarray]:
         """Run a rapid block capture with X amount of captures/frames/waveforms
 
         Args:
@@ -1581,8 +1582,8 @@ class PicoScopeBase:
             pre_trig_percent: Percentage of samples to capture before the trigger. 
 
         Returns:
-            tuple[dict, list]: Dictionary of channel buffers (in mV) and the time
-            axis in nano-seconds.
+            tuple[dict, np.ndarray]: Dictionary of channel buffers (in mV) and the time
+            axis in nano-seconds (numpy array).
         """
 
         # Segment set to 0
