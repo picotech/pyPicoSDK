@@ -1251,6 +1251,7 @@ class PicoScopeBase:
         datatype=DATA_TYPE.INT16_T,
         ratio_mode=RATIO_MODE.RAW,
         action=ACTION.CLEAR_ALL | ACTION.ADD,
+        buffer:np.ndarray|None = None,
     ) -> np.ndarray | None:
         """
         Allocates and assigns a data buffer for a specified channel on the 6000A series.
@@ -1262,6 +1263,8 @@ class PicoScopeBase:
             datatype (DATA_TYPE, optional): C data type for the buffer (e.g., INT16_T). 
             ratio_mode (RATIO_MODE, optional): Downsampling mode. 
             action (ACTION, optional): Action to apply to the data buffer (e.g., CLEAR_ALL | ADD).
+            buffer (np.ndarray | None, optional): Send a preallocated  numpy buffer to be populated.
+                If left as None, this function creates its own buffer.
 
         Returns:
             np.array | None: The allocated buffer or ``None`` when clearing existing buffers.
@@ -1272,6 +1275,8 @@ class PicoScopeBase:
         if samples == 0:
             buffer = None
             buf_ptr = None
+        elif buffer is not None:
+            buf_ptr = npc.as_ctypes(buffer)
         else:
             # Map to NumPy dtype
             dtype_map = {
@@ -1302,7 +1307,7 @@ class PicoScopeBase:
         )
         return buffer
 
-        
+
     def set_data_buffer_rapid_capture(
             self,
             channel,
@@ -1373,6 +1378,7 @@ class PicoScopeBase:
         datatype=DATA_TYPE.INT16_T,
         ratio_mode=RATIO_MODE.AGGREGATE,
         action=ACTION.CLEAR_ALL | ACTION.ADD,
+        buffers:list[np.ndarray, np.ndarray] | np.ndarray | None = None,
     ) -> tuple[np.ndarray, np.ndarray]:
         """
         Allocate and assign max and min NumPy-backed data buffers.
@@ -1384,6 +1390,9 @@ class PicoScopeBase:
             datatype (DATA_TYPE, optional): C data type for the buffer (e.g., INT16_T).
             ratio_mode (RATIO_MODE, optional): Downsampling mode.
             action (ACTION, optional): Action to apply to the data buffer.
+            buffer (np.ndarray | None, optional): Send preallocated 2D numpy buffers to be populated.
+                Min buffer first, followed by max buffer. If left as None, this function 
+                creates its own buffers.
 
         Returns:
             tuple[np.ndarray, np.ndarray]: Tuple of (buffer_min, buffer_max) NumPy arrays.
@@ -1391,21 +1400,25 @@ class PicoScopeBase:
         Raises:
             PicoSDKException: If an unsupported data type is provided.
         """
-        # Map to NumPy dtype
-        dtype_map = {
-            DATA_TYPE.INT8_T: np.int8,
-            DATA_TYPE.INT16_T: np.int16,
-            DATA_TYPE.INT32_T: np.int32,
-            DATA_TYPE.INT64_T: np.int64,
-            DATA_TYPE.UINT32_T: np.uint32,
-        }
+        if buffers is not None:
+            buffer_min = buffers[0]
+            buffer_max = buffers[1]
+        else:
+            # Map to NumPy dtype
+            dtype_map = {
+                DATA_TYPE.INT8_T: np.int8,
+                DATA_TYPE.INT16_T: np.int16,
+                DATA_TYPE.INT32_T: np.int32,
+                DATA_TYPE.INT64_T: np.int64,
+                DATA_TYPE.UINT32_T: np.uint32,
+            }
 
-        np_dtype = dtype_map.get(datatype)
-        if np_dtype is None:
-            raise PicoSDKException("Invalid datatype selected for buffer")
+            np_dtype = dtype_map.get(datatype)
+            if np_dtype is None:
+                raise PicoSDKException("Invalid datatype selected for buffer")
 
-        buffer_max = np.zeros(samples, dtype=np_dtype)
-        buffer_min = np.zeros(samples, dtype=np_dtype)
+            buffer_max = np.zeros(samples, dtype=np_dtype)
+            buffer_min = np.zeros(samples, dtype=np_dtype)
 
         buf_max_ptr = npc.as_ctypes(buffer_max)
         buf_min_ptr = npc.as_ctypes(buffer_min)
