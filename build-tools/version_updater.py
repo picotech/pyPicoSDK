@@ -1,6 +1,12 @@
+"""
+This scipt copies the version numbers to specific files.
+    The master file is located in ./version.py. 
+    Update there then run version_updater.py to updated files
+    below.
+"""
+
 import sys
 import os
-import shutil
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(parent_dir)
 from version import docs_version, package_version
