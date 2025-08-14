@@ -108,12 +108,13 @@ class StreamingScope:
 
         The method resets internal buffer indices and flags to prepare for incoming data.
         """
+        # Setup empty variables for streaming
         self.buffer_index = 0
         self.stop_bool = False
-        # Setup empty variables for streaming
+        self.np_buffer = np.zeros((2, self.samples), dtype=np.int16)
         # Setup initial buffer for streaming
         self.scope.set_data_buffer(0, 0, action=ACTION.CLEAR_ALL) # Clear all buffers
-        self.buffer = self.scope.set_data_buffer(self.channel, self.samples, segment=0)
+        self.scope.set_data_buffer(self.channel, self.samples, segment=0, buffer=self.np_buffer[0])
         # start streaming
         self.scope.run_streaming(
             sample_interval=self.interval,
@@ -148,13 +149,13 @@ class StreamingScope:
         # If buffer isn't empty, add data to array
         if n_samples > 0:
             # Add the new buffer to the buffer array and take end chunk
-            self.buffer_array = np.concatenate([self.buffer_array] + [self.buffer[start_index:start_index+n_samples]])
+            self.buffer_array = np.concatenate([self.buffer_array] + [self.np_buffer[self.buffer_index][start_index:start_index+n_samples]])
             if self.max_buffer_size is not None:
                 self.buffer_array = self.buffer_array[-self.max_buffer_size:]
         # If buffer full, create new buffer
         if info['status'] == 407:
             self.buffer_index = (self.buffer_index + 1) % 2 # Switch between buffer segment index 0*samples and 1*samples
-            self.buffer = self.scope.set_data_buffer(self.channel, self.samples, segment=self.buffer_index*self.samples, action=ACTION.ADD)
+            self.scope.set_data_buffer(self.channel, self.samples, segment=self.buffer_index, action=ACTION.ADD, buffer=self.np_buffer[self.buffer_index])
 
     def run_streaming_while(self) -> None:
         """
