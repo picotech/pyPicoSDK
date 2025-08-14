@@ -43,6 +43,7 @@ nav:
 
 plugins:
 - include-markdown
+- search
 - mkdocstrings:
     handlers:
       python:
