@@ -55,7 +55,34 @@ def export_to_csv(filename:str, channels_buffer:dict, time_axis:list=None):
     elif type(channels_buffer[0]) == np.array:
         NotImplementedError('This data is not yet supported for export')
     else: 
-        NotImplementedError('This data is not supported for export')
+        NotImplementedError('This data is not supported for export')    
+
+def convert_time_axis(
+        time_axis:np.ndarray, 
+        current_units:str|time_standard_form_l, 
+        convert_units:str|time_standard_form_l
+    ) -> tuple[np.ndarray, str]:
+    """
+    Converts a time axis array from one unit to another.
+
+    This method calculates a scaling factor by comparing the exponents of the
+    current and target units, then multiplies the time axis array by this
+    factor.
+
+    Args:
+        time_axis (np.ndarray): The NumPy array of time values to be converted.
+        current_units (str | time_standard_form_l): The starting time unit of the
+            data (e.g., 's', 'ms', 'us').
+        convert_units (str | time_standard_form_l): The target time unit for the
+            conversion (e.g., 'ns').
+
+    Returns:
+        A tuple containing the new NumPy array scaled to the target units,
+        and a string representing the target units.
+    """
+    diff = time_standard_form_m[convert_units] - time_standard_form_m[current_units]
+    time_axis = np.multiply(time_axis, 10**diff)
+    return time_axis, convert_units
         
 
 __all__ = list(_constants.__all__) + [
@@ -65,6 +92,7 @@ __all__ = list(_constants.__all__) + [
     'PowerSupplyWarning',
     'get_all_enumerated_units',
     'export_to_csv',
+    'convert_time_axis',
     'ps6000a',
     'psospa',
     'VERSION',
