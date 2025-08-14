@@ -1,3 +1,12 @@
+"""
+This file copies duplicate .md files in docs from one scope to multiple scopes, 
+    replacing the mkdocstrings reference to the new scope.
+
+i.e. copy_dir is psospa, paste_dir_list includes ps6000a, 
+    ref/psospa/run.md will be copied to ref/ps6000a/run.md automatically replacing
+    :::pypicosdk.pypicosdk.psospa to :::pypicosdk.pypicosdk.ps6000a
+"""
+
 import os
 
 if not os.path.exists('docs'):
