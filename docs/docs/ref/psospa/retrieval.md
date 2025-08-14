@@ -6,7 +6,6 @@
         - "!.*"
         - "values"
         - "is"
-        - "!stop"
         - "!trigger"
         - "!_to_"
         - "!^_"

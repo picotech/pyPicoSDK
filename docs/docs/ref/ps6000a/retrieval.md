@@ -1,11 +1,11 @@
 # Data Retrieval
+
 ::: pypicosdk.pypicosdk.ps6000a
     options:
         filters:
         - "!.*"
         - "values"
         - "is"
-        - "!stop"
         - "!trigger"
         - "!_to_"
         - "!^_"

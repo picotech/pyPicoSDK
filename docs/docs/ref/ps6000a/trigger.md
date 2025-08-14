@@ -1,4 +1,5 @@
 # Trigger Configuration
+
 ::: pypicosdk.pypicosdk.ps6000a
     options:
         filters:

@@ -16,6 +16,7 @@ nav:
       - ref/ps6000a/trigger.md
       - ref/ps6000a/siggen.md
       - ref/ps6000a/buffers.md
+      - ref/ps6000a/conversions.md
       - ref/ps6000a/captures.md
       - ref/ps6000a/run.md
       - ref/ps6000a/retrieval.md
@@ -28,11 +29,12 @@ nav:
       - ref/psospa/trigger.md
       - ref/psospa/siggen.md
       - ref/psospa/buffers.md
+      - ref/psospa/conversions.md
       - ref/psospa/captures.md
       - ref/psospa/run.md
       - ref/psospa/retrieval.md
       - ref/psospa/led.md
-    - General Conversions: ref/conversions.md
+    - ref/general.md
     - General Constants: ref/constants.md
     - ref/streaming.md
   - Development: 

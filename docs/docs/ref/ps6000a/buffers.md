@@ -1,4 +1,5 @@
 # Memory / Buffer Management
+
 ::: pypicosdk.pypicosdk.ps6000a
     options:
         filters:
