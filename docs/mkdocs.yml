@@ -32,7 +32,7 @@ nav:
       - ref/psospa/run.md
       - ref/psospa/retrieval.md
       - ref/psospa/led.md
-    - General Conversions: ref/conversions.md
+    - ref/general.md
     - General Constants: ref/constants.md
     - ref/streaming.md
   - Development: 

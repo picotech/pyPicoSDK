@@ -1,4 +1,4 @@
-# PicoScope conversions
+# Built-in Conversions
 These functions are general functions to convert data to another format.
 This is particularly useful for converting ADC data to mV or calculating 
 the needed timebase for your PicoScope.
@@ -17,7 +17,7 @@ the PicoScope needs to be initialized using `scope.open_unit()` followed by the 
 ```
 
 ## Reference
-::: pypicosdk.pypicosdk.PicoScopeBase
+::: pypicosdk.pypicosdk.ps6000a
     options:
         filters:
         - "!.*"
