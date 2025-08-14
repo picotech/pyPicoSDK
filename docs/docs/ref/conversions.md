@@ -20,7 +20,9 @@ the PicoScope needs to be initialized using `scope.open_unit()` followed by the 
 ::: pypicosdk.pypicosdk.PicoScopeBase
     options:
         filters:
+        - "!.*"
         - ".*_to_.*"
-        #- "!^_[^_]"
+        - "convert"
+        - "!^_"
         show_root_toc_entry: false
         summary: true

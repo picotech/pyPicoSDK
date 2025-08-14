@@ -421,6 +421,9 @@ class TIME_UNIT(IntEnum):
     MS = 1_000
     S = 1
 
+time_standard_form_l = Literal['fs', 'ps', 'ns', 'us', 'ms', 's']
+time_standard_form_m = {'fs': 15, 'ps': 12, 'ns': 9, 'us': 6, 'ms': 3, 's': 0}
+
 class PICO_TIME_UNIT(IntEnum):
     FS = 0
     PS = 1
@@ -1022,6 +1025,8 @@ __all__ = [
 
     'channel_literal',
     'channel_map',
+    'time_standard_form_l',
+    'time_standard_form_m',
     'led_channel_l',
     'led_channel_m',
     'led_state_l',
