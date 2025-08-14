@@ -1390,7 +1390,7 @@ class PicoScopeBase:
             datatype (DATA_TYPE, optional): C data type for the buffer (e.g., INT16_T).
             ratio_mode (RATIO_MODE, optional): Downsampling mode.
             action (ACTION, optional): Action to apply to the data buffer.
-            buffer (np.ndarray | None, optional): Send preallocated 2D numpy buffers to be populated.
+            buffers (np.ndarray | None, optional): Send preallocated 2D numpy buffers to be populated.
                 Min buffer first, followed by max buffer. If left as None, this function 
                 creates its own buffers.
 
