@@ -91,6 +91,10 @@ def convert_time_axis(
     Returns:
         A tuple containing the new NumPy array scaled to the target units,
         and a string representing the target units.
+
+    Examples:
+        >>> from pypicosdk import convert_time_axis
+        >>> new_time_axis = convert_time_axis(old_time_axis, 'ns', 'ms')
     """
     diff = time_standard_form_m[convert_units] - time_standard_form_m[current_units]
     time_axis = np.multiply(time_axis, 10**diff)
