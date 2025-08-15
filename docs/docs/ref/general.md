@@ -9,6 +9,7 @@ These functions are **not** scope specific, so will need to be called using
         - "!.*"
         - "convert"
         - "get"
+        - "enhance"
         - "!^_"
         show_root_toc_entry: false
         summary: true
