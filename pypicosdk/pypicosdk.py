@@ -15,11 +15,23 @@ from .common import (
 )
 
 def get_all_enumerated_units() -> tuple[int, list[str]]:
-    """Enumerate all supported PicoScope units."""
+    """Enumerate all supported PicoScope units.
+    
+    Returns: 
+        Tuple containing number of units and a list of unit serials.
+
+    Examples:
+        >>> from pypicosdk import get_all_enumerated_units
+        >>> n_units, unit_list = get_all_enumerated_units()
+        >>> print(n_units, unit_list)
+    """
     n_units = 0
     unit_serial: list[str] = []
     for scope in [ps6000a(), psospa()]:
-        units = scope.get_enumerated_units()
+        try:
+            units = scope.get_enumerated_units()
+        except PicoSDKException:
+            continue
         n_units += units[0]
         unit_serial += units[1].split(',')
     return n_units, unit_serial
