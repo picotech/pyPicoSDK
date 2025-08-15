@@ -83,7 +83,29 @@ def convert_time_axis(
     diff = time_standard_form_m[convert_units] - time_standard_form_m[current_units]
     time_axis = np.multiply(time_axis, 10**diff)
     return time_axis, convert_units
+
+    
+def resolution_enhancement(self, data:np.ndarray, window_size:int, padded:bool=True) -> np.ndarray:
+    """
+    Calculates the simple moving average and returns the corrected axis.
+
+    Args:
+        data: The input numpy array (e.g., the voltage buffer).
+        window_size: The number of samples to average over.
+        padded: If true, data is extended to produce an output the same size
+            If false, data will be smaller by the window size due to the
+            moving average method.
+
+    Returns:
+        A numpy ndarray containing enhanced data.
+
+    Examples:
+        >>> from pypicosdk import resolution_enhancement
+        >>> enhanced_buffer = resolution_enhancement(buffer)
         
+    """
+    return np.convolve(data, np.ones(window_size)/window_size, mode=['valid', 'same'][padded])
+
 
 __all__ = list(_constants.__all__) + [
     'PicoSDKNotFoundException',
@@ -93,6 +115,7 @@ __all__ = list(_constants.__all__) + [
     'get_all_enumerated_units',
     'export_to_csv',
     'convert_time_axis',
+    'resolution_enhancement',
     'ps6000a',
     'psospa',
     'VERSION',
