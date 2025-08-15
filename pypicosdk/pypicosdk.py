@@ -15,11 +15,23 @@ from .common import (
 )
 
 def get_all_enumerated_units() -> tuple[int, list[str]]:
-    """Enumerate all supported PicoScope units."""
+    """Enumerate all supported PicoScope units.
+    
+    Returns: 
+        Tuple containing number of units and a list of unit serials.
+
+    Examples:
+        >>> from pypicosdk import get_all_enumerated_units
+        >>> n_units, unit_list = get_all_enumerated_units()
+        >>> print(n_units, unit_list)
+    """
     n_units = 0
     unit_serial: list[str] = []
     for scope in [ps6000a(), psospa()]:
-        units = scope.get_enumerated_units()
+        try:
+            units = scope.get_enumerated_units()
+        except PicoSDKException:
+            continue
         n_units += units[0]
         unit_serial += units[1].split(',')
     return n_units, unit_serial
@@ -79,6 +91,10 @@ def convert_time_axis(
     Returns:
         A tuple containing the new NumPy array scaled to the target units,
         and a string representing the target units.
+
+    Examples:
+        >>> from pypicosdk import convert_time_axis
+        >>> new_time_axis = convert_time_axis(old_time_axis, 'ns', 'ms')
     """
     diff = time_standard_form_m[convert_units] - time_standard_form_m[current_units]
     time_axis = np.multiply(time_axis, 10**diff)

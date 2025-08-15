@@ -42,6 +42,8 @@ nav:
     - Current Support: dev/current.md
     - Upcoming Roadmap: dev/roadmap.md
 
+watch:
+  - '../pypicosdk'
 
 plugins:
 - include-markdown
