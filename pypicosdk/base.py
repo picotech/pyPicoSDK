@@ -742,13 +742,7 @@ class PicoScopeBase:
             # Extract data
             data = channels_buffer[channel]
 
-            # If data is rapid block array
-            if type(data[0]) == np.ndarray:
-                for n, array in enumerate(data):
-                    channels_buffer[channel][n] = ((array / self.max_adc_value) * channel_range_mv) * channel_scale
-            # Else anything else is converted normally
-            else:
-                channels_buffer[channel] = ((data / self.max_adc_value) * channel_range_mv) * channel_scale
+            channels_buffer[channel] = ((data / self.max_adc_value) * channel_range_mv) * channel_scale
         return channels_buffer
     
     def buffer_ctypes_to_list(self, ctypes_list):
