@@ -101,13 +101,13 @@ def convert_time_axis(
     return time_axis, convert_units
 
     
-def resolution_enhancement(buffer:np.ndarray, window_size:int, padded:bool=True) -> np.ndarray:
+def resolution_enhancement(buffer:np.ndarray, enhanced_bits:float, padded:bool=True) -> np.ndarray:
     """
     Returns the buffer after applying a moving average filter with the specified window size.
 
     Args:
         buffer: The input numpy array (e.g., the voltage buffer).
-        window_size: The number of samples to average over.
+        enhanced_bits: The number of bits to increase by. Between [0.5 - 4].
         padded: If true, data is extended to produce an output the same size
             If false, data will be smaller by the window size due to the
             moving average method.
@@ -117,9 +117,10 @@ def resolution_enhancement(buffer:np.ndarray, window_size:int, padded:bool=True)
 
     Examples:
         >>> from pypicosdk import resolution_enhancement
-        >>> enhanced_buffer = resolution_enhancement(buffer, window_size=16)
+        >>> enhanced_buffer = resolution_enhancement(buffer, enhanced_bits=2)
         
     """
+    window_size = int(4 ** enhanced_bits)
     return np.convolve(buffer, np.ones(window_size)/window_size, mode=['valid', 'same'][padded])
 
 
