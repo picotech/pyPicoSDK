@@ -1564,7 +1564,7 @@ class PicoScopeBase:
             channels_buffer = self.channels_buffer_adc_to_mv(channels_buffer)
 
         # Generate the time axis based on actual samples and timebase
-        time_axis = self.get_time_axis(timebase, actual_samples)
+        time_axis = self.get_time_axis(timebase, actual_samples, pre_trig_percent=pre_trig_percent)
 
         return channels_buffer, time_axis
     
@@ -1630,7 +1630,7 @@ class PicoScopeBase:
             channels_buffer = self.channels_buffer_adc_to_mv(channels_buffer)
 
         # Get time axis
-        time_axis = self.get_time_axis(timebase, actual_samples)
+        time_axis = self.get_time_axis(timebase, actual_samples, pre_trig_percent=pre_trig_percent)
 
         # Return data
         return channels_buffer, time_axis
