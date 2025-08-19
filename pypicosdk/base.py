@@ -418,7 +418,7 @@ class PicoScopeBase:
         )
         return max_value.value
     
-    def get_time_axis(self, timebase:int, samples:int) -> list:
+    def get_time_axis(self, timebase:int, samples:int, pre_trig_percent:int=None) -> list:
         """
         Return an array of time values based on the timebase and number
         of samples
@@ -426,12 +426,18 @@ class PicoScopeBase:
         Args:
             timebase (int): PicoScope timebase 
             samples (int): Number of samples captured
+            pre_trig_percent: Percent to offset the 0 point by. If None, default is 0.
 
         Returns:
             list: List of time values in nano-seconds
         """
         interval = self.get_timebase(timebase, samples)['Interval(ns)']
-        return np.round(np.arange(samples) * interval, 4)
+        time_axis = np.round(np.arange(samples) * interval, 4)
+        if pre_trig_percent is None:
+            return time_axis
+        else:
+            offset = int(time_axis.max() * (pre_trig_percent / 100))
+            return time_axis - offset
 
     
     def get_trigger_time_offset(self, time_unit: TIME_UNIT, segment_index: int = 0) -> int:
@@ -1558,7 +1564,7 @@ class PicoScopeBase:
             channels_buffer = self.channels_buffer_adc_to_mv(channels_buffer)
 
         # Generate the time axis based on actual samples and timebase
-        time_axis = self.get_time_axis(timebase, actual_samples)
+        time_axis = self.get_time_axis(timebase, actual_samples, pre_trig_percent=pre_trig_percent)
 
         return channels_buffer, time_axis
     
@@ -1624,7 +1630,7 @@ class PicoScopeBase:
             channels_buffer = self.channels_buffer_adc_to_mv(channels_buffer)
 
         # Get time axis
-        time_axis = self.get_time_axis(timebase, actual_samples)
+        time_axis = self.get_time_axis(timebase, actual_samples, pre_trig_percent=pre_trig_percent)
 
         # Return data
         return channels_buffer, time_axis

@@ -11,6 +11,7 @@ from matplotlib import pyplot as plt
 
 # Capture configuration
 SAMPLES = 100000
+PRE_TRIG = 50 # %
 
 # Initialise PicoScope
 scope = psdk.ps6000a()
@@ -31,12 +32,12 @@ TIMEBASE = scope.sample_rate_to_timebase(50, psdk.SAMPLE_RATE.MSPS)
 
 # Run block capture and retrieve values
 channels_buffer = scope.set_data_buffer_for_enabled_channels(samples=SAMPLES)
-scope.run_block_capture(timebase=TIMEBASE, samples=SAMPLES)
+scope.run_block_capture(timebase=TIMEBASE, samples=SAMPLES, pre_trig_percent=PRE_TRIG)
 scope.get_values(SAMPLES)
 
 # No ADC to mV conversion, add it here
 channels_buffer = scope.channels_buffer_adc_to_mv(channels_buffer)
-time_axis = scope.get_time_axis(TIMEBASE, SAMPLES)
+time_axis = scope.get_time_axis(TIMEBASE, SAMPLES, pre_trig_percent=PRE_TRIG)
 
 # Finish with PicoScope
 scope.close_unit()
