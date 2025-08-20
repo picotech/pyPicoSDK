@@ -120,6 +120,10 @@ def resolution_enhancement(buffer:np.ndarray, enhanced_bits:float, padded:bool=T
         >>> enhanced_buffer = resolution_enhancement(buffer, enhanced_bits=2)
         
     """
+    if not 0.5 <= enhanced_bits <= 4:
+        raise PicoSDKException(
+            f"Invalid enhanced_bits value: {enhanced_bits}. Must be between 0.5 and 4.")
+    
     window_size = int(4 ** enhanced_bits)
     return np.convolve(buffer, np.ones(window_size)/window_size, mode=['valid', 'same'][padded])
 
