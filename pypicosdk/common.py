@@ -86,6 +86,8 @@ def _struct_to_dict(struct_instance: ctypes.Structure, format=False) -> dict:
 def _get_literal(variable:str, map:dict):
     """Checks if typing Literal variable is in corresponding map
     and returns enum integer value"""
+    if type(variable) is not str:
+        return variable
     if variable in map:
         return map[variable]
     else:
