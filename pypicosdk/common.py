@@ -83,6 +83,14 @@ def _struct_to_dict(struct_instance: ctypes.Structure, format=False) -> dict:
             result[field_name] = getattr(struct_instance, field_name)
     return result
 
+def _get_literal(variable:str, map:dict):
+    """Checks if typing Literal variable is in corresponding map
+    and returns enum integer value"""
+    if variable in map:
+        return map[variable]
+    else:
+        raise PicoSDKException(f'Variable \'{variable}\' not in {list(map.keys())}')
+
 __all__ = [
     'PicoSDKException',
     'PicoSDKNotFoundException',
@@ -91,4 +99,5 @@ __all__ = [
     '_struct_to_dict',
     '_get_lib_path',
     '_check_path',
+    '_get_literal',
 ]

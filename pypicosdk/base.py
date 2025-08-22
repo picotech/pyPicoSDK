@@ -817,15 +817,23 @@ class PicoScopeBase:
         for channel in range(int(channels)):
             self.set_channel(channel, enabled=False)
     
-    def set_simple_trigger(self, channel, threshold_mv, enable=True, direction=TRIGGER_DIR.RISING, delay=0, auto_trigger=0):
+    def set_simple_trigger(
+            self, 
+            channel: CHANNEL | channel_literal, 
+            threshold_mv:int=0, 
+            enable:bool=True, 
+            direction:TRIGGER_DIR | trigger_dir_l = TRIGGER_DIR.RISING, 
+            delay:int=0, 
+            auto_trigger:int=0
+        ) -> None:
         """
         Sets up a simple trigger from a specified channel and threshold in mV.
 
         Args:
-            channel (int): The input channel to apply the trigger to.
-            threshold_mv (float): Trigger threshold level in millivolts.
+            channel (CHANNEL | str): The input channel to apply the trigger to.
+            threshold_mv (int, optional): Trigger threshold level in millivolts.
             enable (bool, optional): Enables or disables the trigger.
-            direction (TRIGGER_DIR, optional): Trigger direction (e.g., ``TRIGGER_DIR.RISING``).
+            direction (TRIGGER_DIR | str, optional): Trigger direction (e.g., ``TRIGGER_DIR.RISING``).
             delay (int, optional): Delay in samples after the trigger condition is met before starting capture.
             auto_trigger (int, optional): Timeout in **microseconds** after which data capture proceeds even if no
                 trigger occurs. If 0, the PicoScope will wait indefintely.
@@ -834,10 +842,14 @@ class PicoScopeBase:
             When using TRIGGER_AUX, threshold is fixed to 1.25 V
             >>> scope.set_simple_trigger(channel=psdk.CHANNEL.TRIGGER_AUX)
         """
+        channel = _get_literal(channel, channel_map)
+        direction = _get_literal(direction, trigger_dir_m)
+
         if channel in self.range:
             threshold_adc = self.mv_to_adc(threshold_mv, self.range[channel], channel)
         else:
             threshold_adc = int(threshold_mv)
+
         self._call_attr_function(
             'SetSimpleTrigger',
             self.handle,
