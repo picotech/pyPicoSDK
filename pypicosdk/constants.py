@@ -80,6 +80,13 @@ class TRIGGER_DIR:
     FALLING = 3
     RISING_OR_FALLING = 4
 
+trigger_dir_l = Literal['above', 'below', 'rising', 'falling', 'rising or falling']
+trigger_dir_m = {'above': 0, 
+                 'below': 1, 
+                 'rising': 2, 
+                 'falling': 3, 
+                 'rising or falling': 4}
+
 class WAVEFORM:    
     """
     Waveform type constants for PicoScope signal generator configuration.
@@ -1025,6 +1032,8 @@ __all__ = [
 
     'channel_literal',
     'channel_map',
+    'trigger_dir_l',
+    'trigger_dir_m',
     'time_standard_form_l',
     'time_standard_form_m',
     'led_channel_l',
