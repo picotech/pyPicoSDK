@@ -87,23 +87,6 @@ class ps6000a(PicoScopeBase, shared_ps6000a_psospa, shared_4000a_6000a):
         )
 
         return string.value.decode()
-
-    @override
-    def set_simple_trigger(
-            self, 
-            channel:CHANNEL | channel_literal, 
-            threshold_mv=0, 
-            enable=True, 
-            direction:TRIGGER_DIR=TRIGGER_DIR.RISING, 
-            delay=0, 
-            auto_trigger_ms=5_000):
-        
-        # Check if typing Literals
-        if channel in channel_map:
-            channel = channel_map[channel]
-
-        auto_trigger_us = auto_trigger_ms * 1000
-        return super().set_simple_trigger(channel, threshold_mv, enable, direction, delay, auto_trigger_us)
     
     def siggen_clock_manual(self, dac_clock_frequency: float, prescale_ratio: int) -> None:
         """Manually control the signal generator clock.
