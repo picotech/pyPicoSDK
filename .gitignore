@@ -165,3 +165,5 @@ docs/site/
 # PicoSDK specific folders
 inc/
 
+# vscode 
+.vscode/
