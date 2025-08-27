@@ -763,11 +763,11 @@ class PicoScopeBase:
         """
         if isinstance(data, dict):
             for channel, adc in data.items():
-                data[channel] = self._adc_conversion(adc, channel)
+                data[channel] = self._adc_conversion(adc, channel, output_unit=unit)
         else:
             if isinstance(channel, str):
                 channel = _get_literal(channel, channel_map)
-            data = self._adc_conversion(data, channel)
+            data = self._adc_conversion(data, channel, output_unit=unit)
         return data
 
     def adc_to_mv(
