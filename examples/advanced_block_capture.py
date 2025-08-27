@@ -1,17 +1,16 @@
-#########################################################################
-# This example is an advanced PicoScope example with minimal abstraction.
-# This will return the raw ctypes ADC data as samples. 
-#
-#########################################################################
+"""
+This example is an advanced PicoScope example with minimal abstraction.
+This will return the raw ctypes ADC data as samples.
+"""
 
-import pypicosdk as psdk
 from matplotlib import pyplot as plt
+import pypicosdk as psdk
 
 # Pico examples use inline argument values for clarity
 
 # Capture configuration
 SAMPLES = 100000
-PRE_TRIG = 50 # %
+PRE_TRIG = 50  # %
 
 # Initialise PicoScope
 scope = psdk.ps6000a()
@@ -36,7 +35,7 @@ scope.run_block_capture(timebase=TIMEBASE, samples=SAMPLES, pre_trig_percent=PRE
 scope.get_values(SAMPLES)
 
 # No ADC to mV conversion, add it here
-channels_buffer = scope.channels_buffer_adc_to_mv(channels_buffer)
+channels_buffer = scope.adc_to_mv(channels_buffer)
 time_axis = scope.get_time_axis(TIMEBASE, SAMPLES, pre_trig_percent=PRE_TRIG)
 
 # Finish with PicoScope
