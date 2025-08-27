@@ -1,5 +1,11 @@
-import pypicosdk as psdk
+"""
+Rapid block capture in pyPicoSDK.
+Setup:
+ - Connect Channel A to AWG output
+"""
+
 from matplotlib import pyplot as plt
+import pypicosdk as psdk
 
 # Pico examples use inline argument values for clarity
 

@@ -1,5 +1,11 @@
-import pypicosdk as psdk
+"""
+This is a simple example to demonstrate getting started quickly using
+pyPicoSDK.
+Setup:
+ - Connect channel A to AWG output
+"""
 from matplotlib import pyplot as plt
+import pypicosdk as psdk
 
 # Pico examples use inline argument values for clarity
 
@@ -32,7 +38,7 @@ scope.close_unit()
 plt.plot(time_axis, channel_buffer[psdk.CHANNEL.A])
 
 # Add labels to pyplot
-plt.xlabel("Time (ns)")     
+plt.xlabel("Time (ns)")
 plt.ylabel("Amplitude (mV)")
 plt.grid(True)
 plt.show()
