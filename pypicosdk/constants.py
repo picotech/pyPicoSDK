@@ -970,6 +970,8 @@ led_state_m = {'auto': -1, 'off': 0, 'on': 1}
 led_colours_l = Literal['red', 'green', 'blue', 'yellow', 'pink']
 led_colours_m = {'red': 0, 'green': 100, 'blue': 244, 'yellow': 61, 'pink':306}
 
+output_unit_l = Literal['adc', 'mv', 'v']
+
 # Public names exported by :mod:`pypicosdk.constants` for ``import *`` support.
 # This explicit list helps static analyzers like Pylance discover available
 # attributes when the parent package re-exports ``pypicosdk.constants`` using
@@ -1048,4 +1050,5 @@ __all__ = [
     'resolution_map',
     'waveform_literal',
     'waveform_map',
+    'output_unit_l',
 ]
