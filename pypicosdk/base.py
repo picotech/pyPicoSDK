@@ -1,7 +1,7 @@
 import ctypes
 import os
 import warnings
-import typing
+from typing import Literal
 
 import numpy as np
 import numpy.ctypeslib as npc
@@ -709,9 +709,8 @@ class PicoScopeBase:
             "time_interval": time_interval.value,
         }
 
-
     # Data conversion ADC/mV & ctypes/int 
-    def mv_to_adc(self, mv: float, channel_range: int, channel: typing.Optional[CHANNEL] = None) -> int:
+    def mv_to_adc(self, mv: float, channel_range: int, channel: CHANNEL = None) -> int:
         """
         Converts a millivolt (mV) value to an ADC value based on the device's
         maximum ADC range.
@@ -729,51 +728,90 @@ class PicoScopeBase:
         channel_range_mv = RANGE_LIST[channel_range]
         return int(((mv / scale) / channel_range_mv) * self.max_adc_value)
 
-    def adc_to_mv(self, adc: int, channel_range: int, channel: typing.Optional[CHANNEL] = None):
-        """Converts ADC value to mV using the stored probe scaling."""
-        scale = self.probe_scale.get(channel, 1)
-        channel_range_mv = float(RANGE_LIST[channel_range])
-        return ((float(adc) / float(self.max_adc_value)) * channel_range_mv) * scale
-    
-    def buffer_adc_to_mv(self, buffer: list, channel: str) -> list:
-        """Converts an ADC buffer list to mV list"""
-        return [self.adc_to_mv(sample, self.range[channel], channel) for sample in buffer]
+    def _adc_conversion(
+        self,
+        adc: int | np.ndarray,
+        channel: CHANNEL = None,
+        output_unit: output_unit_l = 'mv'
+    ) -> float | np.ndarray:
+        """Converts ADC value or array to mV or V using the stored probe scaling."""
+        unit_scale = {'mv': 1, 'v': 1000}[output_unit.lower()]
+        channel_range_mv = RANGE_LIST[self.range[channel]]
+        channel_scale = self.probe_scale[channel]
+        return (((adc / self.max_adc_value) * channel_range_mv) * channel_scale) / unit_scale
 
-    def channels_buffer_adc_to_mv(self, channels_buffer: dict) -> dict:
-        "Converts dict of multiple channels adc values to millivolts (mV)"
-        for channel in channels_buffer:
-            # Get channel data (mv range and probe scaling)
-            channel_range_mv = RANGE_LIST[self.range[channel]]
-            channel_scale = self.probe_scale[channel]
-            # Extract data
-            data = channels_buffer[channel]
-            channels_buffer[channel] = \
-                ((data / self.max_adc_value) * channel_range_mv) * channel_scale
-        return channels_buffer
-
-    def channels_buffer_mv_to_v(self, channels_buffer: dict) -> dict:
-        """Converts a channel buffer of mV samples to V samples
+    def _adc_to_(
+        self,
+        data: dict | int | np.ndarray,
+        channel: int | CHANNEL | str | channel_literal = None,
+        unit: output_unit_l = 'mv',
+    ) -> dict | float | np.ndarray:
+        """
+        Middle-function between adc conversion to direct data based on if it's a dict or
+        adc values.
 
         Args:
-            channels_buffer (dict): Multi-channel buffer of mV samples
+            data (dict, int, float, np.ndarray):
+                ADC values to be converted to millivolt values
+            channel (int, CHANNEL, str, optional): 
+                Channel the ADC data is from. If the data is a channel buffer dict,
+                set to None. Defaults to None.
+            unit (str, optional): unit of volts from ['mv', 'v']. Defaults to 'mv'.
 
         Returns:
-            dict: Returned multi-channel buffer in V
+            dict | float | np.ndarray: _description_
         """
-        for channel in channels_buffer:
-            channels_buffer[channel] = channels_buffer[channel] / 1000
-        return channels_buffer
+        if isinstance(data, dict):
+            for channel, adc in data.items():
+                data[channel] = self._adc_conversion(adc, channel)
+        else:
+            if isinstance(channel, str):
+                channel = _get_literal(channel, channel_map)
+            data = self._adc_conversion(data, channel)
+        return data
 
-    def buffer_ctypes_to_list(self, ctypes_list):
-        "Converts a ctype dataset into a python list of samples"
-        return [sample for sample in ctypes_list]
-    
-    def channels_buffer_ctype_to_list(self, channels_buffer):
-        "Takes a ctypes channel dictionary buffer and converts into a integer array."
-        for channel in channels_buffer:
-            channels_buffer[channel] = self.buffer_ctypes_to_list(channels_buffer[channel])
-        return channels_buffer
-    
+    def adc_to_mv(
+        self,
+        data: dict | int | np.ndarray,
+        channel: int | CHANNEL | str | channel_literal = None,
+    ) -> dict | float | np.ndarray:
+        """
+        Converts ADC values into millivolt (mV) values.
+        The data can be from a channel buffer (dict), numpy array or single value.
+
+        Args:
+            data (dict, int, float, np.ndarray):
+                ADC values to be converted to millivolt values
+            channel (int, CHANNEL, str, optional): 
+                Channel the ADC data is from. If the data is a channel buffer dict,
+                set to None. Defaults to None.
+
+        Returns:
+            dict, int, float, np.ndarray: Data converted into millivolts (mV)
+        """
+        return self._adc_to_(data, channel, unit='mv')
+
+    def adc_to_volts(
+        self,
+        data: dict | int | np.ndarray,
+        channel: int | CHANNEL | str | channel_literal = None,
+    ) -> dict | float | np.ndarray:
+        """
+        Converts ADC values into voltage (V) values.
+        The data can be from a channel buffer (dict), numpy array or single value.
+
+        Args:
+            data (dict, int, float, np.ndarray):
+                ADC values to be converted to millivolt values
+            channel (int, CHANNEL, str, optional): 
+                Channel the ADC data is from. If the data is a channel buffer dict,
+                set to None. Defaults to None.
+
+        Returns:
+            dict, int, float, np.ndarray: Data converted into volts (V)
+        """
+        return self._adc_to_(data, channel, unit='v')
+
     def _thr_hyst_mv_to_adc(
             self,
             channel,
@@ -794,7 +832,6 @@ class PicoScopeBase:
             hyst_lower_adc = int(hysteresis_lower_mv)
 
         return upper_adc, lower_adc, hyst_upper_adc, hyst_lower_adc
-        
 
     # Set methods for PicoScope configuration    
     def _change_power_source(self, state: POWER_SOURCE) -> 0:
@@ -1586,10 +1623,10 @@ class PicoScopeBase:
             self.get_values(samples, 0, segment, ratio, RATIO_MODE.TRIGGER)
 
         # Convert from ADC to mV or V values
-        if output_unit.lower() in ['mv', 'v']:
-            channels_buffer = self.channels_buffer_adc_to_mv(channels_buffer)
+        if output_unit.lower() == 'mv':
+            channels_buffer = self.adc_to_mv(channels_buffer)
         if output_unit.lower() == 'v':
-            channels_buffer = self.channels_buffer_mv_to_v(channels_buffer)
+            channels_buffer = self.adc_to_volts(channels_buffer)
 
         # Generate the time axis based on actual samples and timebase
         time_axis = self.get_time_axis(timebase, actual_samples, pre_trig_percent=pre_trig_percent)
@@ -1655,7 +1692,7 @@ class PicoScopeBase:
 
         # Convert data to mV
         if conv_to_mv:
-            channels_buffer = self.channels_buffer_adc_to_mv(channels_buffer)
+            channels_buffer = self.adc_to_mv(channels_buffer)
 
         # Get time axis
         time_axis = self.get_time_axis(timebase, actual_samples, pre_trig_percent=pre_trig_percent)
