@@ -738,7 +738,7 @@ class PicoScopeBase:
     def buffer_adc_to_mv(self, buffer: list, channel: str) -> list:
         """Converts an ADC buffer list to mV list"""
         return [self.adc_to_mv(sample, self.range[channel], channel) for sample in buffer]
-    
+
     def channels_buffer_adc_to_mv(self, channels_buffer: dict) -> dict:
         "Converts dict of multiple channels adc values to millivolts (mV)"
         for channel in channels_buffer:
@@ -747,10 +747,24 @@ class PicoScopeBase:
             channel_scale = self.probe_scale[channel]
             # Extract data
             data = channels_buffer[channel]
-
-            channels_buffer[channel] = ((data / self.max_adc_value) * channel_range_mv) * channel_scale
+            channels_buffer[channel] = \
+                ((data / self.max_adc_value) * channel_range_mv) * channel_scale
         return channels_buffer
-    
+
+    def channels_buffer_mv_to_v(self, channels_buffer: dict) -> dict:
+        """Converts a channel buffer of mV samples to V samples
+
+        Args:
+            channels_buffer (dict): Multi-channel buffer of mV samples
+
+        Returns:
+            dict: Returned multi-channel buffer in V
+        """
+        for channel in channels_buffer:
+            print(channels_buffer[channel])
+            channels_buffer[channel] = channels_buffer[channel] / 1000
+        return channels_buffer
+
     def buffer_ctypes_to_list(self, ctypes_list):
         "Converts a ctype dataset into a python list of samples"
         return [sample for sample in ctypes_list]
