@@ -761,7 +761,6 @@ class PicoScopeBase:
             dict: Returned multi-channel buffer in V
         """
         for channel in channels_buffer:
-            print(channels_buffer[channel])
             channels_buffer[channel] = channels_buffer[channel] / 1000
         return channels_buffer
 
