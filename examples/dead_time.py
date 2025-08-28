@@ -1,7 +1,18 @@
-import pypicosdk as psdk
-from matplotlib import pyplot as plt
+"""
+This example displays the dead time between consecutive rapid block captures using a
+PicoScope. The script configures a signal generator to output a square wave, sets up a
+single-channel capture with a trigger, and collects multiple captures in rapid succession.
+It then retrieves trigger timing information to calculate and plot the dead time between
+captures.
 
-# Pico examples use inline argument values for clarity
+Setup:
+ - Connect Channel A to AWG Ouput
+
+Notes:
+ - Pico examples use inline argument values for clarity
+"""
+from matplotlib import pyplot as plt
+import pypicosdk as psdk
 
 # Capture configuration
 SAMPLES = 1000
@@ -25,7 +36,7 @@ TIMEBASE = scope.sample_rate_to_timebase(50, psdk.SAMPLE_RATE.MSPS)
 buffers, time_axis = scope.run_simple_rapid_block_capture(
     timebase=TIMEBASE,
     samples=SAMPLES,
-    n_captures=CAPTURES,
+    captures=CAPTURES,
 )
 
 # Retrieve trigger timing information for each segment
@@ -38,7 +49,8 @@ SAMPLE_INTERVAL_NS = time_axis[1] - time_axis[0]
 
 dead_times = []
 for prev, curr in zip(trigger_info[:-1], trigger_info[1:]):
-    diff_samples = (curr["timeStampCounter"] - prev["timeStampCounter"]) & psdk.TIMESTAMP_COUNTER_MASK
+    diff_samples = (curr["timeStampCounter"] - prev["timeStampCounter"]) & \
+        psdk.TIMESTAMP_COUNTER_MASK
     dead_samples = diff_samples - SAMPLES
     dead_times.append(dead_samples * SAMPLE_INTERVAL_NS)
 
