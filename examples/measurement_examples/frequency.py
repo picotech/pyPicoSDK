@@ -1,9 +1,10 @@
 """Simple frequency measurement using a block capture.
 Measures the signal frequency by averaging time between zero crossings.
 """
-import numpy as np
-import pypicosdk as psdk
+from measurements import measure_frequency
+
 from matplotlib import pyplot as plt
+import pypicosdk as psdk
 
 # Capture configuration
 SAMPLES = 5_000_000
@@ -12,45 +13,6 @@ CHANNEL = psdk.CHANNEL.A
 RANGE = psdk.RANGE.V1
 THRESHOLD = 0
 HYSTERESIS_MV = 10
-
-
-def zero_crossings(data: np.ndarray, hysteresis: float = 0.0) -> np.ndarray:
-    """Return indices of zero crossings in ``data`` with optional hysteresis."""
-
-    centered = data - data.mean()
-    if hysteresis <= 0:
-        return np.where(np.diff(np.sign(centered)))[0]
-
-    sign = 1 if centered[0] >= 0 else -1
-    crossings = []
-    for i, value in enumerate(centered[1:], 1):
-        if sign >= 0 and value <= -hysteresis:
-            sign = -1
-            crossings.append(i - 1)
-        elif sign <= 0 and value >= hysteresis:
-            sign = 1
-            crossings.append(i - 1)
-    return np.asarray(crossings, dtype=int)
-
-
-def measure_frequency(
-    data: np.ndarray, sample_rate: float, hysteresis: float = 0.0
-) -> float:
-    """Return the average frequency of ``data`` in Hz.
-
-    Args:
-        data: Waveform samples.
-        sample_rate: Sampling rate in samples per second.
-        hysteresis: Threshold for zero crossing detection in mV.
-    """
-
-    crossings = zero_crossings(data, hysteresis)
-    if len(crossings) < 3:
-        return float("nan")
-    # Use every other crossing to avoid measuring half periods
-    periods = (crossings[2:] - crossings[:-2]) / sample_rate
-    return float(1 / periods.mean())
-
 
 # Initialize PicoScope 6000
 scope = psdk.ps6000a()

@@ -2,9 +2,11 @@
 Uses histogram-based top and base functions to provide a robust amplitude
 measurement. The script can also calculate RMS amplitude.
 """
-import numpy as np
-import pypicosdk as psdk
+
+from measurements import amplitude, pk2pk, rms
+
 from matplotlib import pyplot as plt
+import pypicosdk as psdk
 
 
 # Capture configuration
@@ -14,64 +16,6 @@ CHANNEL = psdk.CHANNEL.A
 RANGE = psdk.RANGE.V1
 BINS = 32
 THRESHOLD = 0
-
-
-def top(data):
-    # Return the "Top" mode of the data
-
-    # Sort and get upper 40% of samples
-    data = np.sort(data)
-    data = data[int(len(data) * 0.6) :]
-
-    # Build histogram and get max counts
-    counts, bin_edges = np.histogram(data, bins=BINS)
-    mode_bin_index = np.argmax(counts)
-
-    # Get upper and lower edges of bins
-    lbe = bin_edges[mode_bin_index]
-    upe = bin_edges[mode_bin_index + 1]
-
-    # Get data between the bin edges
-    filtered = data[(data >= lbe) & (data <= upe)]
-
-    # Return the average of samples between bin edges
-    return float(filtered.mean())
-
-def base(data):
-    # Return the "Base" mode of the data
-
-    # Sort and get lower 40% of samples
-    data = np.sort(data)
-    data = data[: int(len(data) * 0.4)]
-
-    # Build histogram and get max counts
-    counts, bin_edges = np.histogram(data, bins=BINS)
-    mode_bin_index = np.argmax(counts)
-
-    # Get upper and lower edges of bins
-    lbe = bin_edges[mode_bin_index]
-    upe = bin_edges[mode_bin_index + 1]
-
-    # Get data between the bin edges
-    filtered = data[(data >= lbe) & (data <= upe)]
-    
-    # Return the average of samples between bin edges
-    return float(filtered.mean())
-
-def max_value(data):
-    return np.max(data)
-
-def min_value(data):
-    return np.min(data)
-
-def pk2pk(data):
-    return float(max(waveform) - min(waveform))
-
-def amplitude(data):
-    return float(top(waveform) - base(waveform)) / 2
-
-def rms(data):
-    return float(np.sqrt(np.mean(np.square(waveform - waveform.mean()))))
 
 # Initialize PicoScope 6000
 scope = psdk.ps6000a()
@@ -93,13 +37,14 @@ channels_buffer, time_axis = scope.run_simple_block_capture(TIMEBASE, SAMPLES)
 scope.close_unit()
 
 # Extract waveform and measure amplitude
-waveform = (channels_buffer[CHANNEL])
+waveform = channels_buffer[CHANNEL]
 
 amplitude_value = amplitude(waveform)
 pk2pk_value = pk2pk(waveform)
 rms_value = rms(waveform)
 
-print(f"Measured amplitude: {amplitude_value:.2f} mV, pk2pk: {pk2pk_value:.2f} mV, RMS: {rms_value:.2f} mV")
+print(f"Measured amplitude: {amplitude_value:.2f} mV"
+      f"pk2pk: {pk2pk_value:.2f} mV, RMS: {rms_value:.2f} mV")
 
 # Display waveform
 plt.plot(time_axis, waveform)
