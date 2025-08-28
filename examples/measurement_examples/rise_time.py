@@ -1,50 +1,15 @@
-import pypicosdk as psdk
+"""
+Capture PicoScope data, measure fall time, and plot waveform.
+"""
+from measurements import rise_time
+
 from matplotlib import pyplot as plt
-import numpy as np
+import pypicosdk as psdk
 
 # Pico examples use inline argument values for clarity
 
 # Capture configuration
 SAMPLES = 5_000
-
-def max_value(data):
-    return np.max(data)
-
-def min_value(data):
-    return np.min(data)
-
-def peak_to_peak(data):
-    return max_value(data) - min_value(data)
-
-def rise_time(data, time_axis):
-    # Calculate lower (10%) and upper (90%) thresholds
-    min_val = min_value(data)
-    pk_pk = peak_to_peak(data)
-    low = min_val + 0.1 * pk_pk
-    high = min_val + 0.9 * pk_pk
-
-    # Get time delta between samples
-    t = time_axis[1] - time_axis[0]
-
-    # Get indexes of high and low data
-    high_index = np.where(data > high)[0]
-    low_index = np.where(data < low)[0]
-
-    # Find where a high sample goes to low and how many counts between
-    rise_time_samples = []
-    for i in high_index:
-        if i+1 not in high_index:
-            for x in range(1000):
-                if i+x in low_index:
-                    rise_time_samples.append(x+1)
-                    break
-
-    # Calculate average
-    rise_time_samples = np.array(rise_time_samples)
-    average = rise_time_samples.mean()
-
-    # Return sample counts multiplied by time delta
-    return average * t
 
 # Initialise PicoScope 6000
 scope = psdk.ps6000a()
@@ -73,7 +38,7 @@ print(f'Rise time(ns): {rise_time_value}')
 plt.plot(time_axis, channel_buffer[psdk.CHANNEL.A])
 
 # Add labels to pyplot
-plt.xlabel("Time (ns)")     
+plt.xlabel("Time (ns)")
 plt.ylabel("Amplitude (mV)")
 plt.grid(True)
 plt.show()
