@@ -1,51 +1,50 @@
-##################################################################
-# Histogram example for a PicoScope 6000E.
-#
-# Description:
-#   This example script captures multiple signals and displays
-#   a histogram of captured peak-to-peak (pk2pk) values.
-#
-# Requirements: 
-# - PicoScope 6000E
-# - Python packages:
-#   pip install matplotlib scipy numpy pypicosdk
-#
-# Setup:
-#   - Connect 6000E (preferebly with FlexRes) SigGen (AWG) to 
-#     Channel A of the oscilloscope using a BNC cable or probe
-#
-##################################################################
+"""
+Histogram example for a PicoScope 6000E.
 
-import pypicosdk as psdk
+Description:
+  This example script captures multiple signals and displays
+  a histogram of captured peak-to-peak (pk2pk) values.
+
+Requirements:
+- PicoScope 6000E
+- Python packages:
+  pip install matplotlib scipy numpy pypicosdk
+
+Setup:
+  - Connect 6000E (preferebly with FlexRes) SigGen (AWG) to
+    Channel A of the oscilloscope using a BNC cable or probe
+"""
 import matplotlib.pyplot as plt
 import numpy as np
+import pypicosdk as psdk
 
 # Pico examples use inline argument values for clarity
 
 # Scope setup
 scope = psdk.ps6000a()
-scope.open_unit(resolution=psdk.RESOLUTION._12BIT)
+scope.open_unit(resolution="12bit")
 
 # Set channels (inline arguments)
 scope.set_channel(channel=psdk.CHANNEL.A, coupling=psdk.COUPLING.DC, range=psdk.RANGE.mV500)
-scope.set_simple_trigger(channel=psdk.CHANNEL.A, threshold_mv=200, direction=psdk.TRIGGER_DIR.RISING, auto_trigger_ms=0)
+scope.set_simple_trigger(channel=psdk.CHANNEL.A, threshold_mv=200,
+                         direction=psdk.TRIGGER_DIR.RISING, auto_trigger=0)
 
 # Setup SigGen
 scope.set_siggen(frequency=1000, pk2pk=0.9, wave_type=psdk.WAVEFORM.SINE)
 
-# Acquisition parameters 
-nSamples = 1000
-nCaptures = 1000
+# Acquisition parameters
+SAMPLES = 1000
+CAPTURES = 1000
 
 pk2pk_values = []
 waveforms = []  # Store each waveform
 
 # Main capture loop
-for _ in range(nCaptures):
+for _ in range(CAPTURES):
     # Simple block capture
     channel_buffer, time_axis = scope.run_simple_block_capture(
         timebase=scope.interval_to_timebase(20E-9),
-        samples=nSamples
+        samples=SAMPLES
     )
 
     # Add channel data to list
@@ -72,14 +71,14 @@ for waveform in waveforms:
     axs[0].plot(time_axis, waveform, alpha=0.3)
 axs[0].set_xlabel("Time (ns)")
 axs[0].set_ylabel("Amplitude (mV)")
-axs[0].set_title(f"Overlay of {nCaptures} Waveforms")
+axs[0].set_title(f"Overlay of {CAPTURES} Waveforms")
 axs[0].grid(True)
 
 # Bottom subplot: Histogram of pk2pk values
 axs[1].hist(pk2pk_values, bins=20, edgecolor='black')
 axs[1].set_xlabel("Peak-to-Peak Voltage (mV)")
 axs[1].set_ylabel("Count")
-axs[1].set_title(f"Histogram of Pk-Pk over {nCaptures} Captures")
+axs[1].set_title(f"Histogram of Pk-Pk over {CAPTURES} Captures")
 axs[1].grid(True)
 
 # Display pyplot
