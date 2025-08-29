@@ -708,6 +708,8 @@ class shared_ps6000a_psospa:
         # Add probe scaling
         self.probe_scale[channel] = probe_scale
 
+        self._set_ylim(range)
+
         if enabled:
             self.set_channel_on(channel, range, coupling, offset, bandwidth)
         else:
