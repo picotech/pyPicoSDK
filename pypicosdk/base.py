@@ -8,6 +8,11 @@ import numpy.ctypeslib as npc
 
 from .error_list import ERROR_STRING
 from .constants import *
+from .constants import (
+    RANGE,
+    RANGE_LIST,
+    range_literal,
+)
 from .common import *
 
 
@@ -33,6 +38,8 @@ class PicoScopeBase:
         self.max_adc_value = None
         self.min_adc_value = None
         self.over_range = 0
+
+        self.ylim = (0, 0)
     
     def __exit__(self):
         self.close_unit()
@@ -846,6 +853,38 @@ class PicoScopeBase:
             self.handle,
             state
         )
+
+    def _set_ylim(self, ch_range: RANGE | range_literal) -> None:
+        """
+        Update the scope self.ylim with the largest channel range
+
+        Args:
+            ch_range (RANGE | range_literal): Range of current channel
+        """
+        # Convert to mv
+        ch_range = RANGE_LIST[ch_range]
+
+        # Compare largest value
+        max_ylim = max(self.ylim[1], ch_range)
+        min_ylim = -max_ylim
+        self.ylim = (min_ylim, max_ylim)
+
+    def get_ylim(self) -> tuple[float, float]:
+        """
+        Returns the ylim of the widest channel range as a tuple.
+        Ideal for pyplot
+
+        Returns:
+            tuple[float, float]: _description_
+
+        Examples:
+            >>> from matplotlib import pyplot as plt
+            >>> ...
+            >>> plt.ylim(scope.get_ylim())
+            or
+            >>> plt.ylim(scope.ylim)
+        """
+        return self.ylim
 
     def set_device_resolution(self, resolution: RESOLUTION) -> None:
         """Configure the ADC resolution using ``ps6000aSetDeviceResolution``.
