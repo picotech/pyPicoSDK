@@ -869,22 +869,28 @@ class PicoScopeBase:
         min_ylim = -max_ylim
         self.ylim = (min_ylim, max_ylim)
 
-    def get_ylim(self) -> tuple[float, float]:
+    def get_ylim(self, unit: Literal['mv', 'v'] = 'mv') -> tuple[float, float]:
         """
         Returns the ylim of the widest channel range as a tuple.
-        Ideal for pyplot
+        Ideal for pyplot ylim function.
+
+        Args:
+            unit (str): 'mv' or 'v'. Depending on whether your data is in mV
+                or Volts.
 
         Returns:
-            tuple[float, float]: _description_
+            tuple[float, float]: Minium and maximum range values
 
         Examples:
             >>> from matplotlib import pyplot as plt
             >>> ...
             >>> plt.ylim(scope.get_ylim())
-            or
-            >>> plt.ylim(scope.ylim)
         """
-        return self.ylim
+        unit = unit.lower()
+        if unit.lower() == 'mv':
+            return self.ylim
+        elif unit.lower():
+            return self.ylim[0] / 1000, self.ylim[1] / 1000
 
     def set_device_resolution(self, resolution: RESOLUTION) -> None:
         """Configure the ADC resolution using ``ps6000aSetDeviceResolution``.
