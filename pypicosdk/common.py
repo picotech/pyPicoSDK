@@ -1,6 +1,7 @@
 import ctypes
 import platform
 import os
+from typing import Any
 
 class PicoSDKNotFoundException(Exception):
     pass
@@ -83,15 +84,31 @@ def _struct_to_dict(struct_instance: ctypes.Structure, format=False) -> dict:
             result[field_name] = getattr(struct_instance, field_name)
     return result
 
-def _get_literal(variable:str, map:dict):
+
+def _get_literal(variable: str | Any, map_dict: dict, type_fail=False) -> int:
     """Checks if typing Literal variable is in corresponding map
-    and returns enum integer value"""
-    if type(variable) is not str:
+    and returns enum integer value.
+
+    Args:
+        variable (str | Any): Variable to find in map dict.
+        map_dict (dict): Dict to search for variable.
+        type_fail (bool, optional): If True, if not a string, raise exception.
+            Defaults to False.
+
+    Raises:
+        PicoSDKException: Raises if value not in dict.
+
+    Returns:
+        int: Integer to send to PicoSDK driver.
+    """
+    if not isinstance(variable, str) and type_fail is False:
         return variable
-    if variable in map:
-        return map[variable]
-    else:
-        raise PicoSDKException(f'Variable \'{variable}\' not in {list(map.keys())}')
+    elif isinstance(variable, str):
+        variable = variable.lower()
+        if variable in map_dict:
+            return map_dict[variable]
+    raise PicoSDKException(f'Variable \'{variable}\' not in {list(map_dict.keys())}')
+
 
 __all__ = [
     'PicoSDKException',
