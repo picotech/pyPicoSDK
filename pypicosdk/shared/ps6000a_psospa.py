@@ -2,10 +2,30 @@ import ctypes
 import numpy as np
 
 from ..constants import *
-from ..common import PicoSDKException, _struct_to_dict
+from ..constants import (
+    CHANNEL,
+    RANGE,
+    COUPLING,
+    BANDWIDTH_CH,
+    channel_literal,
+    channel_map,
+    range_literal,
+    range_map,
+    ProbeScale_L,
+    ProbeScale_M,
+    RANGE_LIST,
+)
+from ..common import (
+    PicoSDKException,
+    _struct_to_dict,
+    _get_literal,
+)
 
-class shared_ps6000a_psospa:
+from ._protocol import _ProtocolBase
+
+class shared_ps6000a_psospa(_ProtocolBase):
     """Shared functions between ps6000a and psospa"""
+    probe_scale: dict[float]
 
     def get_adc_limits(self) -> tuple:
         """
@@ -677,17 +697,17 @@ class shared_ps6000a_psospa:
     def set_channel(
         self,
         channel: CHANNEL | channel_literal,
-        range: RANGE | range_literal = RANGE.V1,
+        range: RANGE | range_literal = RANGE.V1,  # pylint: disable=W0622
         enabled: bool = True,
         coupling: COUPLING = COUPLING.DC,
         offset: float = 0.0,
         bandwidth: BANDWIDTH_CH = BANDWIDTH_CH.FULL,
-        probe_scale: float = 1.0,
+        probe_scale: ProbeScale_L = 'x1',
     ) -> None:
         """
         Enable/disable a channel and specify certain variables i.e. range, coupling, offset, etc.
-        
-        For the ps6000a drivers, this combines set_channel_on/off to a single function. 
+
+        For the ps6000a drivers, this combines set_channel_on/off to a single function.
         Set channel on/off by adding enabled=True/False
 
         Args:
@@ -697,24 +717,35 @@ class shared_ps6000a_psospa:
                 coupling (COUPLING, optional): AC/DC/DC 50 Ohm coupling of selected channel.
                 offset (int, optional): Analog offset in volts (V) of selected channel.
                 bandwidth (BANDWIDTH_CH, optional): Bandwidth of channel (selected models).
-                probe_scale (float, optional): Probe attenuation factor such as 1 or 10.
+                probe_scale (str, optional): Probe attenuation factor such as 'x1' or 'x10'.
         """
         # Check if typing Literals
-        if channel in channel_map:
-            channel = channel_map[channel]
-        if range in range_map:
-            range = range_map[range]
-        
+        channel = _get_literal(channel, channel_map)
+        range = _get_literal(range, range_map)
+        probe_scale = _get_literal(probe_scale, ProbeScale_M, type_fail=True)
+
+        # Adjust range based on probe scaling
+        if probe_scale != 1:
+            range_mv = RANGE_LIST[range] // probe_scale
+            if range_mv in RANGE_LIST:
+                range = RANGE_LIST.index(range_mv)
+            else:
+                raise PicoSDKException(
+                    f'Voltage {range_mv * probe_scale} mV is not supported with '
+                    f'x{probe_scale} probe scaling.'
+                )
+
         # Add probe scaling
         self.probe_scale[channel] = probe_scale
 
+        # Update ylims
         self._set_ylim(range)
 
         if enabled:
             self.set_channel_on(channel, range, coupling, offset, bandwidth)
         else:
             self.set_channel_off(channel)
-    
+
     def set_channel_on(self, channel, range, coupling=COUPLING.DC, offset=0.0, bandwidth=BANDWIDTH_CH.FULL):
         """Sets a channel to ON at a specified range (6000E)"""
         self.range[channel] = range
