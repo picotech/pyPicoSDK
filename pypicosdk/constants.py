@@ -321,6 +321,20 @@ range_literal = Literal['10mV', '20mV', '50mV', '100mV', '200mV', '500mV',
 range_map = {'10mV':0, '20mV':1, '50mV':2, '100mV':3, '200mV':4, '500mV':5, 
                         '1V':6, '2V':7, '5V':8, '10V':9, '20V':10, '50V':11}
 
+ProbeScale_L = Literal['x1', 'x2', 'x5', 'x10', 'x20', 'x50', 'x100', 'x200', 'x500', 'x1000']
+ProbeScale_M = {
+    'x1': 1,
+    'x2': 2,
+    'x5': 5,
+    'x10': 10,
+    'x20': 20,
+    'x50': 50,
+    'x100': 100,
+    'x200': 200,
+    'x500': 500,
+    'x1000': 1000
+}
+
 class BANDWIDTH_CH:
     """
     Class for different bandwidth configurations.
@@ -971,6 +985,9 @@ led_colours_l = Literal['red', 'green', 'blue', 'yellow', 'pink']
 led_colours_m = {'red': 0, 'green': 100, 'blue': 244, 'yellow': 61, 'pink':306}
 
 output_unit_l = Literal['adc', 'mv', 'v']
+
+OutputUnitV_L = Literal['mv', 'v']
+OutputUnitV_M = {'mv': 1, 'v': 1000}
 
 # Public names exported by :mod:`pypicosdk.constants` for ``import *`` support.
 # This explicit list helps static analyzers like Pylance discover available
