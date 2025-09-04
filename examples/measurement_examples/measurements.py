@@ -79,13 +79,27 @@ def rms(data):
 
 
 def positive_overshoot_filtered(data):
-    """Return the positive overshoot measurment"""
-    return (max_value(data) - top(data)) / max_value(data) * 100
+    """Positive overshoot as % of step height."""
+    v_top = top(data)
+    v_base = base(data)
+    step = v_top - v_base
+    if not np.isfinite(step) or step <= 0:
+        return float('nan')
+    v_max = max_value(data)
+    pos = (v_max - v_top) / step * 100.0
+    return float(max(0.0, pos))
 
 
 def negative_overshoot_filtered(data):
-    """Return the negative overshoot measurment"""
-    return (min_value(data) - base(data)) / min_value(data) * 100
+    """Negative overshoot as % of step height."""
+    v_top = top(data)
+    v_base = base(data)
+    step = v_top - v_base
+    if not np.isfinite(step) or step <= 0:
+        return float('nan')
+    v_min = min_value(data)
+    neg = (v_base - v_min) / step * 100.0
+    return float(max(0.0, neg))
 
 
 def fall_time(data, time_axis):
