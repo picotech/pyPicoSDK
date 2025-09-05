@@ -8,7 +8,7 @@ samples = int(1E9)
 streaming_samples = 250
 interval = 4
 unit = psdk.TIME_UNIT.NS
-pico_unit = psdk.PICO_TIME_UNIT.NS
+pico_unit = psdk.TIME_UNIT.NS
 channel = psdk.CHANNEL.A
 
 def setup_scope():

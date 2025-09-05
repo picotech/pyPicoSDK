@@ -12,6 +12,7 @@ from .constants import (
     RANGE,
     RANGE_LIST,
     range_literal,
+    _StandardPicoConv,
 )
 from .common import *
 
@@ -22,7 +23,7 @@ class PicoScopeBase:
     def __init__(self, dll_name, *args, **kwargs):
         # Pytest override
         self._pytest = "pytest" in args
-            
+
         # Setup DLL location per device
         if self._pytest:
             self.dll = None
@@ -40,7 +41,7 @@ class PicoScopeBase:
         self.over_range = 0
 
         self.ylim = (0, 0)
-    
+
     def __exit__(self):
         self.close_unit()
 
@@ -62,7 +63,7 @@ class PicoScopeBase:
             ctypes.CDLL: CDLL function for the specified name.
         """
         return getattr(self.dll, self._unit_prefix_n + function_name)
-    
+
     def _error_handler(self, status: int) -> None:
         """
         Checks status code against error list; raises an exception if not 0.
@@ -89,7 +90,7 @@ class PicoScopeBase:
             self.close_unit()
             raise PicoSDKException(error_code)
         return
-    
+
     def _call_attr_function(self, function_name:str, *args) -> int:
         """
         Calls a specific attribute function with the provided arguments.
@@ -106,14 +107,14 @@ class PicoScopeBase:
         return status
 
 
-    # General PicoSDK functions    
+    # General PicoSDK functions
     def open_unit(self, serial_number:int=None, resolution:RESOLUTION=0) -> None:
         """
         Opens PicoScope unit.
 
         Args:
             serial_number (int, optional): Serial number of specific unit, e.g., JR628/0017.
-            resolution (RESOLUTION, optional): Resolution of device. 
+            resolution (RESOLUTION, optional): Resolution of device.
         """
 
         if serial_number is not None:
@@ -121,7 +122,7 @@ class PicoScopeBase:
         self._call_attr_function(
             'OpenUnit',
             ctypes.byref(self.handle),
-            serial_number, 
+            serial_number,
             resolution
         )
         self.resolution = resolution
@@ -167,12 +168,12 @@ class PicoScopeBase:
         while True:
             status = self._call_attr_function(
                 "IsReady",
-                self.handle, 
+                self.handle,
                 ctypes.byref(ready)
             )
             if ready.value != 0:
                 break
-    
+
     def ping_unit(self) -> bool:
         """Check that the device is still connected.
         This wraps ``ps6000aPingUnit`` which verifies communication with
@@ -183,7 +184,7 @@ class PicoScopeBase:
 
         status = self._call_attr_function("PingUnit", self.handle)
         return status == 0
-    
+
     def check_for_update(self, n_infos: int = 8) -> tuple[list, bool]:
         """Query whether a firmware update is available for the device.
         Args:
@@ -243,7 +244,7 @@ class PicoScopeBase:
             ctypes.byref(max_samples),
         )
         return max_samples.value
-    
+
 
     # Get information from PicoScope
     def get_unit_info(self, unit_info: UNIT_INFO) -> str:
@@ -291,13 +292,13 @@ class PicoScopeBase:
         for channel in self.range:
             enabled_channel_byte += 2**channel
         return enabled_channel_byte
-    
+
     def get_nearest_sampling_interval(self, interval_s:float) -> dict:
         """
-        This function returns the nearest possible sample interval to the requested 
+        This function returns the nearest possible sample interval to the requested
         sample interval. It does not change the configuration of the oscilloscope.
 
-        Channels need to be setup first before calculating as more channels may 
+        Channels need to be setup first before calculating as more channels may
         increase sample interval.
 
         Args:
@@ -318,10 +319,10 @@ class PicoScopeBase:
             ctypes.byref(time_interval),
         )
         return {"timebase": timebase.value, "actual_sample_interval": time_interval.value}
-    
+
     def get_timebase(self, timebase: int, samples: int, segment:int=0) -> dict:
         """
-        This function calculates the sampling rate and maximum number of 
+        This function calculates the sampling rate and maximum number of
         samples for a given timebase under the specified conditions.
 
         Args:
@@ -343,9 +344,9 @@ class PicoScopeBase:
             ctypes.byref(max_samples),
             segment
         )
-        return {"Interval(ns)": time_interval_ns.value, 
+        return {"Interval(ns)": time_interval_ns.value,
                 "Samples":          max_samples.value}
-    
+
     def _get_timebase_2(self, timebase: int, samples: int, segment:int=0):
         """
         Calculates the sampling rate and maximum number of samples for a given
@@ -372,33 +373,33 @@ class PicoScopeBase:
             ctypes.byref(max_samples),
             segment
         )
-        return {"Interval(ns)": time_interval_ns.value, 
+        return {"Interval(ns)": time_interval_ns.value,
                 "Samples":          max_samples.value}
-    
+
     def sample_rate_to_timebase(self, sample_rate:float, unit=SAMPLE_RATE.MSPS):
         """
-        Converts sample rate to a PicoScope timebase value based on the 
+        Converts sample rate to a PicoScope timebase value based on the
         attached PicoScope.
 
         This function will return the closest possible timebase.
-        Use `get_nearest_sample_interval(interval_s)` to get the full timebase and 
+        Use `get_nearest_sample_interval(interval_s)` to get the full timebase and
         actual interval achieved.
 
         Args:
-            sample_rate (int): Desired sample rate 
+            sample_rate (int): Desired sample rate
             unit (SAMPLE_RATE): unit of sample rate.
         """
         interval_s = 1 / (sample_rate * unit)
-        
+
         return self.get_nearest_sampling_interval(interval_s)["timebase"]
-    
+
     def interval_to_timebase(self, interval:float, unit=TIME_UNIT.S):
         """
-        Converts a time interval (between samples) into a PicoScope timebase 
+        Converts a time interval (between samples) into a PicoScope timebase
         value based on the attached PicoScope.
 
         This function will return the closest possible timebase.
-        Use `get_nearest_sample_interval(interval_s)` to get the full timebase and 
+        Use `get_nearest_sample_interval(interval_s)` to get the full timebase and
         actual interval achieved.
 
         Args:
@@ -407,7 +408,7 @@ class PicoScopeBase:
         """
         interval_s = interval / unit
         return self.get_nearest_sampling_interval(interval_s)["timebase"]
-    
+
     def _get_maximum_adc_value(self) -> int:
         """
         Gets the ADC limits for specified devices.
@@ -424,14 +425,14 @@ class PicoScopeBase:
             ctypes.byref(max_value)
         )
         return max_value.value
-    
+
     def get_time_axis(self, timebase:int, samples:int, pre_trig_percent:int=None) -> list:
         """
         Return an array of time values based on the timebase and number
         of samples
 
         Args:
-            timebase (int): PicoScope timebase 
+            timebase (int): PicoScope timebase
             samples (int): Number of samples captured
             pre_trig_percent: Percent to offset the 0 point by. If None, default is 0.
 
@@ -446,7 +447,7 @@ class PicoScopeBase:
             offset = int(time_axis.max() * (pre_trig_percent / 100))
             return time_axis - offset
 
-    
+
     def get_trigger_time_offset(self, time_unit: TIME_UNIT, segment_index: int = 0) -> int:
         """
         Get the trigger time offset for jitter correction in waveforms.
@@ -481,7 +482,7 @@ class PicoScopeBase:
         )
 
         # Convert the returned time to the requested ``time_unit``
-        pico_unit = PICO_TIME_UNIT(returned_unit.value)
+        pico_unit = _PICO_TIME_UNIT(returned_unit.value)
         time_s = time.value / TIME_UNIT[pico_unit.name]
         return int(time_s * TIME_UNIT[time_unit.name])
 
@@ -489,10 +490,10 @@ class PicoScopeBase:
         self,
         from_segment_index: int,
         to_segment_index: int,
-    ) -> list[tuple[int, PICO_TIME_UNIT]]:
+    ) -> list[tuple[int, _PICO_TIME_UNIT]]:
         """Retrieve trigger time offsets for a range of segments.
 
-        This method returns the trigger time offset and associated 
+        This method returns the trigger time offset and associated
         time unit for each requested segment.
 
         Args:
@@ -520,7 +521,7 @@ class PicoScopeBase:
 
         results = []
         for i in range(count):
-            results.append((times[i], PICO_TIME_UNIT(units[i])))
+            results.append((times[i], _PICO_TIME_UNIT(units[i])))
         return results
 
     def set_no_of_captures(self, n_captures: int) -> None:
@@ -669,7 +670,7 @@ class PicoScopeBase:
         self.resolution = RESOLUTION(resolution.value)
         self.min_adc_value, self.max_adc_value = self.get_adc_limits()
         return RESOLUTION(resolution.value)
-    
+
     def no_of_streaming_values(self) -> int:
         """Return the number of values currently available while streaming."""
 
@@ -680,7 +681,7 @@ class PicoScopeBase:
             ctypes.byref(count),
         )
         return count.value
-    
+
     def get_no_of_processed_captures(self) -> int:
         """Return the number of captures processed in rapid block mode."""
 
@@ -691,7 +692,7 @@ class PicoScopeBase:
             ctypes.byref(n_processed),
         )
         return n_processed.value
-    
+
     def get_minimum_timebase_stateless(self) -> dict:
         """Return the fastest timebase available for the current setup.
         Queries ``ps6000aGetMinimumTimebaseStateless`` using the enabled
@@ -716,7 +717,7 @@ class PicoScopeBase:
             "time_interval": time_interval.value,
         }
 
-    # Data conversion ADC/mV & ctypes/int 
+    # Data conversion ADC/mV & ctypes/int
     def mv_to_adc(self, mv: float, channel_range: int, channel: CHANNEL = None) -> int:
         """
         Converts a millivolt (mV) value to an ADC value based on the device's
@@ -760,7 +761,7 @@ class PicoScopeBase:
         Args:
             data (dict, int, float, np.ndarray):
                 ADC values to be converted to millivolt values
-            channel (int, CHANNEL, str, optional): 
+            channel (int, CHANNEL, str, optional):
                 Channel the ADC data is from. If the data is a channel buffer dict,
                 set to None. Defaults to None.
             unit (str, optional): unit of volts from ['mv', 'v']. Defaults to 'mv'.
@@ -789,7 +790,7 @@ class PicoScopeBase:
         Args:
             data (dict, int, float, np.ndarray):
                 ADC values to be converted to millivolt values
-            channel (int, CHANNEL, str, optional): 
+            channel (int, CHANNEL, str, optional):
                 Channel the ADC data is from. If the data is a channel buffer dict,
                 set to None. Defaults to None.
 
@@ -810,7 +811,7 @@ class PicoScopeBase:
         Args:
             data (dict, int, float, np.ndarray):
                 ADC values to be converted to millivolt values
-            channel (int, CHANNEL, str, optional): 
+            channel (int, CHANNEL, str, optional):
                 Channel the ADC data is from. If the data is a channel buffer dict,
                 set to None. Defaults to None.
 
@@ -840,7 +841,7 @@ class PicoScopeBase:
 
         return upper_adc, lower_adc, hyst_upper_adc, hyst_lower_adc
 
-    # Set methods for PicoScope configuration    
+    # Set methods for PicoScope configuration
     def _change_power_source(self, state: POWER_SOURCE) -> 0:
         """
         Change the power source of a device to/from USB only or DC + USB.
@@ -911,14 +912,14 @@ class PicoScopeBase:
         channels = self.get_unit_info(UNIT_INFO.PICO_VARIANT_INFO)[1]
         for channel in range(int(channels)):
             self.set_channel(channel, enabled=False)
-    
+
     def set_simple_trigger(
-            self, 
-            channel: CHANNEL | channel_literal, 
-            threshold_mv:int=0, 
-            enable:bool=True, 
-            direction:TRIGGER_DIR | trigger_dir_l = TRIGGER_DIR.RISING, 
-            delay:int=0, 
+            self,
+            channel: CHANNEL | channel_literal,
+            threshold_mv:int=0,
+            enable:bool=True,
+            direction:TRIGGER_DIR | trigger_dir_l = TRIGGER_DIR.RISING,
+            delay:int=0,
             auto_trigger:int=0
         ) -> None:
         """
@@ -932,7 +933,7 @@ class PicoScopeBase:
             delay (int, optional): Delay in samples after the trigger condition is met before starting capture.
             auto_trigger (int, optional): Timeout in **microseconds** after which data capture proceeds even if no
                 trigger occurs. If 0, the PicoScope will wait indefintely.
-        
+
         Examples:
             When using TRIGGER_AUX, threshold is fixed to 1.25 V
             >>> scope.set_simple_trigger(channel=psdk.CHANNEL.TRIGGER_AUX)
@@ -964,7 +965,7 @@ class PicoScopeBase:
         """Configure a trigger condition.
 
         Args:
-            conditions (list[tuple[CHANNEL, TRIGGER_STATE]]): 
+            conditions (list[tuple[CHANNEL, TRIGGER_STATE]]):
                 A list of tuples describing the CHANNEL and TRIGGER_STATE for that channel
             action (int, optional): Action to apply this condition relateive to any previous
                 condition. Defaults to ACTION.CLEAR_ALL | ACTION.ADD.
@@ -1031,8 +1032,8 @@ class PicoScopeBase:
         threshold_mode: THRESHOLD_MODE | list,
     ) -> None:
         """
-        Specify the trigger direction for ``channel``. 
-        If multiple directions are needed, channel, direction and threshold_mode 
+        Specify the trigger direction for ``channel``.
+        If multiple directions are needed, channel, direction and threshold_mode
         can be given a list of values.
 
         Args:
@@ -1155,7 +1156,7 @@ class PicoScopeBase:
         """Configure a pulse width qualifier condition.
 
         Args:
-            conditions (list[tuple[CHANNEL, TRIGGER_STATE]]): 
+            conditions (list[tuple[CHANNEL, TRIGGER_STATE]]):
                 A list of tuples describing the CHANNEL and TRIGGER_STATE for that channel
             action (int, optional): Action to apply this condition relateive to any previous
                 condition. Defaults to ACTION.CLEAR_ALL | ACTION.ADD.
@@ -1191,12 +1192,12 @@ class PicoScopeBase:
         trig_dir:THRESHOLD_DIRECTION=None,
         threshold_mode:THRESHOLD_MODE = THRESHOLD_MODE.LEVEL,
         auto_trigger_us=0
-    ) -> None: 
+    ) -> None:
         """
         Configures a pulse width trigger using a specified channel and timing parameters.
 
-        This method sets up a trigger condition where a pulse on the specified channel 
-        must be within or outside a defined pulse width window. The trigger logic uses 
+        This method sets up a trigger condition where a pulse on the specified channel
+        must be within or outside a defined pulse width window. The trigger logic uses
         both level thresholds and pulse width qualifiers to define the trigger behavior.
 
         Args:
@@ -1215,16 +1216,16 @@ class PicoScopeBase:
             hysteresis_lower_mv (float, optional): Hysteresis for lower threshold in mV. Default is 0.0 mV.
             trig_dir (THRESHOLD_DIRECTION, optional): Trigger direction for the initial pulse.
                 If None, inferred as opposite of `direction`. Default is None.
-            threshold_mode (THRESHOLD_MODE, optional): Specifies whether thresholds are in level or window mode. 
+            threshold_mode (THRESHOLD_MODE, optional): Specifies whether thresholds are in level or window mode.
                 Default is LEVEL.
-            auto_trigger_us (int, optional): Time in microseconds after which an automatic trigger occurs. 
+            auto_trigger_us (int, optional): Time in microseconds after which an automatic trigger occurs.
                 Default is 0 (disabled).
         """
-        
+
         # If no times are set, raise an error.
         if time_upper == 0 and time_lower == 0:
             raise PicoSDKException('No time_upper or time_lower bounds specified for Pulse Width Trigger')
-        
+
         self.set_trigger_channel_conditions(
             conditions=[
                 (channel, TRIGGER_STATE.TRUE),
@@ -1238,7 +1239,7 @@ class PicoScopeBase:
             elif direction is THRESHOLD_DIRECTION.FALLING: trig_dir = THRESHOLD_DIRECTION.RISING
             else:
                 raise PicoSDKException('THRESHOLD_DIRECTION for trig_dir has not been specified')
-            
+
         self.set_trigger_channel_directions(
             channel=channel,
             direction=trig_dir,
@@ -1254,8 +1255,8 @@ class PicoScopeBase:
         )
 
         self.set_trigger_channel_properties(
-            threshold_upper=upper_adc, hysteresis_upper=hyst_upper_adc, 
-            threshold_lower=lower_adc, hysteresis_lower=hyst_lower_adc, 
+            threshold_upper=upper_adc, hysteresis_upper=hyst_upper_adc,
+            threshold_lower=lower_adc, hysteresis_lower=hyst_lower_adc,
             channel=channel,
             auto_trigger_us=auto_trigger_us
         )
@@ -1263,7 +1264,7 @@ class PicoScopeBase:
         # Determine actual sample interval from the selected timebase
         interval_ns = self.get_timebase(timebase, samples)["Interval(ns)"]
         sample_interval_s = interval_ns / 1e9
-        
+
         # Convert pulse width threshold to samples
         pw_upper = int((time_upper / time_upper_units) / sample_interval_s)
         pw_lower = int((time_lower / time_lower_units) / sample_interval_s)
@@ -1310,11 +1311,11 @@ class PicoScopeBase:
         )
 
     def set_data_buffer_for_enabled_channels(
-            self, 
-            samples:int, 
-            segment:int=0, 
+            self,
+            samples:int,
+            segment:int=0,
             datatype=DATA_TYPE.INT16_T,
-            ratio_mode=RATIO_MODE.RAW, 
+            ratio_mode=RATIO_MODE.RAW,
             clear_buffer:bool=True,
             captures:int=0
         ) -> dict:
@@ -1349,7 +1350,7 @@ class PicoScopeBase:
                 channels_buffer[channel] = self.set_data_buffer(channel, samples, segment, datatype, ratio_mode, action=ACTION.ADD)
 
         return channels_buffer
-        
+
     def set_data_buffer(
         self,
         channel,
@@ -1366,9 +1367,9 @@ class PicoScopeBase:
         Args:
             channel (int): The channel to associate the buffer with (e.g., CHANNEL.A).
             samples (int): Number of samples to allocate in the buffer.
-            segment (int, optional): Memory segment to use. 
-            datatype (DATA_TYPE, optional): C data type for the buffer (e.g., INT16_T). 
-            ratio_mode (RATIO_MODE, optional): Downsampling mode. 
+            segment (int, optional): Memory segment to use.
+            datatype (DATA_TYPE, optional): C data type for the buffer (e.g., INT16_T).
+            ratio_mode (RATIO_MODE, optional): Downsampling mode.
             action (ACTION, optional): Action to apply to the data buffer (e.g., CLEAR_ALL | ADD).
             buffer (np.ndarray | None, optional): Send a preallocated  numpy buffer to be populated.
                 If left as None, this function creates its own buffer.
@@ -1432,9 +1433,9 @@ class PicoScopeBase:
             channel (int): The channel to associate the buffer with (e.g., CHANNEL.A).
             samples (int): Number of samples to allocate in the buffer.
             captures (int): Number of rapid block captures
-            segment (int, optional): Memory segment to start at. 
-            datatype (DATA_TYPE, optional): C data type for the buffer (e.g., INT16_T). 
-            ratio_mode (RATIO_MODE, optional): Downsampling mode. 
+            segment (int, optional): Memory segment to start at.
+            datatype (DATA_TYPE, optional): C data type for the buffer (e.g., INT16_T).
+            ratio_mode (RATIO_MODE, optional): Downsampling mode.
             action (ACTION, optional): Action to apply to the data buffer (e.g., CLEAR_ALL | ADD).
 
         Returns:
@@ -1461,7 +1462,7 @@ class PicoScopeBase:
                 raise PicoSDKException("Invalid datatype selected for buffer")
 
             buffer = np.zeros((captures, samples), dtype=np_dtype)
-        
+
         for i in range(captures):
             self._call_attr_function(
                 "SetDataBuffer",
@@ -1498,7 +1499,7 @@ class PicoScopeBase:
             ratio_mode (RATIO_MODE, optional): Downsampling mode.
             action (ACTION, optional): Action to apply to the data buffer.
             buffers (np.ndarray | None, optional): Send preallocated 2D numpy buffers to be populated.
-                Min buffer first, followed by max buffer. If left as None, this function 
+                Min buffer first, followed by max buffer. If left as None, this function
                 creates its own buffers.
 
         Returns:
@@ -1544,7 +1545,7 @@ class PicoScopeBase:
         )
 
         return buffer_min, buffer_max
-    
+
     def set_data_buffers_rapid_capture(
             self,
             channel,
@@ -1556,16 +1557,16 @@ class PicoScopeBase:
             action=ACTION.CLEAR_ALL | ACTION.ADD,
         ) -> np.ndarray | None:
         """
-        Allocate and assign max and min NumPy-backed data buffers for rapid block 
+        Allocate and assign max and min NumPy-backed data buffers for rapid block
         capture on a specified channel.
 
         Args:
             channel (int): The channel to associate the buffer with (e.g., CHANNEL.A).
             samples (int): Number of samples to allocate in the buffer.
             captures (int): Number of rapid block captures
-            segment (int, optional): Memory segment to start at. 
-            datatype (DATA_TYPE, optional): C data type for the buffer (e.g., INT16_T). 
-            ratio_mode (RATIO_MODE, optional): Downsampling mode. 
+            segment (int, optional): Memory segment to start at.
+            datatype (DATA_TYPE, optional): C data type for the buffer (e.g., INT16_T).
+            ratio_mode (RATIO_MODE, optional): Downsampling mode.
             action (ACTION, optional): Action to apply to the data buffer (e.g., CLEAR_ALL | ADD).
 
         Returns:
@@ -1592,7 +1593,7 @@ class PicoScopeBase:
                 raise PicoSDKException("Invalid datatype selected for buffer")
 
             buffer = np.zeros((captures, samples, 2), dtype=np_dtype)
-        
+
         for i in range(captures):
             self._call_attr_function(
                 "SetDataBuffers",
@@ -1696,13 +1697,13 @@ class PicoScopeBase:
             timebase: PicoScope timebase value.
             samples: Number of samples to capture.
             captures: Number of waveforms to capture.
-            start_index: Starting index in buffer. 
-            datatype: Data type to use for the capture buffer. 
+            start_index: Starting index in buffer.
+            datatype: Data type to use for the capture buffer.
             conv_to_mv: If True, function will return a float mV array.
                 If False, function will return a ADC array specified by datatype arg.
-            ratio: Downsampling ratio. 
-            ratio_mode: Downsampling mode. 
-            pre_trig_percent: Percentage of samples to capture before the trigger. 
+            ratio: Downsampling ratio.
+            ratio_mode: Downsampling mode.
+            pre_trig_percent: Percentage of samples to capture before the trigger.
 
         Returns:
             tuple[dict, np.ndarray]: Dictionary of channel buffers (in mV) and the time
@@ -1711,11 +1712,11 @@ class PicoScopeBase:
 
         # Segment set to 0
         segment = 0
-        
+
         # Setup memory segments
         self.memory_segments(captures)
         self.set_no_of_captures(captures)
-        
+
         # Build buffers for data and trigger (if applicable)
         if ratio_mode == RATIO_MODE.TRIGGER:
             channels_buffer = self.set_data_buffer_for_enabled_channels(samples, datatype=datatype, ratio_mode=RATIO_MODE.RAW, captures=captures)
@@ -1755,7 +1756,7 @@ class PicoScopeBase:
         Args:
                 timebase (int): Timebase value determining sample interval (refer to PicoSDK guide).
                 samples (int): Total number of samples to capture.
-                pre_trig_percent (int, optional): Percentage of samples to capture before the trigger. 
+                pre_trig_percent (int, optional): Percentage of samples to capture before the trigger.
                 segment (int, optional): Memory segment index to use.
 
         Returns:
@@ -1777,11 +1778,11 @@ class PicoScopeBase:
             None
         )
         return time_indisposed_ms.value
-    
+
     def run_streaming(
         self,
         sample_interval: float,
-        time_units: PICO_TIME_UNIT,
+        time_units: TIME_UNIT,
         max_pre_trigger_samples: int,
         max_post_trigger_samples: int,
         auto_stop: int,
@@ -1803,6 +1804,8 @@ class PicoScopeBase:
             float: The actual sample interval configured by the driver.
         """
 
+        time_units = _StandardPicoConv[time_units]
+
         c_sample_interval = ctypes.c_double(sample_interval)
         self._call_attr_function(
             "RunStreaming",
@@ -1816,7 +1819,7 @@ class PicoScopeBase:
             ratio_mode,
         )
         return c_sample_interval.value
-    
+
     def get_enumerated_units(self) -> tuple[int, str, int]:
         """
         Returns count, serials and serial string length of a specific PicoScope unit.
@@ -1837,7 +1840,7 @@ class PicoScopeBase:
             ctypes.byref(serial_length)
         )
         return count.value, serials.value.decode(), serial_length.value
-    
+
     def get_values(self, samples, start_index=0, segment=0, ratio=0, ratio_mode=RATIO_MODE.RAW) -> int:
         """
         Retrieves a block of captured samples from the device once it's ready.
@@ -1851,7 +1854,7 @@ class PicoScopeBase:
                 start_index (int, optional): Starting index in the buffer.
                 segment (int, optional): Memory segment index to retrieve data from.
                 ratio (int, optional): Downsampling ratio.
-                ratio_mode (RATIO_MODE, optional): Ratio mode for downsampling. 
+                ratio_mode (RATIO_MODE, optional): Ratio mode for downsampling.
 
         Returns:
                 int: Actual number of samples retrieved.
@@ -1862,7 +1865,7 @@ class PicoScopeBase:
         over_range = ctypes.c_int16()
         self._call_attr_function(
             'GetValues',
-            self.handle, 
+            self.handle,
             start_index,
             ctypes.byref(total_samples),
             ratio,
@@ -1904,7 +1907,7 @@ class PicoScopeBase:
             'triggered?': trigger.triggered_,
             'auto stopped?': trigger.autoStop_,
         }
-    
+
     def is_over_range(self) -> list:
         """
         Logs and prints a warning if any channel has been over range.
@@ -1920,7 +1923,7 @@ class PicoScopeBase:
         """
 
         over_range_channels = [CHANNEL_NAMES[i] for i in range(8) if self.over_range & (1 << i)]
-    
+
         if over_range_channels:
             warnings.warn(
                 f"Overrange detected on channels: {', '.join(over_range_channels)}.",
