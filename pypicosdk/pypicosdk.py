@@ -8,16 +8,16 @@ from .ps6000a import ps6000a
 from .psospa import psospa
 from .base import PicoScopeBase
 from .common import (
-    PicoSDKException, 
-    PicoSDKNotFoundException, 
-    OverrangeWarning, 
+    PicoSDKException,
+    PicoSDKNotFoundException,
+    OverrangeWarning,
     PowerSupplyWarning
 )
 
 def get_all_enumerated_units() -> tuple[int, list[str]]:
     """Enumerate all supported PicoScope units.
-    
-    Returns: 
+
+    Returns:
         Tuple containing number of units and a list of unit serials.
 
     Examples:
@@ -47,7 +47,7 @@ def _export_to_csv_rapid(filename, channels_buffer, time_axis=None, time_unit='n
         channel_name = list(channel_map.keys())[channel].title()
         for column in range(len(channels_buffer[channel])):
             headers.append(f'{channel_name}-{column+1}')
-        
+
     with open(filename, 'w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile)
         csv_writer.writerow(headers)
@@ -66,13 +66,13 @@ def export_to_csv(filename:str, channels_buffer:dict, time_axis:list=None):
         _export_to_csv_rapid(filename, channels_buffer, time_axis)
     elif type(channels_buffer[0]) == np.array:
         NotImplementedError('This data is not yet supported for export')
-    else: 
-        NotImplementedError('This data is not supported for export')    
+    else:
+        NotImplementedError('This data is not supported for export')
 
 def convert_time_axis(
-        time_axis:np.ndarray, 
-        current_units:str|time_standard_form_l, 
-        convert_units:str|time_standard_form_l
+        time_axis:np.ndarray,
+        current_units:str|TimeUnit_L,
+        convert_units:str|TimeUnit_L
     ) -> tuple[np.ndarray, str]:
     """
     Converts a time axis array from one unit to another.
@@ -96,11 +96,11 @@ def convert_time_axis(
         >>> from pypicosdk import convert_time_axis
         >>> new_time_axis = convert_time_axis(old_time_axis, 'ns', 'ms')
     """
-    diff = time_standard_form_m[convert_units] - time_standard_form_m[current_units]
+    diff = TimeUnitPwr_M[convert_units] - TimeUnitPwr_M[current_units]
     time_axis = np.multiply(time_axis, 10**diff)
     return time_axis, convert_units
 
-    
+
 def resolution_enhancement(buffer:np.ndarray, enhanced_bits:float, padded:bool=True) -> np.ndarray:
     """
     Returns the buffer after applying a moving average filter with the specified window size.
@@ -118,12 +118,12 @@ def resolution_enhancement(buffer:np.ndarray, enhanced_bits:float, padded:bool=T
     Examples:
         >>> from pypicosdk import resolution_enhancement
         >>> enhanced_buffer = resolution_enhancement(buffer, enhanced_bits=2)
-        
+
     """
     if not 0.5 <= enhanced_bits <= 4:
         raise PicoSDKException(
             f"Invalid enhanced_bits value: {enhanced_bits}. Must be between 0.5 and 4.")
-    
+
     window_size = int(4 ** enhanced_bits)
     return np.convolve(buffer, np.ones(window_size)/window_size, mode=['valid', 'same'][padded])
 
