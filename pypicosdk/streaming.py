@@ -17,11 +17,15 @@ from warnings import warn
 import numpy as np
 from .constants import (
     CHANNEL,
-    PICO_TIME_UNIT,
+    TIME_UNIT,
     RATIO_MODE,
     DATA_TYPE,
     ACTION,
+    TimeUnit_L,
+    TimeUnitStd_M,
+    _TimeUnitText,
 )
+from .common import _get_literal, PicoSDKException
 from .pypicosdk import psospa, ps6000a
 
 
@@ -39,7 +43,7 @@ class StreamingScope:
         self.pre_trig_samples: int
         self.post_trig_samples: int
         self.interval: int
-        self.time_units: PICO_TIME_UNIT
+        self.time_units: TIME_UNIT
         self.ratio: int
         self.ratio_mode: RATIO_MODE
         self.data_type: DATA_TYPE
@@ -63,7 +67,7 @@ class StreamingScope:
         channel: CHANNEL,
         samples: int,
         interval: int,
-        time_units: PICO_TIME_UNIT,
+        time_units: TIME_UNIT | TimeUnit_L,
         pre_trig_samples: int = 0,
         post_trig_samples: int = 250,
         ratio: int = 0,
@@ -80,8 +84,8 @@ class StreamingScope:
             samples (int):
                 The number of samples to acquire in each streaming segment.
             interval (int): The time interval between samples.
-            time_units (PICO_TIME_UNIT): Units for the sample interval
-                (e.g., microseconds).
+            time_units (str | TIME_UNIT): Units for the sample interval
+                (e.g., 'ms' or TIME_UNIT.MS).
             pre_trig_samples (int, optional): Number of samples to capture
                 before a trigger event. Defaults to 0.
             post_trig_samples (int, optional): Number of samples to capture
@@ -96,6 +100,14 @@ class StreamingScope:
         Returns:
             None
         """
+        # Get typing literals
+        time_units = _get_literal(time_units, TimeUnitStd_M)
+
+        if interval/time_units >= 0.001:
+            raise PicoSDKException(
+                f'An interval of {interval} {_TimeUnitText[time_units]} is too long. '
+                f'Please specify an interval less than 1 ms.')
+
         # Streaming settings
         self.channel = channel
         self.pre_trig_samples = pre_trig_samples
@@ -209,7 +221,7 @@ class StreamingScope:
         if n_samples > 0:
             # Calculate samples per second using timer
             timer_end = time.perf_counter_ns()
-            self._calcualte_sps(timer_start, timer_end, n_samples)
+            # self._calcualte_sps(timer_start, timer_end, n_samples)
 
             # Add the new buffer to the buffer array and take end chunk
             new_data = (self.np_buffer[buffer_index]

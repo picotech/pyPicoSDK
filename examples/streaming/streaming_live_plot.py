@@ -1,5 +1,6 @@
 """
-This is an example of streaming mode displayed to a pyplot animation plot.
+This is an example of single-channelstreaming mode displayed to
+a pyplot animation plot.
 
 To do this it uses the StreamingScope class from pypicosdk.streaming
 and runs a thread containing the streaming loop.
@@ -20,7 +21,7 @@ DISPLAY_SAMPLES = 10_000  # Samples of pyplot x-axis
 DISPLAY_RATIO = SAMPLES // DISPLAY_SAMPLES  # Downsample ratio for display
 
 INTERVAL = 10
-pico_unit = psdk.PICO_TIME_UNIT.NS
+pico_unit = psdk.TIME_UNIT.NS
 channel = psdk.CHANNEL.A
 
 
