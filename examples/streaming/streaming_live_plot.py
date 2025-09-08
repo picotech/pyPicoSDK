@@ -1,5 +1,5 @@
 """
-This is an example of single-channelstreaming mode displayed to
+This is an example of single-channel streaming mode displayed to
 a pyplot animation plot.
 
 To do this it uses the StreamingScope class from pypicosdk.streaming
@@ -20,8 +20,8 @@ SAMPLES = int(1E6)  # Maxmimum samples in scope memory
 DISPLAY_SAMPLES = 10_000  # Samples of pyplot x-axis
 DISPLAY_RATIO = SAMPLES // DISPLAY_SAMPLES  # Downsample ratio for display
 
-INTERVAL = 10
-pico_unit = psdk.TIME_UNIT.NS
+INTERVAL = 1
+pico_unit = psdk.TIME_UNIT.US
 channel = psdk.CHANNEL.A
 
 
@@ -53,13 +53,7 @@ def streaming_thread(stream: StreamingScope):
 
 def animate(_, line, stream: StreamingScope):
     """pyplot animation thread"""
-
-    # Print streaming rate in MS/s
-    print(f'Min/Max/Avg: {stream.msps_min}, {stream.msps_max}'
-          f', {stream.msps_avg} MS/s')
-
-    # Get streaming data and update pyplot
-    data = stream.buffer[::DISPLAY_RATIO]
+    data = stream.buffer[::DISPLAY_RATIO]  # Downsample data to ydata length
     line.set_ydata(data)
     return [line]
 
