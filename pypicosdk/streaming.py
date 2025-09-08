@@ -25,7 +25,7 @@ from .constants import (
     TimeUnitStd_M,
     _TimeUnitText,
 )
-from .common import _get_literal, PicoSDKException
+from .common import _get_literal, PicoSDKException, BufferTooSmall
 from .pypicosdk import psospa, ps6000a
 
 
@@ -56,6 +56,7 @@ class StreamingScope:
         self.max_buffer_size: int
 
         # Stats
+        self._debug = False
         self._msps_avg_array = np.empty(0, dtype=np.int32)
         self._msps_avg_len = 100
         self.msps_avg = 0.0
@@ -151,6 +152,18 @@ class StreamingScope:
         """
         self.channel_config.append([channel, ratio_mode, data_type])
 
+    def _stream_set_data_buffer(self, buffer: np.ndarray):
+        """Set data buffer function for consistency when creating a new buffer
+        Args:
+            buffer (np.ndarray): Numpy buffer to send to set_data_buffer()"""
+        self.scope.set_data_buffer(
+                self.channel,
+                int(self.samples/2),
+                buffer=buffer,
+                action=ACTION.ADD,
+                ratio_mode=self.ratio_mode,
+            )
+
     def run_streaming(self) -> None:
         """
         Initiates the data streaming process.
@@ -168,10 +181,8 @@ class StreamingScope:
         self.np_buffer = np.zeros((2, self.samples), dtype=np.int16)
         # Setup initial buffer for streaming
         self.scope.set_data_buffer(0, 0, action=ACTION.CLEAR_ALL)
-        self.scope.set_data_buffer(self.channel, self.samples,
-                                   buffer=self.np_buffer[0], action=ACTION.ADD)
-        self.scope.set_data_buffer(self.channel, self.samples,
-                                   buffer=self.np_buffer[1], action=ACTION.ADD)
+        for buffer_index in range(self.np_buffer.shape[0]):
+            self._stream_set_data_buffer(self.np_buffer[buffer_index])
         # start streaming
         self.scope.run_streaming(
             sample_interval=self.interval,
@@ -196,12 +207,14 @@ class StreamingScope:
         also handles alternating between buffer segments when a buffer
         overflow condition is detected.
         """
-        timer_start = time.perf_counter_ns()
+        if self._debug:
+            timer_start = time.perf_counter_ns()
         self.info = self.scope.get_streaming_latest_values(
             channel=self.channel,
             ratio_mode=self.ratio_mode,
             data_type=self.data_type
         )
+        status = self.info['status']
         n_samples = self.info['no of samples']
         start_index = self.info['start index']
         scope_buffer_index = self.info['Buffer index']
@@ -213,25 +226,26 @@ class StreamingScope:
         # Once a buffer is finished with, add it again as a new buffer
         if buffer_index != self.buffer_index:
             self.buffer_index = buffer_index
-            self.scope.set_data_buffer(
-                self.channel, self.samples,
-                buffer=self.np_buffer[new_buf_index], action=ACTION.ADD)
+            self._stream_set_data_buffer(self.np_buffer[new_buf_index])
 
         # If buffer isn't empty, add data to array
         if n_samples > 0:
+            if status == 407:
+                warn(f'Max buffer size {self.max_buffer_size} too small to capture samples at '
+                     f'{self.interval} {_TimeUnitText[self.time_units]} interval, increase to '
+                     f'not miss data.',
+                     BufferTooSmall)
             # Calculate samples per second using timer
-            timer_end = time.perf_counter_ns()
-            # self._calcualte_sps(timer_start, timer_end, n_samples)
+            if self._debug:
+                timer_end = time.perf_counter_ns()
+                self._calcualte_sps(timer_start, timer_end, n_samples)
 
             # Add the new buffer to the buffer array and take end chunk
-            new_data = (self.np_buffer[buffer_index]
-                        [start_index:start_index + n_samples])
-            pad_len = max(self.samples -
-                          (len(self.buffer) + len(new_data)), 0)
+            new_data = (self.np_buffer[buffer_index][start_index:start_index + n_samples])
+            pad_len = max(self.samples - (len(self.buffer) + len(new_data)), 0)
             temp_pad_array = np.zeros(pad_len)
-            self.buffer = np.concatenate(
-                [temp_pad_array, self.buffer, new_data]
-                )[-self.max_buffer_size:]
+            self.buffer = (np.concatenate([temp_pad_array, self.buffer, new_data])
+                           [-self.max_buffer_size:])
 
     def _calcualte_sps(self, start, end, samples):
         """Calculates the samples per second stats"""
