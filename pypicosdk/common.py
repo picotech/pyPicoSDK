@@ -17,6 +17,11 @@ class OverrangeWarning(UserWarning):
 class PowerSupplyWarning(UserWarning):
     pass
 
+
+class BufferTooSmall(UserWarning):
+    "User warning for 407 status from streaming"
+
+
 # General Functions
 def _check_path(location:str, folders:list) -> str:
     """Checks a list of folders in a location i.e. ['Pico Technology']
