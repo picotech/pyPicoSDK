@@ -24,7 +24,7 @@ class UNIT_INFO:
         "JM115/0007"
 
     """
-    PICO_DRIVER_VERSION = 0 
+    PICO_DRIVER_VERSION = 0
     PICO_USB_VERSION = 1
     PICO_HARDWARE_VERSION = 2
     PICO_VARIANT_INFO = 3
@@ -81,13 +81,13 @@ class TRIGGER_DIR:
     RISING_OR_FALLING = 4
 
 trigger_dir_l = Literal['above', 'below', 'rising', 'falling', 'rising or falling']
-trigger_dir_m = {'above': 0, 
-                 'below': 1, 
-                 'rising': 2, 
-                 'falling': 3, 
+trigger_dir_m = {'above': 0,
+                 'below': 1,
+                 'rising': 2,
+                 'falling': 3,
                  'rising or falling': 4}
 
-class WAVEFORM:    
+class WAVEFORM:
     """
     Waveform type constants for PicoScope signal generator configuration.
 
@@ -169,7 +169,7 @@ class CHANNEL(IntEnum):
     """
     A = 0
     B = 1
-    C = 2 
+    C = 2
     D = 3
     E = 4
     F = 5
@@ -181,7 +181,7 @@ class CHANNEL(IntEnum):
 
     #: Auxiliary trigger input/output.
     TRIGGER_AUX = 1001
-    
+
     PULSE_WIDTH_SOURCE = 0x10000000
     PICO_DIGITAL_SOURCE = 0x10000001
 
@@ -214,7 +214,7 @@ channel_map = {
 }
 
 led_channel_l = Literal[
-    'A', 
+    'A',
     'B',
     'C',
     'D',
@@ -227,7 +227,7 @@ led_channel_l = Literal[
 ]
 
 led_channel_m = {
-    'A':0, 
+    'A':0,
     'B':1,
     'C':2,
     'D':3,
@@ -478,16 +478,63 @@ class TIME_UNIT(IntEnum):
     MS = 1_000
     S = 1
 
-time_standard_form_l = Literal['fs', 'ps', 'ns', 'us', 'ms', 's']
-time_standard_form_m = {'fs': 15, 'ps': 12, 'ns': 9, 'us': 6, 'ms': 3, 's': 0}
 
-class PICO_TIME_UNIT(IntEnum):
+TimeUnit_L = Literal['fs', 'ps', 'ns', 'us', 'ms', 's']
+TimeUnitPwr_M = {'fs': 15, 'ps': 12, 'ns': 9, 'us': 6, 'ms': 3, 's': 0}
+TimeUnitStd_M = {
+    'fs': 1_000_000_000_000_000,
+    'ps': 1_000_000_000_000,
+    'ns': 1_000_000_000,
+    'us': 1_000_000,
+    'ms': 1_000,
+    's': 1}
+
+
+class _PICO_TIME_UNIT(IntEnum):
     FS = 0
     PS = 1
     NS = 2
     US = 3
     MS = 4
     S = 5
+
+
+_PicoStandardConv = {
+    0: TIME_UNIT.FS,
+    1: TIME_UNIT.PS,
+    2: TIME_UNIT.NS,
+    3: TIME_UNIT.US,
+    4: TIME_UNIT.MS,
+    5: TIME_UNIT.S,
+}
+
+_PicoTimeUnitText = {
+    0: 'fs',
+    1: 'ps',
+    2: 'ns',
+    3: 'us',
+    4: 'ms',
+    5: 's',
+}
+
+_TimeUnitText = {
+    1_000_000_000_000_000: 'fs',
+    1_000_000_000_000: 'ps',
+    1_000_000_000: 'ns',
+    1_000_000: 'us',
+    1_000: 'ms',
+    1: 's',
+}
+
+_StandardPicoConv = {
+    1_000_000_000_000_000: _PICO_TIME_UNIT.FS,
+    1_000_000_000_000: _PICO_TIME_UNIT.PS,
+    1_000_000_000: _PICO_TIME_UNIT.NS,
+    1_000_000: _PICO_TIME_UNIT.US,
+    1_000: _PICO_TIME_UNIT.MS,
+    1: _PICO_TIME_UNIT.S,
+}
+
 
 class PICO_VERSION(ctypes.Structure):
     """Firmware or driver version information.
@@ -993,8 +1040,8 @@ class TRIGGER_WITHIN_PRE_TRIGGER(IntEnum):
 
 # LED Structures
 class PICO_LED_COLOUR_PROPERTIES(ctypes.Structure):
-    """This structure is used with psospaSetLedColours() to define 
-    the color for one LED using hue and saturation (HSV) values 
+    """This structure is used with psospaSetLedColours() to define
+    the color for one LED using hue and saturation (HSV) values
     for the color."""
 
     _pack_ = 1
@@ -1006,7 +1053,7 @@ class PICO_LED_COLOUR_PROPERTIES(ctypes.Structure):
     ]
 
 class PICO_LED_STATE_PROPERTIES(ctypes.Structure):
-    """This structure is used with set_led_states() to define the 
+    """This structure is used with set_led_states() to define the
     state for one LED."""
     # _pack_ = 8
     _fields_ = [
@@ -1048,7 +1095,7 @@ __all__ = [
     'POWER_SOURCE',
     'SAMPLE_RATE',
     'TIME_UNIT',
-    'PICO_TIME_UNIT',
+    '_PICO_TIME_UNIT',
     'PICO_VERSION',
     'PICO_FIRMWARE_INFO',
     'DIGITAL_PORT',
@@ -1089,8 +1136,8 @@ __all__ = [
     'channel_map',
     'trigger_dir_l',
     'trigger_dir_m',
-    'time_standard_form_l',
-    'time_standard_form_m',
+    'TimeUnit_L',
+    'TimeUnitPwr_M',
     'led_channel_l',
     'led_channel_m',
     'led_state_l',

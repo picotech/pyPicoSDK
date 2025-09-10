@@ -1,7 +1,9 @@
-<div align="center">
-<img src="https://raw.githubusercontent.com/JamesPicoTech/pyPicoSDK/refs/heads/main/docs/docs/img/pypicosdk-image-400x400.png" alt="Centered Image" />
-</div>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/JamesPicoTech/pyPicoSDK/refs/heads/main/docs/docs/img/pypicosdk-light-300x300.png#gh-light-mode-only" alt="Fancy logo">
+  <img src="https://raw.githubusercontent.com/JamesPicoTech/pyPicoSDK/refs/heads/main/docs/docs/img/pypicosdk-dark-300x300.png#gh-dark-mode-only" alt="Fancy logo">
+</p>
 
+<!-- start here -->
 # Welcome to pyPicoSDK Documentation
 ## Installation
 ### Prerequisites 
@@ -45,6 +47,6 @@ Current PicoScope support:
 - [pypi-nightly (dev repo)](https://pypi.org/project/pypicosdk-nightly/)
 
 ## Version Control
-pyPicoSDK: 1.5.2
+pyPicoSDK: 1.5.3
 
 Docs: 0.4.0
