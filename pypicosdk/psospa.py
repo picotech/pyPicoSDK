@@ -3,6 +3,9 @@ from typing import override, Literal
 import json
 
 from .constants import *
+from .constants import (
+    TIME_UNIT
+)
 from .common import PicoSDKException
 from .base import PicoScopeBase
 from .shared.ps6000a_psospa import shared_ps6000a_psospa
@@ -129,7 +132,8 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
             ctypes.byref(timebase),
             ctypes.byref(time_interval),
         )
-        return {"timebase": timebase.value}
+        return {"timebase": timebase.value,
+                "actual_sample_interval": (timebase.value / TIME_UNIT.PS)}
 
     def get_scaling_values(self, n_channels: int = 8) -> list[PICO_SCALING_FACTORS_VALUES]:
         """Return probe scaling factors for each channel.

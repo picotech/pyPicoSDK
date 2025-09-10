@@ -39,6 +39,7 @@ class PicoScopeBase:
         self.max_adc_value = None
         self.min_adc_value = None
         self.over_range = 0
+        self._actual_interval = 0
 
         self.ylim = (0, 0)
 
@@ -376,6 +377,26 @@ class PicoScopeBase:
         return {"Interval(ns)": time_interval_ns.value,
                 "Samples":          max_samples.value}
 
+    def get_actual_interval(self):
+        """
+        Returns the actual interval set by device in seconds (s).
+
+
+        Returns:
+            float: Actual interval of device in seconds (s)
+        """
+        return self._actual_interval
+
+    def get_actual_sample_rate(self):
+        """
+        Returns the actual sample rate set by device in samples per second (S/s)
+
+
+        Returns:
+            float: Actual sample rate of device in samples per second (S/s)
+        """
+        return (1 / self._actual_interval)
+
     def sample_rate_to_timebase(self, sample_rate:float, unit=SAMPLE_RATE.MSPS):
         """
         Converts sample rate to a PicoScope timebase value based on the
@@ -390,8 +411,10 @@ class PicoScopeBase:
             unit (SAMPLE_RATE): unit of sample rate.
         """
         interval_s = 1 / (sample_rate * unit)
+        timebase_dict = self.get_nearest_sampling_interval(interval_s)
+        self._actual_interval = timebase_dict['actual_sample_interval']
 
-        return self.get_nearest_sampling_interval(interval_s)["timebase"]
+        return timebase_dict["timebase"]
 
     def interval_to_timebase(self, interval:float, unit=TIME_UNIT.S):
         """
