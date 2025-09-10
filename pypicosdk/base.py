@@ -9,12 +9,18 @@ import numpy.ctypeslib as npc
 from .error_list import ERROR_STRING
 from .constants import *
 from .constants import (
+    CHANNEL,
     RANGE,
     RANGE_LIST,
     range_literal,
+    OutputUnitV_L,
+    OutputUnitV_M,
     _StandardPicoConv,
 )
 from .common import *
+from .common import (
+    _get_literal,
+)
 
 
 class PicoScopeBase:
@@ -763,10 +769,10 @@ class PicoScopeBase:
         self,
         adc: int | np.ndarray,
         channel: CHANNEL = None,
-        output_unit: output_unit_l = 'mv'
+        output_unit: OutputUnitV_L = 'mv'
     ) -> float | np.ndarray:
         """Converts ADC value or array to mV or V using the stored probe scaling."""
-        unit_scale = {'mv': 1, 'v': 1000}[output_unit.lower()]
+        unit_scale = _get_literal(output_unit, OutputUnitV_M)
         channel_range_mv = RANGE_LIST[self.range[channel]]
         channel_scale = self.probe_scale[channel]
         return (((adc / self.max_adc_value) * channel_range_mv) * channel_scale) / unit_scale
@@ -775,7 +781,7 @@ class PicoScopeBase:
         self,
         data: dict | int | np.ndarray,
         channel: int | CHANNEL | str | channel_literal = None,
-        unit: output_unit_l = 'mv',
+        unit: OutputUnitV_L = 'mv',
     ) -> dict | float | np.ndarray:
         """
         Middle-function between adc conversion to direct data based on if it's a dict or
@@ -893,7 +899,7 @@ class PicoScopeBase:
         min_ylim = -max_ylim
         self.ylim = (min_ylim, max_ylim)
 
-    def get_ylim(self, unit: Literal['mv', 'v'] = 'mv') -> tuple[float, float]:
+    def get_ylim(self, unit: OutputUnitV_L = 'mv') -> tuple[float, float]:
         """
         Returns the ylim of the widest channel range as a tuple.
         Ideal for pyplot ylim function.
