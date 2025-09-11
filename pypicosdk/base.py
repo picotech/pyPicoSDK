@@ -612,10 +612,11 @@ class PicoScopeBase:
             ctypes.c_uint64(to_segment_index),
             ctypes.c_uint64(down_sample_ratio),
             down_sample_ratio_mode,
-            ctypes.byref(overflow),
+            None,
         )
-        self.over_range = overflow.value
-        self.is_over_range()
+        # self.over_range = overflow.value
+        # self.is_over_range()
+        # return no_samples.value, overflow.value
         return no_samples.value, overflow.value
 
     def get_values_overlapped(
