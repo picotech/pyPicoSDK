@@ -581,7 +581,7 @@ class PicoScopeBase:
         to_segment_index: int,
         down_sample_ratio: int,
         down_sample_ratio_mode: int,
-    ) -> int:
+    ) -> tuple[int, list[list[str]]]:
         """Retrieve data from multiple memory segments.
 
         Args:
@@ -595,14 +595,14 @@ class PicoScopeBase:
                 :class:`RATIO_MODE`.
 
         Returns:
-            tuple[int, int]: ``(samples, overflow)`` where ``samples`` is the
-            number of samples copied and ``overflow`` is a bit mask of any
-            channels that exceeded their input range.
+            tuple[int, list[list[str]]]: ``(samples, overflow)list)`` where ``samples`` is the
+            number of samples copied and ``overflow`` is list of captures with where
+            channnels have exceeded their voltage range.
         """
 
         self.is_ready()
         no_samples = ctypes.c_uint64(no_of_samples)
-        overflow = ctypes.c_int16()
+        overflow = np.zeros(to_segment_index + 1, dtype=np.int16)
         self._call_attr_function(
             "GetValuesBulk",
             self.handle,
@@ -612,12 +612,13 @@ class PicoScopeBase:
             ctypes.c_uint64(to_segment_index),
             ctypes.c_uint64(down_sample_ratio),
             down_sample_ratio_mode,
-            None,
+            npc.as_ctypes(overflow),
         )
-        # self.over_range = overflow.value
-        # self.is_over_range()
-        # return no_samples.value, overflow.value
-        return no_samples.value, overflow.value
+        overflow_list = []
+        for i in overflow:
+            self.over_range = i
+            overflow_list.append(self.is_over_range())
+        return no_samples.value, overflow_list
 
     def get_values_overlapped(
         self,
