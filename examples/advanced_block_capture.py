@@ -1,49 +1,80 @@
 """
-This example is an advanced PicoScope example with minimal abstraction.
-This will return the raw ctypes ADC data as samples.
+Advanced block mode example for a Picoscope 6000E device
+
+Description:
+  This example script captures a single acquisition with minimal abstraction
+  It is intended to demonstrate how to use the pyPicoSDK library to automate
+  your Picoscope device
+
+Requirements:
+- PicoScope 6000E
+- Python packages:
+  (pip install) matplotlib numpy pypicosdk
+
+Setup:
+  - Connect 6000E AWG output to Channel A
+    of the oscilloscope using a BNC cable or probe
 """
 
 from matplotlib import pyplot as plt
 import pypicosdk as psdk
 
-# Pico examples use inline argument values for clarity
+# Create a local variable to hold number of samples for use in later functions
+SAMPLES = 100_000
 
-# Capture configuration
-SAMPLES = 100000
-PRE_TRIG = 50  # %
-
-# Initialise PicoScope
+# Create "scope" class and initialize PicoScope
 scope = psdk.ps6000a()
 scope.open_unit()
+
+# Print the returned serial number of the initialized instrument
 print(scope.get_unit_serial())
 
-# Set siggen
-scope.set_siggen(frequency=1_000, pk2pk=0.8, wave_type=psdk.WAVEFORM.SINE)
+# Set siggen to 50kHz & 1.8Vpkpk output
+scope.set_siggen(frequency=50_000, pk2pk=1.8, wave_type=psdk.WAVEFORM.SINE)
 
-# Setup channels and trigger (inline arguments)
+# Enable channel A with +/- 1V range (2V total dynamic range)
 scope.set_channel(channel=psdk.CHANNEL.A, range=psdk.RANGE.V1)
+
+# Configure a simple rising edge trigger for channel A
 scope.set_simple_trigger(channel=psdk.CHANNEL.A, threshold_mv=0)
 
-# Preferred: convert sample rate to timebase
-TIMEBASE = scope.sample_rate_to_timebase(50, psdk.SAMPLE_RATE.MSPS)
-# TIMEBASE = 2  # direct driver timebase
-# TIMEBASE = scope.interval_to_timebase(20E-9)
+# Helper function to set timebase of scope via requested sample rate
+TIMEBASE = scope.sample_rate_to_timebase(500, psdk.SAMPLE_RATE.MSPS)
 
-# Run block capture and retrieve values
+# Unused alternate methods to set sample rate / interval
+# TIMEBASE = 2                                      # direct driver timebase
+# TIMEBASE = scope.interval_to_timebase(2E-9)       # set timebase via requested sample interval
+
+# Print to console the actual sample rate selected by the device driver
+print(scope.get_actual_sample_rate())
+
+# Create buffers in this application space to hold returned sample array
 channels_buffer = scope.set_data_buffer_for_enabled_channels(samples=SAMPLES)
-scope.run_block_capture(timebase=TIMEBASE, samples=SAMPLES, pre_trig_percent=PRE_TRIG)
+
+# Run the aqusition using the selected timebase and numbver of samples from above
+scope.run_block_capture(timebase=TIMEBASE, samples=SAMPLES)
+
+# Populate the python array with actual ADC values from the device
 scope.get_values(SAMPLES)
 
-# No ADC to mV conversion, add it here
+# Scale the raw ADC values to mV values according to the selected timebase
 channels_buffer = scope.adc_to_mv(channels_buffer)
-time_axis = scope.get_time_axis(TIMEBASE, SAMPLES, pre_trig_percent=PRE_TRIG)
 
-# Finish with PicoScope
+# Create an array of time values in nano seconds, to align with each sample point
+time_axis = scope.get_time_axis(TIMEBASE, SAMPLES)
+
+# Release the device from the driver
 scope.close_unit()
 
-# Create a single plot for the time series
+# Use matplotlib to plot the data
 plt.plot(time_axis, channels_buffer[psdk.CHANNEL.A])
-plt.title('Time Series of Channel A')
+plt.title('Example plot for Channel A')
 plt.xlabel('Time (ns)')
 plt.ylabel('Voltage (mV)')
+plt.grid(True)
+
+# Set the Y axis of the graph to the largest voltage range selected for enabled channels, with mV units
+plt.ylim(scope.get_ylim(unit='mv'))
+
+# Display the completed plot
 plt.show()
