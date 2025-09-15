@@ -12,8 +12,6 @@ Downsampling:
 
     If using any other downsampling method, stream.buffer only outputs a single buffer.
 """
-
-import threading
 import numpy as np
 
 from matplotlib import pyplot as plt
@@ -24,74 +22,69 @@ from pypicosdk.streaming import StreamingScope
 
 # Capture configuration
 SAMPLES = 10_000
-INTERVAL = 1
-UNIT = psdk.TIME_UNIT.US
-CHANNEL = psdk.CHANNEL.A
+INTERVAL = 1000
+unit = psdk.TIME_UNIT.PS
+channel = psdk.CHANNEL.A
 
 # Downsample data using min/max aggregate
-RATIO = 100
-RATIO_MODE = psdk.RATIO_MODE.AGGREGATE
+RATIO = 100000
+ratio_mode = psdk.RATIO_MODE.AGGREGATE
 
 # Setup classe objects
-scope = psdk.ps6000a()
-stream = StreamingScope(scope)
+scope = psdk.psospa()
 
 
 def setup_pyplot():
     """Sets up pyplot with empty data"""
     fig = plt.figure()
-    axis = plt.axes(xlim=(0, SAMPLES),
-                    ylim=(-scope.min_adc_value, scope.max_adc_value))
+    axis = plt.axes(xlim=(0, SAMPLES), ylim=(-scope.min_adc_value, scope.max_adc_value))
     # Initialize with numpy array of zeros
     x = np.arange(SAMPLES)
     line, = axis.plot(x, np.zeros_like(x), lw=2)
-    return fig, line
+    # Add a sweep line
+    vline = axis.axvline(x=0, color='red')
+    return fig, line, vline
 
 
 def setup_scope():
     """Setup PicoScope and get scope class"""
     scope.open_unit()
-    scope.set_siggen(frequency=10, pk2pk=1.6,
-                     wave_type=psdk.WAVEFORM.TRIANGLE)
+    scope.set_siggen(frequency=1, pk2pk=1.6, wave_type=psdk.WAVEFORM.TRIANGLE)
     scope.set_channel(channel=psdk.CHANNEL.A, range=psdk.RANGE.V1)
-    scope.set_simple_trigger(channel=psdk.CHANNEL.A, threshold_mv=0)
 
 
-def streaming_thread():
-    """Streaming thread"""
-    stream.start_streaming_while()
-
-
-def get_data():
+def get_data(stream):
     """Get data from streaming class based on ratio mode"""
+    buffer = stream.get_data()
+    index = stream.get_last_sample_index()
     # If AGGREGATE ratio mode, find midpoint
-    if RATIO_MODE == psdk.RATIO_MODE.AGGREGATE:
-        return (stream.buffer[0] + stream.buffer[1]) / 2
-    return stream.buffer
+    if ratio_mode == psdk.RATIO_MODE.AGGREGATE:
+        return (buffer[0] + buffer[1]) / 2, index
+    return buffer, index
 
 
-def animate(_frame, line):
+def animate(_frame, stream, line, vline):
     """pyplot animation thread"""
-    line.set_ydata(get_data())
-    return [line]
+    buffer, index = get_data(stream)
+    line.set_ydata(buffer)
+    vline.set_xdata([index, index])
+    return [line, vline]
 
 
 def main():
     """Main function"""
     setup_scope()
-    fig, line = setup_pyplot()
+    fig, line, vline = setup_pyplot()
 
-    stream.config_streaming(CHANNEL, SAMPLES, INTERVAL, UNIT, ratio=RATIO, ratio_mode=RATIO_MODE)
+    stream = StreamingScope(scope, channel, SAMPLES, INTERVAL, unit,
+                            ratio=RATIO, ratio_mode=ratio_mode)
+    stream.start()
 
-    th = threading.Thread(target=streaming_thread)
-    th.start()
-
-    _ = FuncAnimation(fig, animate, frames=500, fargs=(line,), interval=20, blit=True)
+    _ = FuncAnimation(fig, animate, frames=500, fargs=(stream, line, vline,),
+                      interval=20, blit=True)
     plt.show()
 
     stream.stop()
-    th.join()
-
     scope.close_unit()
 
 

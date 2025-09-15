@@ -12,76 +12,35 @@ Todo:
     - get_streaming_latest_values() PICO_STREAMIN_DATA_INFO needs to be a list
       of structs
 """
-from warnings import warn
+import threading
 import numpy as np
-from .constants import (
-    CHANNEL,
-    TIME_UNIT,
-    RATIO_MODE,
-    DATA_TYPE,
-    ACTION,
-    TimeUnit_L,
-    TimeUnitStd_M,
-    _TimeUnitText,
-)
-from .common import _get_literal, PicoSDKException, BufferTooSmall
+from . import constants as cst
+from .common import _get_literal, PicoSDKException
 from .pypicosdk import psospa, ps6000a
 
 
 class StreamingScope:
     """Streaming Scope class"""
-    def __init__(self, scope: ps6000a | psospa):
-        self.scope = scope
-        self.stop_bool = False  # Bool to stop streaming while loop
-        self.msps_current = 0
-        self.channel_config: list
-        self.info: dict
-
-        # Streaming settings
-        self.channel: CHANNEL
-        self.pre_trig_samples: int
-        self.post_trig_samples: int
-        self.interval: int
-        self.time_units: TIME_UNIT
-        self.ratio: int
-        self.ratio_mode: RATIO_MODE
-        self.data_type: DATA_TYPE
-
-        # Buffers
-        self.np_buffer = np.empty(0)
-        self.buffer_index = 0
-        self.buffer = np.empty(0)
-        self.samples: int
-        self.np_samples: int
-        self.max_buffer_size: int
-
-        # Stats
-        self._debug = False
-        self._msps_avg_array = np.empty(0, dtype=np.int32)
-        self._msps_avg_len = 100
-        self.msps_avg = 0.0
-        self.msps_min = 9999.9
-        self.msps_max = 0.0
-
-    def config_streaming(
+    def __init__(
         self,
-        channel: CHANNEL,
+        scope: ps6000a | psospa,
+        channel: str | cst.channel_literal | cst.CHANNEL,
         samples: int,
         interval: int,
-        time_units: TIME_UNIT | TimeUnit_L,
+        time_units: str | cst.TimeUnit_L | cst.TIME_UNIT,
         pre_trig_samples: int = 0,
         post_trig_samples: int = 250,
         ratio: int = 0,
-        ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
-        data_type: DATA_TYPE = DATA_TYPE.INT16_T,
+        ratio_mode: str | cst.RatioMode_L | cst.RATIO_MODE = cst.RATIO_MODE.RAW,
+        data_type: str | cst.DataType_L | cst.DATA_TYPE = cst.DATA_TYPE.INT16_T,
     ) -> None:
         """
-        Configures the streaming settings for data acquisition. This method
-        sets up the channel, sample counts, timing intervals, and buffer
+        Creates a class with streaming settings for data acquisition. By intialising
+        this class it sets up the channel, sample counts, timing intervals, and buffer
         management for streaming data from the device.
 
         Args:
-            channel (CHANNEL): The channel to stream data from.
+            channel (str | CHANNEL): The channel to stream data from.
             samples (int):
                 The number of samples to acquire in each streaming segment.
             interval (int): The time interval between samples.
@@ -93,50 +52,80 @@ class StreamingScope:
                 after a trigger event. Defaults to 250.
             ratio (int, optional): Downsampling ratio to apply to the captured
                 data. Defaults to 0 (no downsampling).
-            ratio_mode (RATIO_MODE, optional): Mode used for applying the
+            ratio_mode (str | RATIO_MODE, optional): Mode used for applying the
                 downsampling ratio. Defaults to RATIO_MODE.RAW.
-            data_type (DATA_TYPE, optional): Data type for the samples in the
+            data_type (str | DATA_TYPE, optional): Data type for the samples in the
                 buffer. Defaults to DATA_TYPE.INT16_T.
-
-        Returns:
-            None
         """
+
         # Get typing literals
-        time_units = _get_literal(time_units, TimeUnitStd_M)
+        channel = _get_literal(channel, cst.channel_map)
+        time_units = _get_literal(time_units, cst.TimeUnitStd_M)
+        ratio_mode = _get_literal(ratio_mode, cst.RatioMode_M)
+        data_type = _get_literal(data_type, cst.DataType_M)
 
         if interval/time_units >= 0.001:
             raise PicoSDKException(
-                f'An interval of {interval} {_TimeUnitText[time_units]} is too long. '
+                f'An interval of {interval} {cst.TimeUnitText[time_units]} is too long. '
                 f'Please specify an interval less than 1 ms.')
 
+        # Threading
+        self._streaming_thread: threading.Thread
+        self._stop = False  # Bool to stop streaming while loop
+
+        # Scope Setup
+        self.scope = scope
+        self._channel_config: list
+        self.info: cst.StreamInfo
+
         # Streaming settings
-        self.channel = channel
-        self.pre_trig_samples = pre_trig_samples
-        self.post_trig_samples = post_trig_samples
-        self.interval = interval
-        self.time_units = time_units
-        self.ratio = ratio
-        self.ratio_mode = ratio_mode
-        self.data_type = data_type
+        self._channel = channel
+        self._pre_trig_samples = pre_trig_samples
+        self._post_trig_samples = post_trig_samples
+        self._interval = interval
+        self._time_units = time_units
+        self._ratio = ratio
+        self._ratio_mode = ratio_mode
+        self._data_type = data_type
 
         # python buffer setup
-        self.samples = samples
-        self.np_samples = int(samples/2)
-        if self.ratio_mode == RATIO_MODE.AGGREGATE:
-            self.buffer = np.zeros((2, samples))
-            self.np_buffer = np.zeros((2, 2, self.np_samples), dtype=np.int16)
+        self._buffer_index = 0
+        self._last_index = 0
+        self._samples = samples
+        self._np_samples = int(samples/2)
+        if self._ratio_mode == cst.RATIO_MODE.AGGREGATE:
+            self._buffer = np.zeros((2, samples))
+            self._np_buffer = np.zeros((2, 2, self._np_samples), dtype=np.int16)
         else:
-            self.buffer = np.zeros(samples)
-            self.np_buffer = np.zeros((2, self.np_samples), dtype=np.int16)
-        # max_buffer_size (int | None): Maximum number of samples the python
-        # buffer can hold. If None, the buffer will not constrain.
-        self.max_buffer_size = samples
+            self._buffer = np.zeros(samples)
+            self._np_buffer = np.zeros((2, self._np_samples), dtype=np.int16)
+
+    def get_data(self) -> np.ndarray:
+        """
+        Returns the data from the buffer
+
+        Returns:
+            np.ndarray: Numpy array of the streaming buffer.
+        """
+        if self._ratio_mode == cst.RATIO_MODE.AGGREGATE:
+            return self._buffer[0], self._buffer[1]
+        return self._buffer
+
+    def get_last_sample_index(self) -> int:
+        """
+        Returns the index of the last sample captured.
+        Ideal for adding a sweep line on the graph.
+
+        Returns:
+            int: Integer of the last sample added.
+        """
+        return self._last_index
 
     def _add_channel(
         self,
-        channel: CHANNEL,
-        ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
-        data_type: DATA_TYPE = DATA_TYPE.INT16_T,
+        channel: cst.CHANNEL,
+        ratio_mode: cst.RATIO_MODE = cst.RATIO_MODE.RAW,
+        data_type: cst.DATA_TYPE = cst.DATA_TYPE.INT16_T,
     ) -> None:
         """
         !NOT YET IMPLEMETED!
@@ -156,27 +145,27 @@ class StreamingScope:
         Returns:
             None
         """
-        self.channel_config.append([channel, ratio_mode, data_type])
+        self._channel_config.append([channel, ratio_mode, data_type])
 
     def _stream_set_data_buffer(self, buffer_index: int):
         """Set data buffer function for consistency when creating a new buffer
         Args:
             buffer_index (int): Index of buffer to set to PicoScope"""
-        if self.ratio_mode == RATIO_MODE.AGGREGATE:
+        if self._ratio_mode == cst.RATIO_MODE.AGGREGATE:
             self.scope.set_data_buffers(
-                self.channel,
-                self.np_samples,
-                buffers=self.np_buffer[buffer_index],
-                action=ACTION.ADD,
-                ratio_mode=self.ratio_mode
+                self._channel,
+                self._np_samples,
+                buffers=self._np_buffer[buffer_index],
+                action=cst.ACTION.ADD,
+                ratio_mode=self._ratio_mode
             )
         else:
             self.scope.set_data_buffer(
-                    self.channel,
-                    self.np_samples,
-                    buffer=self.np_buffer[buffer_index],
-                    action=ACTION.ADD,
-                    ratio_mode=self.ratio_mode,
+                    self._channel,
+                    self._np_samples,
+                    buffer=self._np_buffer[buffer_index],
+                    action=cst.ACTION.ADD,
+                    ratio_mode=self._ratio_mode,
                 )
 
     def run_streaming(self) -> None:
@@ -192,22 +181,22 @@ class StreamingScope:
         incoming data.
         """
         # Setup empty variables for streaming
-        self.stop_bool = False
+        self._stop = False
 
         # Setup initial buffer for streaming
-        self.scope.set_data_buffer(0, 0, action=ACTION.CLEAR_ALL)
-        for buffer_index in range(self.np_buffer.shape[0]):
+        self.scope.set_data_buffer(0, 0, action=cst.ACTION.CLEAR_ALL)
+        for buffer_index in range(self._np_buffer.shape[0]):
             self._stream_set_data_buffer(buffer_index)
 
         # start streaming
         self.scope.run_streaming(
-            sample_interval=self.interval,
-            time_units=self.time_units,
-            max_pre_trigger_samples=self.pre_trig_samples,
-            max_post_trigger_samples=self.post_trig_samples,
+            sample_interval=self._interval,
+            time_units=self._time_units,
+            max_pre_trigger_samples=self._pre_trig_samples,
+            max_post_trigger_samples=self._post_trig_samples,
             auto_stop=0,
-            ratio=self.ratio,
-            ratio_mode=self.ratio_mode
+            ratio=self._ratio,
+            ratio_mode=self._ratio_mode
         )
 
     def get_streaming_values(self) -> None:
@@ -224,98 +213,49 @@ class StreamingScope:
         overflow condition is detected.
         """
         self.info = self.scope.get_streaming_latest_values(
-            channel=self.channel,
-            ratio_mode=self.ratio_mode,
-            data_type=self.data_type
+            channel=self._channel,
+            ratio_mode=self._ratio_mode,
+            data_type=self._data_type
         )
-        status = self.info['status']
-        n_samples = self.info['no of samples']
-        start_index = self.info['start index']
-        scope_buffer_index = self.info['Buffer index']
+        n_samples = self.info.no_of_samples
+        start_index = self.info.start_index
+        scope_buffer_index = self.info.buffer_index
 
         # Buffer indexes
         buffer_index = scope_buffer_index % 2
         new_buf_index = 1 - buffer_index
 
         # Once a buffer is finished with, add it again as a new buffer
-        if buffer_index != self.buffer_index:
-            self.buffer_index = buffer_index
+        if buffer_index != self._buffer_index:
+            self._buffer_index = buffer_index
             self._stream_set_data_buffer(new_buf_index)
 
         # If buffer isn't empty, add data to array
         if n_samples > 0:
-            # If buffer is overflowing to device
-            if status == 407:
-                if self.ratio_mode == RATIO_MODE.AGGREGATE:
-                    warn(f'Max buffer size {self.max_buffer_size} too small to capture samples at '
-                         f'{self.interval} {_TimeUnitText[self.time_units]} interval, increase to '
-                         f'sample size or ratio to not miss data.',
-                         BufferTooSmall)
-                else:
-                    warn(f'Max buffer size {self.max_buffer_size} too small to capture samples at '
-                         f'{self.interval} {_TimeUnitText[self.time_units]} interval, increase to '
-                         f'not miss data.',
-                         BufferTooSmall)
-
-            # Add the new buffer to the buffer array and take end chunk
-            if self.ratio_mode == RATIO_MODE.AGGREGATE:
-                new_data = self.np_buffer[buffer_index][:, start_index:start_index + n_samples]
-                pad_len = max(self.samples - (self.buffer.shape[1] + new_data.shape[1]), 0)
-                temp_pad_array = np.zeros((2, pad_len))
-                self.buffer = (np.concatenate([temp_pad_array, self.buffer, new_data], axis=1)
-                               [:, -self.max_buffer_size:])
+            # Update _last_index with the location of the last gathered sample location
+            self._last_index = (n_samples + start_index) + (buffer_index * self._np_samples)
+            # Add the numpy buffers together
+            if self._ratio_mode == cst.RATIO_MODE.AGGREGATE:
+                for i in range(2):
+                    self._buffer[i] = np.concatenate([self._np_buffer[0][i], self._np_buffer[1][i]])
             else:
-                new_data = (self.np_buffer[buffer_index][start_index:start_index + n_samples])
-                pad_len = max(self.samples - (len(self.buffer) + len(new_data)), 0)
-                temp_pad_array = np.zeros(pad_len)
-                self.buffer = (np.concatenate([temp_pad_array, self.buffer, new_data])
-                               [-self.max_buffer_size:])
+                self._buffer = np.concatenate([self._np_buffer[0], self._np_buffer[1]])
 
-    def start_streaming_while(self) -> None:
+    def _streaming_loop(self) -> None:
         """
         Starts and continuously runs the streaming acquisition loop until
         StreamingScope.stop() is called.
         """
         self.run_streaming()
-        while not self.stop_bool:
+        while not self._stop:
             self.get_streaming_values()
         self.scope.stop()
 
-    def _run_streaming_for(self, n_times) -> None:
-        """
-        Runs the streaming acquisition loop for a fixed number of iterations.
-
-        Args:
-            n_times (int): Number of iterations to run the streaming loop.
-        """
-
-        if self.max_buffer_size is not None:
-            warn('max_buffer_data needs to be None to retrieve the full '
-                 'streaming data.')
-        self.run_streaming()
-        for _ in range(n_times):
-            self.get_streaming_values()
-        self.scope.stop()
-
-    def _run_streaming_for_samples(self, no_of_samples) -> np.ndarray:
-        """
-        Runs streaming acquisition until a specified number of samples are
-        collected. The loop will terminate early if `StreamingScope.stop()` is
-        called.
-
-        Args:
-            no_of_samples (int):
-                The total number of samples to acquire before stopping.
-
-        Returns:
-            numpy.ndarray: The buffer array containing the collected samples.
-        """
-        self.run_streaming()
-        while not self.stop_bool:
-            self.get_streaming_values()
-            if len(self.buffer) >= no_of_samples:
-                return self.buffer
+    def start(self):
+        "Starts streaming as a thread"
+        self._streaming_thread = threading.Thread(target=self._streaming_loop)
+        self._streaming_thread.start()
 
     def stop(self):
         """Signals the streaming loop to stop."""
-        self.stop_bool = True
+        self._stop = True

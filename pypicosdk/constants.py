@@ -1,6 +1,19 @@
 from enum import IntEnum
 import ctypes
-from typing import Literal
+from typing import Literal, NamedTuple
+
+
+class StreamInfo(NamedTuple):
+    "NamedTuple class containing streaming info"
+    status: int
+    no_of_samples: int
+    buffer_index: int
+    start_index: int
+    overflowed: bool
+    triggered_at: int
+    triggered: bool
+    auto_stopped: bool
+
 
 class UNIT_INFO:
     """
@@ -188,27 +201,27 @@ class CHANNEL(IntEnum):
 CHANNEL_NAMES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 
 channel_literal = Literal[
-    'channel_a',
-    'channel_b',
-    'channel_c',
-    'channel_d',
-    'channel_e',
-    'channel_f',
-    'channel_g',
-    'channel_h',
+    'a',
+    'b',
+    'c',
+    'd',
+    'e',
+    'f',
+    'g',
+    'h',
     'external',
     'trigger_aux'
 ]
 
 channel_map = {
-    'channel_a': 0,
-    'channel_b': 1,
-    'channel_c': 2,
-    'channel_d': 3,
-    'channel_e': 4,
-    'channel_f': 5,
-    'channel_g': 6,
-    'channel_h': 7,
+    'a': 0,
+    'b': 1,
+    'c': 2,
+    'd': 3,
+    'e': 4,
+    'f': 5,
+    'g': 6,
+    'h': 7,
     'external': 1000,
     'trigger_aux': 1001
 }
@@ -340,21 +353,21 @@ range_literal = Literal[
 ]
 
 range_map = {
-    '10mV': 0,
-    '20mV': 1,
-    '50mV': 2,
-    '100mV': 3,
-    '200mV': 4,
-    '500mV': 5,
-    '1V': 6,
-    '2V': 7,
-    '5V': 8,
-    '10V': 9,
-    '20V': 10,
-    '50V': 11,
-    '100V': 12,
-    '200V': 13,
-    '1000V': 14,
+    '10mv': 0,
+    '20mv': 1,
+    '50mv': 2,
+    '100mv': 3,
+    '200mv': 4,
+    '500mv': 5,
+    '1v': 6,
+    '2v': 7,
+    '5v': 8,
+    '10v': 9,
+    '20v': 10,
+    '50v': 11,
+    '100v': 12,
+    '200v': 13,
+    '1000v': 14,
 }
 
 ProbeScale_L = Literal['x1', 'x2', 'x5', 'x10', 'x20', 'x50', 'x100', 'x200', 'x500', 'x1000']
@@ -384,6 +397,7 @@ class BANDWIDTH_CH:
     BW_20MHZ = 1
     BW_200MHZ = 2
 
+
 class DATA_TYPE:
     """
     Class for different data types.
@@ -400,6 +414,24 @@ class DATA_TYPE:
     INT32_T = 2
     UINT32_T = 3
     INT64_T = 4
+
+
+DataType_L = Literal[
+    "int8_t",
+    "int16_t",
+    "int32_t",
+    "uint32_t",
+    "int64_t",
+]
+
+DataType_M: dict[DataType_L, int] = {
+    "int8_t": 0,
+    "int16_t": 1,
+    "int32_t": 2,
+    "uint32_t": 3,
+    "int64_t": 4,
+}
+
 
 class ACTION:
     """
@@ -421,7 +453,8 @@ class ACTION:
     CLEAR_WAVEFORM_DATA_BUFFERS = 0x00002000
     CLEAR_WAVEFORM_READ_DATA_BUFFERS = 0x00004000
 
-class RATIO_MODE:
+
+class RATIO_MODE(IntEnum):
     """
     Defines various ratio modes for signal processing.
 
@@ -449,6 +482,33 @@ class RATIO_MODE:
     TRIGGER = 0x40000000
     RAW = 0x80000000
 
+
+RatioMode_L = Literal[
+    "aggregate",
+    "decimate",
+    "average",
+    "distribution",
+    "sum",
+    "trigger_data_for_time_calculation",
+    "trigger_data_for_time_calcuation",  # Deprecated alias
+    "segment_header",
+    "trigger",
+    "raw",
+]
+
+RatioMode_M: dict[RatioMode_L, int] = {
+    "aggregate": 1,
+    "decimate": 2,
+    "average": 4,
+    "distribution": 8,
+    "sum": 16,
+    "trigger_data_for_time_calculation": 0x10000000,
+    "trigger_data_for_time_calcuation": 0x10000000,  # Deprecated alias
+    "segment_header": 0x20000000,
+    "trigger": 0x40000000,
+    "raw": 0x80000000,
+}
+
 class POWER_SOURCE:
     """
     Defines different power source connection statuses.
@@ -469,6 +529,10 @@ class SAMPLE_RATE(IntEnum):
     KSPS = 1_000
     MSPS = 1_000_000
     GSPS = 1_000_000_000
+
+SampleRate_L = Literal['sps', 'ksps', 'msps', 'gsps']
+SampleRate_M = {'sps': SAMPLE_RATE.SPS, 'ksps': SAMPLE_RATE.KSPS,
+                'msps': SAMPLE_RATE.MSPS, 'gsps': SAMPLE_RATE.GSPS}
 
 class TIME_UNIT(IntEnum):
     FS = 1_000_000_000_000_000
@@ -517,7 +581,7 @@ _PicoTimeUnitText = {
     5: 's',
 }
 
-_TimeUnitText = {
+TimeUnitText = {
     1_000_000_000_000_000: 'fs',
     1_000_000_000_000: 'ps',
     1_000_000_000: 'ns',
@@ -1077,6 +1141,7 @@ OutputUnitV_M = {'mv': 1, 'v': 1000}
 # attributes when the parent package re-exports ``pypicosdk.constants`` using
 # ``from .constants import *``.
 __all__ = [
+    'StreamInfo',
     'UNIT_INFO',
     'RESOLUTION',
     'TRIGGER_DIR',
