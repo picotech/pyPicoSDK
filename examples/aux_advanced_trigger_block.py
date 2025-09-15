@@ -1,48 +1,72 @@
+"""
+Auxiliary trigger example for a Picoscope 6000E device
+
+Description:
+  This example script captures a single aqusition with minimal abstraction
+  It is intended to demonstrate how to use the pyPicoSDK librarby to automate
+  your Picoscope device
+
+Requirements:
+- PicoScope 6000E
+- Python packages:
+  (pip install) matplotlib numpy pypicosdk
+
+Setup:
+  - Connect 6000E AWG output to AUX trig input & Channel A
+    of the oscilloscope using a tee BNC connector / cable or probe
+"""
+
 import pypicosdk as psdk
 from matplotlib import pyplot as plt
 
-# Pico examples use inline argument values for clarity
-
-# Capture configuration
+# Create a local variable to hold number of samples for use in later functions
 SAMPLES = 50_000
 
-# Initialise PicoScope 6000
+# create "scope" class and initialise PicoScope
 scope = psdk.ps6000a()
 scope.open_unit()
 
-# Setup SigGen to swing above 1.25 V threshold (1.5 Vpk)
+# Set siggen to 1KHz & 3Vpkpk output
 # For demo, split SigGen output to TRIGGER_AUX and Channel A input
-scope.set_siggen(frequency=1000, pk2pk=3, wave_type=psdk.WAVEFORM.SINE)
+scope.set_siggen(frequency=1e6, pk2pk=3, wave_type=psdk.WAVEFORM.SINE)
 
-# Enable Channel A (inline arguments)
-scope.set_channel(channel=psdk.CHANNEL.A, range=psdk.RANGE.V1)
+# Enable Channel A and set range to +/ 2V (4V total dynamic range)
+scope.set_channel(channel=psdk.CHANNEL.A, range=psdk.RANGE.V2)
 
 # Configure an advanced trigger using the AUX input
-# Threshold parameters are ignored; AUX triggers at 1.25 V
+# Threshold parameters are ignored when using AUX trig input (fixed 1.25 V threshold)
 scope.set_advanced_trigger(
     channel=psdk.CHANNEL.TRIGGER_AUX,
     state=psdk.TRIGGER_STATE.TRUE,
     direction=psdk.THRESHOLD_DIRECTION.RISING,
     threshold_mode=psdk.THRESHOLD_MODE.LEVEL,
-    threshold_upper_mv=0,
-    threshold_lower_mv=0,
+    threshold_upper_mv=0,                           # Required by driver despite fixed threshold
+    threshold_lower_mv=0,                           # Required by driver despite fixed threshold
 )
 
-# Preferred: convert sample rate to timebase
-TIMEBASE = scope.sample_rate_to_timebase(50, psdk.SAMPLE_RATE.MSPS)
-# TIMEBASE = 2  # direct driver timebase
-# TIMEBASE = scope.interval_to_timebase(20E-9)
+# Helper function to set timebase of scope by sample rate
+TIMEBASE = scope.sample_rate_to_timebase(500, psdk.SAMPLE_RATE.MSPS)
 
-# Run the block capture
+
+# Unused alternate methods to set sample rate / interval
+# TIMEBASE = 2                                      # direct driver timebase
+# TIMEBASE = scope.interval_to_timebase(2E-9)
+
+# helper function which sets up buffers for time axis and samples automatically and returns mV values
 channel_buffer, time_axis = scope.run_simple_block_capture(TIMEBASE, SAMPLES)
 
-# Finish with PicoScope
+# Release the device from the driver
 scope.close_unit()
 
-# Plot data
+# Use matplotlib to plot the data
 plt.plot(time_axis, channel_buffer[psdk.CHANNEL.A], label="Channel A")
+plt.title('Example plot for Channel A using AUX trigger')
 plt.xlabel("Time (ns)")
 plt.ylabel("Amplitude (mV)")
-plt.legend()
 plt.grid(True)
+
+# Set the Y axis of the graph to the largest voltage range selected for enabled channels, with mV units
+plt.ylim(scope.get_ylim(unit='mv'))
+
+# Display the completed plot
 plt.show()

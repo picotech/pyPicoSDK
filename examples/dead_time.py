@@ -12,11 +12,12 @@ Notes:
  - Pico examples use inline argument values for clarity
 """
 from matplotlib import pyplot as plt
+import numpy as np
 import pypicosdk as psdk
 
 # Capture configuration
 SAMPLES = 1000
-CAPTURES = 25
+CAPTURES = 20
 
 # Initialize scope
 scope = psdk.ps6000a()
@@ -45,14 +46,17 @@ trigger_info = scope.get_trigger_info(0, CAPTURES)
 scope.close_unit()
 
 # Calculate dead time between captures
-SAMPLE_INTERVAL_NS = time_axis[1] - time_axis[0]
+# Use the returned time axis to derive the actual sample interval and count
+sample_interval_ns = np.diff(time_axis)[0]
+actual_samples = time_axis.size
 
 dead_times = []
 for prev, curr in zip(trigger_info[:-1], trigger_info[1:]):
-    diff_samples = (curr["timeStampCounter"] - prev["timeStampCounter"]) & \
-        psdk.TIMESTAMP_COUNTER_MASK
-    dead_samples = diff_samples - SAMPLES
-    dead_times.append(dead_samples * SAMPLE_INTERVAL_NS)
+    diff_samples = (
+        int(curr["timeStampCounter"]) - int(prev["timeStampCounter"])
+    ) & psdk.TIMESTAMP_COUNTER_MASK
+    dead_samples = diff_samples - actual_samples
+    dead_times.append(dead_samples * sample_interval_ns)
 
 print("Dead time between captures (ns):")
 for i, dt in enumerate(dead_times, start=1):
