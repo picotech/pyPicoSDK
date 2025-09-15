@@ -8,6 +8,7 @@ import numpy.ctypeslib as npc
 
 from .error_list import ERROR_STRING
 from .constants import *
+from . import constants as cst
 from .constants import (
     CHANNEL,
     RANGE,
@@ -1910,16 +1911,30 @@ class PicoScopeBase:
 
     def get_streaming_latest_values(
         self,
-        channel,
-        ratio_mode,
-        data_type
-    ):
-        info = PICO_STREAMING_DATA_INFO(
-            channel_ = channel,
-            mode_ = ratio_mode,
-            type_ = data_type,
+        channel: cst.CHANNEL,
+        ratio_mode: cst.RATIO_MODE = cst.RATIO_MODE.RAW,
+        data_type: cst.DATA_TYPE = cst.DATA_TYPE.INT16_T
+    ) -> cst.StreamInfo:
+        """
+        Gets the data from PicoScope streaming and returns a class containing
+        the descriptions of samples available and trigger info.
+
+        Args:
+            channel (CHANNEL): Channel to retrieve the data from.
+            ratio_mode (RATIO_MODE): Ratio mode to retrieve the data.
+                Defaults to RAW.
+            data_type (DATA_TYPE, optional): Data type for the data to be returned as.
+                Defaults to INT16_T.
+
+        Returns:
+            StreamInfo: Class containing the streaming buffer data.
+        """
+        info = cst.PICO_STREAMING_DATA_INFO(
+            channel_=channel,
+            mode_=ratio_mode,
+            type_=data_type,
         )
-        trigger = PICO_STREAMING_DATA_TRIGGER_INFO()
+        trigger = cst.PICO_STREAMING_DATA_TRIGGER_INFO()
 
         status = self._call_attr_function(
             "GetStreamingLatestValues",
@@ -1928,16 +1943,16 @@ class PicoScopeBase:
             1,
             ctypes.byref(trigger)
         )
-        return {
-            'status': status,
-            'no of samples': info.noOfSamples_,
-            'Buffer index': info.bufferIndex_,
-            'start index': info.startIndex_,
-            'overflowed?': info.overflow_,
-            'triggered at': trigger.triggerAt_,
-            'triggered?': trigger.triggered_,
-            'auto stopped?': trigger.autoStop_,
-        }
+        return cst.StreamInfo(
+            status=status,
+            no_of_samples=info.noOfSamples_,
+            buffer_index=info.bufferIndex_,
+            start_index=info.startIndex_,
+            overflowed=info.overflow_,
+            triggered_at=trigger.triggerAt_,
+            triggered=trigger.triggered_,
+            auto_stopped=trigger.autoStop_,
+        )
 
     def is_over_range(self) -> list:
         """

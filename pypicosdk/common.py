@@ -4,27 +4,23 @@ import os
 from typing import Any
 
 class PicoSDKNotFoundException(Exception):
-    pass
+    "PicoSDK drivers cannot be found"
 
 
 class PicoSDKException(Exception):
-    pass
+    "General PicoSDK exception"
 
 
 class OverrangeWarning(UserWarning):
-    pass
+    "Overrange warning"
 
 
 class PowerSupplyWarning(UserWarning):
-    pass
-
-
-class BufferTooSmall(UserWarning):
-    "User warning for 407 status from streaming"
+    "Power Supply Warning"
 
 
 # General Functions
-def _check_path(location:str, folders:list) -> str:
+def _check_path(location: str, folders: list) -> str:
     """Checks a list of folders in a location i.e. ['Pico Technology']
        in /ProgramFiles/ and returns first full path found
 
@@ -45,6 +41,7 @@ def _check_path(location:str, folders:list) -> str:
     raise PicoSDKException(
         "No PicoSDK or PicoScope 7 drivers installed, get them from http://picotech.com/downloads"
     )
+
 
 def _get_lib_path() -> str:
     """Looks for PicoSDK folder based on OS and returns folder
@@ -72,6 +69,7 @@ def _get_lib_path() -> str:
     else:
         raise PicoSDKException("Unsupported OS")
     
+
 def _struct_to_dict(struct_instance: ctypes.Structure, format=False) -> dict:
     """Takes a ctypes struct and returns the values as a python dict
 
@@ -82,7 +80,7 @@ def _struct_to_dict(struct_instance: ctypes.Structure, format=False) -> dict:
         dict: python dictionary of struct values
     """
     result = {}
-    for field_name, _ in struct_instance._fields_:
+    for field_name, _ in struct_instance._fields_:  # pylint: disable=W0212
         if format:
             result[field_name.replace('_', '')] = getattr(struct_instance, field_name)
         else:
