@@ -73,7 +73,7 @@ plt.xlabel('Time (ns)')
 plt.ylabel('Voltage (mV)')
 plt.grid(True)
 
-# Set the Y axis of the graph to the largest voltage range selected for enabled channels, with mV units
+# Set the Y axis of the graph to the largest voltage range selected for enabled channels, in mV
 plt.ylim(scope.get_ylim(unit='mv'))
 
 # Display the completed plot
