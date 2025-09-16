@@ -1,7 +1,13 @@
 """
-This examples shows how to use the eRes or resolution enhancement on a square helo
-wave. Pyplot will display the output showing a blue (origional) and orange
-(enhanced) waveform.
+This examples demonstrates how to use a moving average filter (implemented through NumPy.convolve)
+as a way to enhance the vertical resolution of a channel.
+This example uses a square wave. Matplotlib will display the output showing a blue (original) and
+orange (enhanced) waveform.
+
+Requirements:
+- PicoScope 6000E
+- Python packages:
+  (pip install) matplotlib pypicosdk
 
 Setup:
  - Connect:
@@ -13,27 +19,37 @@ from matplotlib import pyplot as plt
 import pypicosdk as psdk
 from pypicosdk import resolution_enhancement
 
-# Capture configuration
+# Create a local variable to hold number of samples for use in later functions
 SAMPLES = 500
 
-# Initialise PicoScope 6000
+# Create "scope" class and initialize PicoScope
 scope = psdk.ps6000a()
 scope.open_unit()
 
-# Setup siggen
+# Set siggen to 10MhHz & 0.8Vpkpk output
 scope.set_siggen(frequency=10_00_000, pk2pk=0.8, wave_type=psdk.WAVEFORM.SQUARE)
 
-# Setup channels and trigger (inline arguments)
+# Enable channel A with +/- 1V range (4V total dynamic range)
 scope.set_channel(channel=psdk.CHANNEL.A, range=psdk.RANGE.V2)
+
+# Configure a simple rising edge trigger for channel A
 scope.set_simple_trigger(channel=psdk.CHANNEL.A, threshold_mv=0)
 
-# Preferred: convert sample rate to timebase
+# Helper function to set timebase of scope via requested sample rate
 TIMEBASE = scope.sample_rate_to_timebase(sample_rate=1.25, unit=psdk.SAMPLE_RATE.GSPS)
-# TIMEBASE = 2  # direct driver timebase
-# TIMEBASE = scope.interval_to_timebase(20E-9)
 
-# Run the block capture
+# Unused alternate methods to set sample rate / interval
+# TIMEBASE = 2                                      # direct driver timebase
+# TIMEBASE = scope.interval_to_timebase(2E-9)       # set timebase via requested sample interval
+
+# Print to console the actual sample rate selected by the device driver
+print(scope.get_actual_sample_rate())
+
+# Create buffers in this application space to hold returned sample array
 channel_buffer, time_axis = scope.run_simple_block_capture(TIMEBASE, SAMPLES)
+
+# Create a duplicate channel_buffer array after applying the moving average enhancement technique
+# in a new array named enhanced_buffer
 enhanced_buffer = resolution_enhancement(channel_buffer[psdk.CHANNEL.A], enhanced_bits=2)
 
 # Finish with PicoScope
@@ -48,12 +64,13 @@ ax.plot(channel_buffer[psdk.CHANNEL.A], marker='x', label="Raw Buffer", alpha=0.
 # Enhanced buffer
 ax.plot(enhanced_buffer, marker='x', label="Enhanced Buffer", color="orange", alpha=0.7)
 
-# Labels and title
+# Labels, title and layout
 ax.set_xlabel("Time (ns)")
 ax.set_ylabel("Amplitude (mV)")
 ax.set_title("Raw vs Resolution Enhanced Buffer")
 ax.grid(True)
 ax.legend()
-
 plt.tight_layout()
+
+# Display the plot
 plt.show()

@@ -22,12 +22,12 @@ from matplotlib import pyplot as plt
 # Create a local variable to hold number of samples for use in later functions
 SAMPLES = 50_000
 
-# create "scope" class and initialise PicoScope
+# Create "scope" class and initialise PicoScope
 scope = psdk.ps6000a()
 scope.open_unit()
 
 # Set siggen to 1KHz & 3Vpkpk output
-# For demo, split SigGen output to TRIGGER_AUX and Channel A input
+# For this demo, split SigGen output to TRIGGER_AUX and Channel A input
 scope.set_siggen(frequency=1e6, pk2pk=3, wave_type=psdk.WAVEFORM.SINE)
 
 # Enable Channel A and set range to +/ 2V (4V total dynamic range)
@@ -49,10 +49,10 @@ TIMEBASE = scope.sample_rate_to_timebase(500, psdk.SAMPLE_RATE.MSPS)
 
 
 # Unused alternate methods to set sample rate / interval
-# TIMEBASE = 2                                      # direct driver timebase
-# TIMEBASE = scope.interval_to_timebase(2E-9)
+# TIMEBASE = 2                                      # Direct driver timebase
+# TIMEBASE = scope.interval_to_timebase(2E-9)       # Set timebase via requested sample interval
 
-# helper function which sets up buffers for time axis and samples automatically and returns mV values
+# Helper function which sets up buffers for time axis and samples automatically and returns mV values
 channel_buffer, time_axis = scope.run_simple_block_capture(TIMEBASE, SAMPLES)
 
 # Release the device from the driver

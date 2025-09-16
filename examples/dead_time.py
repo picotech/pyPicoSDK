@@ -6,7 +6,7 @@ It then retrieves trigger timing information to calculate and plot the dead time
 captures.
 
 Setup:
- - Connect Channel A to AWG Ouput
+ - Connect Channel A to AWG Output
 
 Notes:
  - Pico examples use inline argument values for clarity
