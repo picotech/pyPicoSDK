@@ -100,7 +100,7 @@ trigger_dir_m = {'above': 0,
                  'falling': 3,
                  'rising or falling': 4}
 
-class WAVEFORM:
+class WAVEFORM(IntEnum):
     """
     Waveform type constants for PicoScope signal generator configuration.
 
@@ -398,7 +398,7 @@ class BANDWIDTH_CH:
     BW_200MHZ = 2
 
 
-class DATA_TYPE:
+class DATA_TYPE(IntEnum):
     """
     Class for different data types.
 
@@ -452,7 +452,6 @@ class ACTION:
     CLEAR_THIS_DATA_BUFFER = 0x00001000
     CLEAR_WAVEFORM_DATA_BUFFERS = 0x00002000
     CLEAR_WAVEFORM_READ_DATA_BUFFERS = 0x00004000
-
 
 class RATIO_MODE(IntEnum):
     """
