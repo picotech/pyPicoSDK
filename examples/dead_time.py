@@ -36,13 +36,17 @@ scope.set_channel(channel=psdk.CHANNEL.A, range=psdk.RANGE.V2)
 scope.set_simple_trigger(channel=psdk.CHANNEL.A, threshold_mv=0)
 
 # Helper function to set timebase of scope via requested sample rate
-TIMEBASE = scope.sample_rate_to_timebase(50, psdk.SAMPLE_RATE.MSPS)
+TIMEBASE = scope.sample_rate_to_timebase(sample_rate=50, unit=psdk.SAMPLE_RATE.MSPS)
 
 # Print to console the actual sample rate selected by the device driver
 print(scope.get_actual_sample_rate())
 
+<<<<<<< Updated upstream
 # Perform rapid block capture via help function
 # (inc. buffer setup, time axix mV conversion etc.)
+=======
+# Perform rapid block capture via help function (inc. buffer setup, time axis mV conversion etc.)
+>>>>>>> Stashed changes
 buffers, time_axis = scope.run_simple_rapid_block_capture(
     timebase=TIMEBASE,
     samples=SAMPLES,
