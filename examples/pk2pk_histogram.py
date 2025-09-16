@@ -18,52 +18,48 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pypicosdk as psdk
 
-# Pico examples use inline argument values for clarity
+# Create a local variable to hold number of samples for use in later functions
+SAMPLES = 500
 
-# Scope setup
+# Create a local variable to hold number of captures for use in
+# run_simple_rapid_block_capture helper function
+CAPTURES = 1000
+
+# Create "scope" class and initialize PicoScope
 scope = psdk.ps6000a()
 scope.open_unit(resolution="12bit")
 
-# Set channels (inline arguments)
+# Enable channel A with +/- 500mV range (1V total dynamic range)
 scope.set_channel(channel=psdk.CHANNEL.A, coupling=psdk.COUPLING.DC, range=psdk.RANGE.mV500)
+
+# Configure a simple rising edge trigger for channel A
 scope.set_simple_trigger(channel=psdk.CHANNEL.A, threshold_mv=200,
                          direction=psdk.TRIGGER_DIR.RISING, auto_trigger=0)
 
-# Setup SigGen
-scope.set_siggen(frequency=1000, pk2pk=0.9, wave_type=psdk.WAVEFORM.SINE)
+# Set siggen to 10MHz & 0.9Vpkpk output sine wave
+scope.set_siggen(frequency=10_000_000, pk2pk=0.9, wave_type=psdk.WAVEFORM.SINE)
 
-# Acquisition parameters
-SAMPLES = 1000
-CAPTURES = 1000
+# Helper function to set timebase of scope via requested sample rate
+TIMEBASE = scope.sample_rate_to_timebase(1.25, psdk.SAMPLE_RATE.GSPS)
 
-pk2pk_values = []
-waveforms = []  # Store each waveform
+# Unused alternate methods to set sample rate / interval
+# TIMEBASE = 2                                      # direct driver timebase
+# TIMEBASE = scope.interval_to_timebase(2E-9)       # set timebase via requested sample interval
 
-# Main capture loop
-for _ in range(CAPTURES):
-    # Simple block capture
-    channel_buffer, time_axis = scope.run_simple_block_capture(
-        timebase=scope.interval_to_timebase(20E-9),
-        samples=SAMPLES
-    )
+# Perform rapid block capture via help function (inc. buffer setup, time axix mV conversion etc.)
+channel_buffer, time_axis = scope.run_simple_rapid_block_capture(TIMEBASE, SAMPLES, CAPTURES)
 
-    # Add channel data to list
-    waveform = channel_buffer[psdk.CHANNEL.A]
-    waveforms.append(waveform)
+# Extract channel A waveforms from NumPy array which holds both sample and time data
+waveforms = channel_buffer[psdk.CHANNEL.A]
 
-    # Calculate pk2pk values, add to list
-    pk2pk = np.ptp(waveform)
-    pk2pk_values.append(pk2pk)
-
-# Convert to numpy arrays
-pk2pk_values = np.array(pk2pk_values)
-waveforms = np.array(waveforms)
+# Use numpy to generate pk2pk values per capture (using axis=1)
+pk2pk_values = np.ptp(waveforms, axis=1)
 
 # Calculate statistics
 print(f"Mean Pk-Pk: {np.mean(pk2pk_values):.2f} mV")
 print(f"Std Dev Pk-Pk: {np.std(pk2pk_values):.2f} mV")
 
-# Setup pyplot subplots
+# Setup matplotlib subplots
 fig, axs = plt.subplots(2, 1, figsize=(10, 8))
 
 # Top subplot: Overlay of all waveforms

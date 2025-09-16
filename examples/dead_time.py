@@ -22,7 +22,7 @@ SAMPLES = 1000
 # run_simple_rapid_block_capture helper function
 CAPTURES = 20
 
-# Initialize scope
+# Create "scope" class and initialize PicoScope
 scope = psdk.ps6000a()
 scope.open_unit()
 
@@ -41,8 +41,7 @@ TIMEBASE = scope.sample_rate_to_timebase(50, psdk.SAMPLE_RATE.MSPS)
 # Print to console the actual sample rate selected by the device driver
 print(scope.get_actual_sample_rate())
 
-# Perform rapid block capture via help function
-# (inc. buffer setup, time axix mV conversion etc.)
+# Perform rapid block capture via help function (inc. buffer setup, time axix mV conversion etc.)
 buffers, time_axis = scope.run_simple_rapid_block_capture(
     timebase=TIMEBASE,
     samples=SAMPLES,
