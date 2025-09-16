@@ -259,3 +259,4 @@ class StreamingScope:
     def stop(self):
         """Signals the streaming loop to stop."""
         self._stop = True
+        self._streaming_thread.join()
