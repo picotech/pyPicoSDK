@@ -29,7 +29,7 @@ scope.open_unit()
 # Print the returned serial number of the initialized instrument
 print(scope.get_unit_serial())
 
-# Set siggen to 50kHz & 1.8Vpkpk output
+# Set siggen to 50kHz & 1.8Vpkpk output sine wave
 scope.set_siggen(frequency=50_000, pk2pk=1.8, wave_type=psdk.WAVEFORM.SINE)
 
 # Enable channel A with +/- 1V range (2V total dynamic range)
@@ -39,7 +39,7 @@ scope.set_channel(channel=psdk.CHANNEL.A, range=psdk.RANGE.V1)
 scope.set_simple_trigger(channel=psdk.CHANNEL.A, threshold_mv=0)
 
 # Helper function to set timebase of scope via requested sample rate
-TIMEBASE = scope.sample_rate_to_timebase(500, psdk.SAMPLE_RATE.MSPS)
+TIMEBASE = scope.sample_rate_to_timebase(sample_rate=50, unit=psdk.SAMPLE_RATE.MSPS)
 
 # Unused alternate methods to set sample rate / interval
 # TIMEBASE = 2                                      # direct driver timebase
