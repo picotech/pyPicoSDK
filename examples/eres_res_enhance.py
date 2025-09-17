@@ -26,8 +26,8 @@ SAMPLES = 500
 scope = psdk.ps6000a()
 scope.open_unit()
 
-# Set siggen to 10MhHz & 0.8Vpkpk output
-scope.set_siggen(frequency=10_00_000, pk2pk=0.8, wave_type=psdk.WAVEFORM.SQUARE)
+# Set siggen to 10MhHz & 3.5Vpkpk output
+scope.set_siggen(frequency=10_00_000, pk2pk=3.5, wave_type=psdk.WAVEFORM.SQUARE)
 
 # Enable channel A with +/- 1V range (4V total dynamic range)
 scope.set_channel(channel=psdk.CHANNEL.A, range=psdk.RANGE.V2)
@@ -71,6 +71,9 @@ ax.set_title("Raw vs Resolution Enhanced Buffer")
 ax.grid(True)
 ax.legend()
 plt.tight_layout()
+
+# Set the Y axis of the graph to the largest voltage range selected for enabled channels, in mV
+plt.ylim(scope.get_ylim(unit='mv'))
 
 # Display the plot
 plt.show()
