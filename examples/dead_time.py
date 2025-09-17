@@ -26,7 +26,7 @@ CAPTURES = 20
 scope = psdk.ps6000a()
 scope.open_unit()
 
-# Setup siggen
+# Set siggen to 20MHz & 3Vpkpk output square wave
 scope.set_siggen(frequency=20E6, pk2pk=3, wave_type=psdk.WAVEFORM.SQUARE)
 
 # Enable channel A with +/- 2V range (4V total dynamic range)
@@ -36,12 +36,12 @@ scope.set_channel(channel=psdk.CHANNEL.A, range=psdk.RANGE.V2)
 scope.set_simple_trigger(channel=psdk.CHANNEL.A, threshold_mv=0)
 
 # Helper function to set timebase of scope via requested sample rate
-TIMEBASE = scope.sample_rate_to_timebase(50, psdk.SAMPLE_RATE.MSPS)
+TIMEBASE = scope.sample_rate_to_timebase(sample_rate=50, unit=psdk.SAMPLE_RATE.MSPS)
 
 # Print to console the actual sample rate selected by the device driver
 print(scope.get_actual_sample_rate())
 
-# Perform rapid block capture via help function (inc. buffer setup, time axix mV conversion etc.)
+# Perform rapid block capture via help function (inc. buffer setup, time axis mV conversion etc.)
 buffers, time_axis = scope.run_simple_rapid_block_capture(
     timebase=TIMEBASE,
     samples=SAMPLES,
