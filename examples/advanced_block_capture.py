@@ -66,7 +66,7 @@ time_axis = scope.get_time_axis(TIMEBASE, SAMPLES)
 # Release the device from the driver
 scope.close_unit()
 
-# Use matplotlib to plot the data
+# Use matplotlib to setup the graph and plot the data
 plt.plot(time_axis, channels_buffer[psdk.CHANNEL.A])
 plt.title('Example plot for Channel A')
 plt.xlabel('Time (ns)')
