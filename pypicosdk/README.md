@@ -24,6 +24,56 @@ def open_unit(serial, resolution):
 ```
 
 ### Package Layout
+#### pypicosdk Folder Structure
+##### General files:
+- \_\_init__.py
+    - Script called when importing pypicosdk for the first time.
+    - Imports everything inside pypicosdk.py.
+- pypicosdk.py
+    - The main source of all information.
+    - Pulls and exposes the following:
+        - Main scope classes i.e. psospa() and ps6000a().
+        - Warnings and Exceptions from common.
+        - Version.
+        - Everything else is pulled in for the benifit of mkdocs.
+- common.py
+    - Contains the common functions and exceptions.
+- constants.py
+    - Contains all enum CONSTANTS used throughout the package.
+    - Contains typing Literals and mappings for string typing hints.
+- error_list.py
+    - Contains a dictionary of all status errors in the PicoSDK to check against in the
+        `base.py:_error_handler()`.
+- version.py
+    - Contains the version information.
+
+##### PicoScope class files:
+- ps####.py
+    - Contains the main PicoScope class which include:
+        - Scope specific functions i.e. LED's for psospa devices.
+        - Overrides for certain functions i.e. different methods for `open_unit()` but still
+            want to use the same function name.
+- base.py
+    - Contains mutable data between all scopes i.e.:
+        - Scope handle
+        - Scope DLL location and ctypes function
+        - Channel information
+        - ADC min and max
+    - Contains shared functions across all scopes i.e. 'open_unit()'
+- shared/ps#####_ps######.py
+    - The shared folder contains functions shared between 2-3 scopes, but not all.
+        - i.e. The 4000a 6000a share functions, but psospa does not so there is a class specifically
+            for 6000a and 4000a devices called ps6000a_ps4000a.py which is inherited into the main
+            scope class.
+- shared/\_\_init__.py
+    - Not currently used, but allows mkdocs and python to initialise the folder.
+- shared/\_protocol.py
+    - This file contains an inheritable class to help pylint/flake8 see variables that exist in
+        different inherited classes i.e. get_max_adc_values() won't be in the class base, but it
+        still may use it raising a flake8/pylint error. Having that function in the protocol class
+        allows the linters to be happy the variable 'exists'.
+
+#### Inheritance
 
 pyPicoSDK has a shared inheritence class layout. Each driver class will follow this format:
 
