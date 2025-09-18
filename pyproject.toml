@@ -13,7 +13,7 @@ keywords = [
     "electronic"
 ]
 description = "Modern Python wrapper for PicoSDK"
-readme = "README_pypi.md"
+readme = "pypi.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [
