@@ -8,6 +8,7 @@ import numpy.ctypeslib as npc
 
 from .error_list import ERROR_STRING
 from .constants import *
+from . import constants as cst
 from .constants import (
     CHANNEL,
     RANGE,
@@ -455,7 +456,13 @@ class PicoScopeBase:
         )
         return max_value.value
 
-    def get_time_axis(self, timebase:int, samples:int, pre_trig_percent:int=None) -> list:
+    def get_time_axis(
+            self,
+            timebase: int,
+            samples: int,
+            pre_trig_percent: int = None,
+            unit: cst.TimeUnit_L = 'ns',
+            ) -> list:
         """
         Return an array of time values based on the timebase and number
         of samples
@@ -463,13 +470,16 @@ class PicoScopeBase:
         Args:
             timebase (int): PicoScope timebase
             samples (int): Number of samples captured
-            pre_trig_percent: Percent to offset the 0 point by. If None, default is 0.
+            pre_trig_percent (int): Percent to offset the 0 point by. If None, default is 0.
+            unit (str): Unit of seconds the time axis is returned in.
+                Default is 'ns' (nanoseconds).
 
         Returns:
             list: List of time values in nano-seconds
         """
-        interval = self.get_timebase(timebase, samples)['Interval(ns)']
-        time_axis = np.round(np.arange(samples) * interval, 4)
+        scalar = cst.TimeUnitStd_M['ns'] / cst.TimeUnitStd_M[unit]
+        interval = self.get_timebase(timebase, samples)['Interval(ns)'] / scalar
+        time_axis = np.arange(samples) * interval
         if pre_trig_percent is None:
             return time_axis
         else:
