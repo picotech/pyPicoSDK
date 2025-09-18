@@ -11,6 +11,26 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(parent_dir)
 from version import docs_version, package_version
 
+IMG_STR = '''<p align="center">
+  <img src="https://raw.githubusercontent.com/JamesPicoTech/pyPicoSDK/refs/heads/main/docs/docs/img/pypicosdk-light-300x300.png" alt="Fancy logo">
+</p>
+
+'''
+
+def build_pypi_doc():
+    "Create a pypi readme"
+    string = '<!-- start here -->'
+    string_len = len(string)
+    with open('README.md') as f:
+        readme = f.read()
+
+    index = readme.find(string) + string_len + 1
+
+    new_readme = IMG_STR + readme[index:]
+
+    with open('pypi.md', 'w') as f:
+        f.write(new_readme)
+
 
 def update_lines(file_path, start_with, replacement_string):
     with open(file_path, 'r') as f:
@@ -36,3 +56,4 @@ def update_versions():
 
 if __name__ == "__main__":
     update_versions()
+    build_pypi_doc()
