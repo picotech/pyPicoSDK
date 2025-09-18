@@ -23,6 +23,10 @@ class BufferTooSmall(UserWarning):
     "User warning for 407 status from streaming"
 
 
+class ProbeScaleWarning(UserWarning):
+    "User warning for probe scaling"
+
+
 # General Functions
 def _check_path(location:str, folders:list) -> str:
     """Checks a list of folders in a location i.e. ['Pico Technology']
@@ -71,7 +75,7 @@ def _get_lib_path() -> str:
         raise PicoSDKException("macOS is not yet tested and supported")
     else:
         raise PicoSDKException("Unsupported OS")
-    
+
 def _struct_to_dict(struct_instance: ctypes.Structure, format=False) -> dict:
     """Takes a ctypes struct and returns the values as a python dict
 

@@ -1,6 +1,8 @@
 import ctypes
+from warnings import warn
 import numpy as np
 
+from .. import constants as cst
 from ..constants import *
 from ..constants import (
     CHANNEL,
@@ -15,6 +17,7 @@ from ..constants import (
     ProbeScale_M,
     RANGE_LIST,
 )
+from .. import common as cmn
 from ..common import (
     PicoSDKException,
     _struct_to_dict,
@@ -702,7 +705,7 @@ class shared_ps6000a_psospa(_ProtocolBase):
         coupling: COUPLING = COUPLING.DC,
         offset: float = 0.0,
         bandwidth: BANDWIDTH_CH = BANDWIDTH_CH.FULL,
-        probe_scale: ProbeScale_L = 'x1',
+        probe_scale: float = 1.0,
     ) -> None:
         """
         Enable/disable a channel and specify certain variables i.e. range, coupling, offset, etc.
@@ -717,26 +720,20 @@ class shared_ps6000a_psospa(_ProtocolBase):
                 coupling (COUPLING, optional): AC/DC/DC 50 Ohm coupling of selected channel.
                 offset (int, optional): Analog offset in volts (V) of selected channel.
                 bandwidth (BANDWIDTH_CH, optional): Bandwidth of channel (selected models).
-                probe_scale (str, optional): Probe attenuation factor such as 'x1' or 'x10'.
+                probe_scale (float, optional): Probe attenuation factor e.g. 10 for x10 probe.
+                    Default value of 1.0 (x1).
         """
         # Check if typing Literals
         channel = _get_literal(channel, channel_map)
         range = _get_literal(range, range_map)
-        probe_scale = _get_literal(probe_scale, ProbeScale_M, type_fail=True)
-
-        # Adjust range based on probe scaling
-        if probe_scale != 1:
-            range_mv = RANGE_LIST[range] // probe_scale
-            if range_mv in RANGE_LIST:
-                range = RANGE_LIST.index(range_mv)
-            else:
-                raise PicoSDKException(
-                    f'Voltage {range_mv * probe_scale} mV is not supported with '
-                    f'x{probe_scale} probe scaling.'
-                )
 
         # Add probe scaling
         self.probe_scale[channel] = probe_scale
+        if probe_scale != 1.0:
+            warn(
+                f'Ensure selected channel range of {cst.range_literal.__args__[range]} ' +
+                f'accounts for attenuation of x{probe_scale} at scope input',
+                cmn.ProbeScaleWarning)
 
         # Update ylims
         self._set_ylim(range)
