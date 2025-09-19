@@ -466,7 +466,8 @@ class PicoScopeBase:
             samples: int,
             pre_trig_percent: int = None,
             unit: cst.TimeUnit_L = 'ns',
-            ) -> list:
+            ratio: int = 0
+            ) -> np.ndarray:
         """
         Return an array of time values based on the timebase and number
         of samples
@@ -477,12 +478,15 @@ class PicoScopeBase:
             pre_trig_percent (int): Percent to offset the 0 point by. If None, default is 0.
             unit (str): Unit of seconds the time axis is returned in.
                 Default is 'ns' (nanoseconds).
+            ratio (int): If using a downsampling ratio, this will scale the time interval
+                to reflect the reduced samples.
 
         Returns:
-            list: List of time values in nano-seconds
+            np.ndarray: Array of time values in nano-seconds
         """
+        ratio = max(1, ratio)
         scalar = cst.TimeUnitStd_M['ns'] / cst.TimeUnitStd_M[unit]
-        interval = self.get_timebase(timebase, samples)['Interval(ns)'] / scalar
+        interval = self.get_timebase(timebase, samples)['Interval(ns)'] * ratio / scalar
         time_axis = np.arange(samples) * interval
         if pre_trig_percent is None:
             return time_axis
