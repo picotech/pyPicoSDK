@@ -22,7 +22,7 @@ SAMPLES = 1000
 
 # Create a local variable to hold number of captures for use in
 # run_simple_rapid_block_capture helper function
-CAPTURES = 20
+CAPTURES = 200
 
 # Create "scope" class and initialize PicoScope
 scope = psdk.ps6000a()
@@ -34,11 +34,11 @@ scope.set_siggen(frequency=20E6, pk2pk=3, wave_type=psdk.WAVEFORM.SQUARE)
 # Enable channel A with +/- 2V range (4V total dynamic range)
 scope.set_channel(channel=psdk.CHANNEL.A, range=psdk.RANGE.V2)
 
-# Configure a simple rising edge trigger for channel A
-scope.set_simple_trigger(channel=psdk.CHANNEL.A, threshold_mv=0)
+# Configure a simple rising edge trigger for channel A, wait indefinitely (do not auto trigger)
+scope.set_simple_trigger(channel=psdk.CHANNEL.A, threshold_mv=0, auto_trigger=0)
 
 # Helper function to set timebase of scope via requested sample rate
-TIMEBASE = scope.sample_rate_to_timebase(sample_rate=50, unit=psdk.SAMPLE_RATE.MSPS)
+TIMEBASE = scope.sample_rate_to_timebase(sample_rate=50, unit=psdk.SAMPLE_RATE.GSPS)
 
 # Print to console the actual sample rate selected by the device driver
 print(scope.get_actual_sample_rate())

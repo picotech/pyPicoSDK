@@ -33,8 +33,8 @@ scope.set_siggen(frequency=1_000_000, pk2pk=1.8, wave_type=psdk.WAVEFORM.SINE)
 # Enable channel A with +/- 1V range (2V total dynamic range)
 scope.set_channel(channel=psdk.CHANNEL.A, range=psdk.RANGE.V1)
 
-# Configure a simple rising edge trigger for channel A
-scope.set_simple_trigger(channel=psdk.CHANNEL.A, threshold_mv=0)
+# Configure a simple rising edge trigger for channel A, wait indefinitely (do not auto trigger)
+scope.set_simple_trigger(channel=psdk.CHANNEL.A, threshold_mv=0, auto_trigger=0)
 
 # Helper function to set timebase of scope via requested sample rate
 TIMEBASE = scope.sample_rate_to_timebase(sample_rate=50, unit=psdk.SAMPLE_RATE.MSPS)
