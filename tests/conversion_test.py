@@ -1,4 +1,6 @@
 """
+Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+
 pytest file for checking the mv/adc conversions
 """
 from pypicosdk import ps6000a, RANGE

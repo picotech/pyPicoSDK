@@ -1,3 +1,4 @@
+<!-- Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms. -->
 # Advanced Examples
 The code examples in this repository are arranged into modular functions and classes and include
 only minimal inline comments to preserve readability for large examples. They are intended to

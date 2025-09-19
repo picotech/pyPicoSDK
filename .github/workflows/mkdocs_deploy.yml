@@ -1,3 +1,5 @@
+# Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+
 # This is a basic workflow that is manually triggered
 
 name: mkdocs deploy

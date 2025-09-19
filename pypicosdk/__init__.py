@@ -1,4 +1,8 @@
-"""Public package interface for :mod:`pypicosdk`."""
+"""
+Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+
+Public package interface for :mod:`pypicosdk`.
+"""
 
 # Import the implementation module under an internal name so we can
 # reference its ``__all__`` attribute for static type checkers like Pylance.

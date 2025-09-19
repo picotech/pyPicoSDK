@@ -1,3 +1,5 @@
+"""Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms."""
+
 from pypicosdk import ps6000a, OverrangeWarning
 import warnings
 

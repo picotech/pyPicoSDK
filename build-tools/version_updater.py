@@ -1,4 +1,6 @@
 """
+Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+
 This scipt copies the version numbers to specific files.
     The master file is located in ./version.py. 
     Update there then run version_updater.py to updated files
@@ -11,7 +13,8 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(parent_dir)
 from version import docs_version, package_version
 
-IMG_STR = '''<p align="center">
+IMG_STR = '''<!-- Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms. -->
+<p align="center">
   <img src="https://raw.githubusercontent.com/JamesPicoTech/pyPicoSDK/refs/heads/main/docs/docs/img/pypicosdk-light-300x300.png" alt="Fancy logo">
 </p>
 

@@ -1,3 +1,4 @@
+<!-- Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms. -->
 # Introduction
 
 Each picoSDK class is built from a common class (PicoScopeBase) and a specific sub-class (ps####a).

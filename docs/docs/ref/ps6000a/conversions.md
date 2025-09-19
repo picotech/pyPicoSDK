@@ -1,3 +1,4 @@
+<!-- Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms. -->
 # Built-in Conversions
 These functions are general functions to convert data to another format.
 This is particularly useful for converting ADC data to mV or calculating 

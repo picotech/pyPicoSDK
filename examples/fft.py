@@ -1,4 +1,6 @@
 """
+Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+
 FFT example for a PicoScope 6000E.
 
 Description:

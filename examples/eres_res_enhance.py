@@ -1,4 +1,6 @@
 """
+Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+
 This examples demonstrates how to use a moving average filter (implemented through NumPy.convolve)
 as a way to enhance the vertical resolution of a channel.
 This example uses a square wave. Matplotlib will display the output showing a blue (original) and

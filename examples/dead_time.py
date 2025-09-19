@@ -1,4 +1,6 @@
 """
+Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+
 This example displays the dead time between consecutive rapid block captures using a
 PicoScope. The script configures a signal generator to output a square wave, sets up a
 single-channel capture with a trigger, and collects multiple captures in rapid succession.
