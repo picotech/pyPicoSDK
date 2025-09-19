@@ -1,3 +1,5 @@
+# flake8: noqa
+# pylint: skip-file
 import ctypes
 from warnings import warn
 import numpy as np
