@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+# Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
 
 # This is a basic workflow that is manually triggered
 
@@ -13,7 +13,7 @@ on:
       - v*
 
 permissions:
-  contents: write  
+  contents: write
 
 jobs:
   mkdocs-deploy:
@@ -43,7 +43,7 @@ jobs:
         mkdocs gh-deploy --force
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
 
-    
-    
+
+
+

@@ -1,5 +1,5 @@
 """
-Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
 
 Simple block capture example for a PicoScope 6000E device
 
@@ -21,7 +21,7 @@ import pypicosdk as psdk
 SAMPLES = 5_000
 
 # Create "scope" class and initialize PicoScope
-scope = psdk.ps6000a()
+scope = psdk.psospa()
 scope.open_unit()
 
 # Print the returned serial number of the initialized instrument
@@ -33,8 +33,8 @@ scope.set_siggen(frequency=1_000_000, pk2pk=1.8, wave_type=psdk.WAVEFORM.SINE)
 # Enable channel A with +/- 1V range (2V total dynamic range)
 scope.set_channel(channel=psdk.CHANNEL.A, range=psdk.RANGE.V1)
 
-# Configure a simple rising edge trigger for channel A
-scope.set_simple_trigger(channel=psdk.CHANNEL.A, threshold_mv=0)
+# Configure a simple rising edge trigger for channel A - Auto-trigger set to wait indefinitely
+scope.set_simple_trigger(channel=psdk.CHANNEL.A, threshold_mv=0, auto_trigger=0)
 
 # Helper function to set timebase of scope via requested sample rate
 TIMEBASE = scope.sample_rate_to_timebase(sample_rate=50, unit=psdk.SAMPLE_RATE.MSPS)
@@ -48,6 +48,8 @@ print(scope.get_actual_sample_rate())
 
 # Perform simple block capture via help function (inc. buffer setup, time axis, mV conversion etc.)
 channel_buffer, time_axis = scope.run_simple_block_capture(TIMEBASE, SAMPLES)
+
+# time_base, unit = scope.get_time_axis(...)
 
 # Release the device from the driver
 scope.close_unit()

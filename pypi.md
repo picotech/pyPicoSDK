@@ -1,11 +1,11 @@
-<!-- Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms. -->
+<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
 <p align="center">
   <img src="https://raw.githubusercontent.com/JamesPicoTech/pyPicoSDK/refs/heads/main/docs/docs/img/pypicosdk-light-300x300.png" alt="Fancy logo">
 </p>
 
 # Welcome to pyPicoSDK Documentation
 ## Installation
-### Prerequisites 
+### Prerequisites
 1. Go to PicoTech downloads [picotech.com/downloads](https://www.picotech.com/downloads)
 2. Find your PicoScope in the list and click through
 3. Download and install PicoSDK for your operating system

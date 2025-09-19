@@ -1,10 +1,10 @@
 """
-Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
 
-This file copies duplicate .md files in docs from one scope to multiple scopes, 
+This file copies duplicate .md files in docs from one scope to multiple scopes,
     replacing the mkdocstrings reference to the new scope.
 
-i.e. copy_dir is psospa, paste_dir_list includes ps6000a, 
+i.e. copy_dir is psospa, paste_dir_list includes ps6000a,
     ref/psospa/run.md will be copied to ref/ps6000a/run.md automatically replacing
     :::pypicosdk.pypicosdk.psospa to :::pypicosdk.pypicosdk.ps6000a
 """
@@ -26,7 +26,7 @@ paste_dir_list = [
 file_list = [
     # 'init.md', Do not include init.md
     'buffers.md',
-    'captures.md', 
+    'captures.md',
     'channel.md',
     'conversions.md',
     'digital.md',
@@ -44,7 +44,7 @@ all_files = os.listdir(os.path.join(ref_dir, copy_dir))
 missing_files = [f for f in all_files if f not in file_list]
 print('Files not included in copy:', missing_files)
 
-# Copy each file to each paste_dir 
+# Copy each file to each paste_dir
 for paste_dir_dict in paste_dir_list:
     paste_dir = paste_dir_dict['name']
     exclude_list = paste_dir_dict['exclude']

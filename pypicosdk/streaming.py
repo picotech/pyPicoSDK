@@ -1,5 +1,5 @@
 """
-Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
 
 This is a streaming scope class. Due to how streaming works, it needs its own
 class and config independant to the main PicoScope drivers.

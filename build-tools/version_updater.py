@@ -1,8 +1,8 @@
 """
-Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
 
 This scipt copies the version numbers to specific files.
-    The master file is located in ./version.py. 
+    The master file is located in ./version.py.
     Update there then run version_updater.py to updated files
     below.
 """
@@ -13,7 +13,7 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(parent_dir)
 from version import docs_version, package_version
 
-IMG_STR = '''<!-- Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms. -->
+IMG_STR = '''<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
 <p align="center">
   <img src="https://raw.githubusercontent.com/JamesPicoTech/pyPicoSDK/refs/heads/main/docs/docs/img/pypicosdk-light-300x300.png" alt="Fancy logo">
 </p>
@@ -38,7 +38,7 @@ def build_pypi_doc():
 def update_lines(file_path, start_with, replacement_string):
     with open(file_path, 'r') as f:
         lines = f.readlines()
-    
+
     with open(file_path, "w") as f:
         for line in lines:
             if line.strip().startswith(start_with):
