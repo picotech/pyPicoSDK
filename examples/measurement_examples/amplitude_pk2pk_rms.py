@@ -1,4 +1,7 @@
-"""Simple amplitude measurement using a block capture.
+"""
+Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+
+Simple amplitude measurement using a block capture.
 Uses histogram-based top and base functions to provide a robust amplitude
 measurement. The script can also calculate RMS amplitude.
 """

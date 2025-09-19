@@ -1,3 +1,4 @@
+<!-- Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms. -->
 # Roadmap for pyPicoSDK
 ## WIP
 - 6000 (A) API Signal Generator

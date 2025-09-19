@@ -1,3 +1,5 @@
+"""Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms."""
+
 ERROR_STRING = {
 	0: "Pico ok",
 	1: "Pico max units opened",

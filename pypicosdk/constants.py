@@ -1,3 +1,5 @@
+"""Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms."""
+
 from enum import IntEnum
 import ctypes
 from typing import Literal

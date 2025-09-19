@@ -1,4 +1,6 @@
 """
+Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+
 This script is an example of the kind of measurements you can do in python.
 
 These measurements demonstrate one of many methods of measuring the ADC data from your PicoScope.

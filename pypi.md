@@ -1,3 +1,4 @@
+<!-- Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms. -->
 <p align="center">
   <img src="https://raw.githubusercontent.com/JamesPicoTech/pyPicoSDK/refs/heads/main/docs/docs/img/pypicosdk-light-300x300.png" alt="Fancy logo">
 </p>
@@ -16,6 +17,20 @@
 1. Install github repository to folder `git clone https://github.com/JamesPicoTech/pyPicoSDK.git`
 2. In the root directory (where setup.py is) run `pip install .`
 3. In your `main.py` add `import pypicosdk` or `import pypicosdk as psdk`
+
+### Python requirements
+When installing pyPicoSDK, the following dependency is automatically installed:
+- numpy
+
+To run the provided examples, the following additional Python packages are required:
+- matplotlib
+- scipy
+- numpy (installed automatically with pyPicoSDK)
+
+To install the example depedancies use one of the following commands:
+`pip install matplotlib scipy numpy`
+or
+`pip install -r requirements.txt`
 
 ## Quickstart
 To test functionality of this library, copy and run the following python script:

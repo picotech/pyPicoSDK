@@ -1,3 +1,4 @@
+<!-- Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms. -->
 # Measurement examples
 
 These examples demonstrate one of many methods of measuring the ADC data from your PicoScope.

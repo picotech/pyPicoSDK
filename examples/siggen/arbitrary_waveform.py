@@ -1,4 +1,6 @@
 """
+Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+
 This example uses the Arbitrary Waveform Generater to generate a custom waveform.
 The waveform can be generated via numpy (as below)
 or can be taken from a csv and converted into a numpy array using np.array(csv)
@@ -11,9 +13,9 @@ Notes:
 - The maximum ADC limits of the AWG are -32767 and +32767 (signed int 16)
 """
 
-import pypicosdk as psdk
-from matplotlib import pyplot as plt
 import numpy as np
+from matplotlib import pyplot as plt
+import pypicosdk as psdk
 
 # Open PicoScope
 scope = psdk.ps6000a()
@@ -29,9 +31,9 @@ numpy_sine_wave = np.round(np.sin(x) * (32767)).astype(int)
 
 # Create sweeping sine waveform
 scope.set_siggen_awg(
-    frequency=1000, # 1000 Hz
+    frequency=1000,  # 1000 Hz
     pk2pk=0.8,  # 0.8 Vpk2pk
-    buffer=numpy_sine_wave 
+    buffer=numpy_sine_wave
 )
 
 # Get timebase from sample rate
@@ -46,7 +48,7 @@ scope.close_unit()
 # Plot data to pyplot
 plt.plot(time_axis, channel_buffer[psdk.CHANNEL.A])
 # Add labels to pyplot
-plt.xlabel("Time (ns)")     
+plt.xlabel("Time (ns)")
 plt.ylabel("Amplitude (mV)")
 plt.grid(True)
 plt.show()

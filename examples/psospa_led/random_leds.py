@@ -1,4 +1,6 @@
 """
+Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+
 This is an example of using the LED channel identification
 on the PSOSPA devices i.e. 3000E.
 
@@ -20,8 +22,8 @@ led_list = ['A', 'B', 'C', 'D', 'AUX', 'AWG']
 while True:
     random_values = randint(0, 360, size=6)
     scope.set_led_colours(
-        led_list, 
-        randint(0, 360, size=6), 
+        led_list,
+        randint(0, 360, size=6),
         [100]*6,
     )
     time.sleep(1)

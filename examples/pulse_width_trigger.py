@@ -1,4 +1,7 @@
-"""Pulse width trigger example using advanced trigger mode.
+"""
+Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+
+Pulse width trigger example using advanced trigger mode.
 This script demonstrates configuring a pulse width qualifier to trigger when a high pulse
 on Channel A exceeds a user-defined width. The width is specified using
 :class:`pypicosdk.TIME_UNIT` in the same way as sample rates use :class:`pypicosdk.SAMPLE_RATE`.

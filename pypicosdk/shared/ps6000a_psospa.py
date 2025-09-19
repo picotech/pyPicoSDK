@@ -1,3 +1,7 @@
+"""
+Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+"""
+
 import ctypes
 from warnings import warn
 import numpy as np
@@ -714,14 +718,14 @@ class shared_ps6000a_psospa(_ProtocolBase):
         Set channel on/off by adding enabled=True/False
 
         Args:
-                channel (CHANNEL): Channel to setup.
-                range (RANGE): Voltage range of channel.
-                enabled (bool, optional): Enable or disable channel.
-                coupling (COUPLING, optional): AC/DC/DC 50 Ohm coupling of selected channel.
-                offset (int, optional): Analog offset in volts (V) of selected channel.
-                bandwidth (BANDWIDTH_CH, optional): Bandwidth of channel (selected models).
-                probe_scale (float, optional): Probe attenuation factor e.g. 10 for x10 probe.
-                    Default value of 1.0 (x1).
+            channel (CHANNEL): Channel to setup.
+            range (RANGE): Voltage range of channel.
+            enabled (bool, optional): Enable or disable channel.
+            coupling (COUPLING, optional): AC/DC/DC 50 Ohm coupling of selected channel.
+            offset (int, optional): Analog offset in volts (V) of selected channel.
+            bandwidth (BANDWIDTH_CH, optional): Bandwidth of channel (selected models).
+            probe_scale (float, optional): Probe attenuation factor e.g. 10 for x10 probe.
+                Default value of 1.0 (x1).
         """
         # Check if typing Literals
         channel = _get_literal(channel, channel_map)

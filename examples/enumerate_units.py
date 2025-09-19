@@ -1,5 +1,9 @@
-# This example enumerates all PicoScope units (supported by pyPicoSDK), returns the number
-# of units and a list of serial numbers.
+"""
+Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+
+This example enumerates all PicoScope units (supported by pyPicoSDK), returns the number
+of units and a list of serial numbers.
+"""
 
 import pypicosdk as psdk
 
