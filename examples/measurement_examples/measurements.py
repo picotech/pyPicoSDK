@@ -1,5 +1,5 @@
 """
-Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
 
 This script is an example of the kind of measurements you can do in python.
 

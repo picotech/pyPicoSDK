@@ -1,5 +1,5 @@
 """
-Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
 
 This example sets up the PicoScope as a single channel digital multimeter.
 It measures the DC output of the SigGen and prints the average voltage of a single capture.

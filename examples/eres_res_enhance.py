@@ -1,5 +1,5 @@
 """
-Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
 
 This examples demonstrates how to use a moving average filter (implemented through NumPy.convolve)
 as a way to enhance the vertical resolution of a channel.
@@ -25,7 +25,7 @@ from pypicosdk import resolution_enhancement
 SAMPLES = 500
 
 # Create "scope" class and initialize PicoScope
-scope = psdk.ps6000a()
+scope = psdk.psospa()
 scope.open_unit()
 
 # Set siggen to 10MhHz & 3.5Vpkpk output

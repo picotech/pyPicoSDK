@@ -1,5 +1,5 @@
 """
-Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
 
 Pulse width trigger example using advanced trigger mode.
 This script demonstrates configuring a pulse width qualifier to trigger when a high pulse

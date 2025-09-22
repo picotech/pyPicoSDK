@@ -1,5 +1,5 @@
 """
-Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
 
 Simple block capture example for a PicoScope 6000E device
 
@@ -21,7 +21,7 @@ import pypicosdk as psdk
 SAMPLES = 5_000
 
 # Create "scope" class and initialize PicoScope
-scope = psdk.ps6000a()
+scope = psdk.psospa()
 scope.open_unit()
 
 # Print the returned serial number of the initialized instrument
@@ -48,6 +48,8 @@ print(scope.get_actual_sample_rate())
 
 # Perform simple block capture via help function (inc. buffer setup, time axis, mV conversion etc.)
 channel_buffer, time_axis = scope.run_simple_block_capture(TIMEBASE, SAMPLES)
+
+# time_base, unit = scope.get_time_axis(...)
 
 # Release the device from the driver
 scope.close_unit()

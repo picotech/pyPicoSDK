@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+# Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
 site_name: pyPicoSDK
 
 theme:
@@ -6,7 +6,7 @@ theme:
 
 nav:
   - Home: index.md
-  - Reference: 
+  - Reference:
     - Introduction: ref/introduction.md
     - PicoScope 6000E (A) Specific Functions:
       - ref/ps6000a/init.md
@@ -38,7 +38,7 @@ nav:
     - ref/general.md
     - General Constants: ref/constants.md
     - ref/streaming.md
-  - Development: 
+  - Development:
     - Changelog: dev/changelog.md
     - Current Support: dev/current.md
     - Upcoming Roadmap: dev/roadmap.md
@@ -63,6 +63,6 @@ plugins:
           separate_signature: false
           extensions:
           - griffe_inherited_docstrings
-          
+
 extra_css:
 - css/mkdocstrings.css

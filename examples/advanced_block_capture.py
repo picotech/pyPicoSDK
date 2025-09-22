@@ -1,5 +1,5 @@
 """
-Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
 
 Advanced block mode example for a Picoscope 6000E device
 
@@ -25,7 +25,7 @@ import pypicosdk as psdk
 SAMPLES = 100_000
 
 # Create "scope" class and initialize PicoScope
-scope = psdk.ps6000a()
+scope = psdk.psospa()
 scope.open_unit()
 
 # Print the returned serial number of the initialized instrument

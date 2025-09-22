@@ -1,4 +1,4 @@
-# Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+# Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
 
 name: Build Windows Python Package
 
@@ -23,7 +23,7 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: "3.12"
-    
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -48,7 +48,7 @@ jobs:
     - name: Build package
       run: |
         python -m build --wheel
-    
+
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4.6.2
       with:

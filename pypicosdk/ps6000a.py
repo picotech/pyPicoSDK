@@ -1,4 +1,4 @@
-"""Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms."""
+"""Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms."""
 
 import ctypes
 from typing import override
@@ -24,7 +24,7 @@ class ps6000a(PicoScopeBase, shared_ps6000a_psospa, shared_4000a_6000a):
 
         super().open_unit(serial_number, resolution)
         self.min_adc_value, self.max_adc_value =super().get_adc_limits()
-    
+
     def get_channel_combinations(self, timebase: int) -> list[int]:
         """Return valid channel flag combinations for a proposed timebase.
         This wraps ``ps6000aChannelCombinationsStateless`` and requires the
@@ -89,7 +89,7 @@ class ps6000a(PicoScopeBase, shared_ps6000a_psospa, shared_4000a_6000a):
         )
 
         return string.value.decode()
-    
+
     def siggen_clock_manual(self, dac_clock_frequency: float, prescale_ratio: int) -> None:
         """Manually control the signal generator clock.
         Args:
@@ -115,5 +115,5 @@ class ps6000a(PicoScopeBase, shared_ps6000a_psospa, shared_4000a_6000a):
             self.handle,
             filter_state,
         )
-    
+
 __all__ = ['ps6000a']

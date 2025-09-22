@@ -1,5 +1,5 @@
 """
-Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms.
+Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
 """
 
 import ctypes
@@ -139,7 +139,7 @@ class PicoScopeBase:
         )
         self.resolution = resolution
         self.set_all_channels_off()
-    
+
     def close_unit(self) -> None:
         """
         Closes the PicoScope device and releases the hardware handle.

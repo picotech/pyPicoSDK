@@ -1,9 +1,9 @@
-<!-- Copyright (C) 2018-2022 Pico Technology Ltd. See LICENSE file for terms. -->
+<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
 # LED Control
 
 The LED's on the 3000E are controllable via hue, saturation and brightness. To control them these rules need to be met:
 
-- To control each LED `set_led_states([led], 'on')` must be called first per LED. 
+- To control each LED `set_led_states([led], 'on')` must be called first per LED.
 
 Here is an example of the three different methods of changing the LEDs
 ```
