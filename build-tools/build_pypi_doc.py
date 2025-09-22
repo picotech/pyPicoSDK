@@ -11,7 +11,7 @@ with open('README.md') as f:
 
 index = readme.find(string) + string_len + 1
 img_str = '''<p align="center">
-  <img src="https://raw.githubusercontent.com/JamesPicoTech/pyPicoSDK/refs/heads/main/docs/docs/img/pypicosdk-light-300x300.png" alt="Fancy logo">
+  <img src="https://raw.githubusercontent.com/picotech/pyPicoSDK/refs/heads/main/docs/docs/img/pypicosdk-light-300x300.png" alt="Fancy logo">
 </p>
 
 '''

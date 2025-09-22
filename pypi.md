@@ -1,6 +1,6 @@
 <!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
 <p align="center">
-  <img src="https://raw.githubusercontent.com/JamesPicoTech/pyPicoSDK/refs/heads/main/docs/docs/img/pypicosdk-light-300x300.png" alt="Fancy logo">
+  <img src="https://raw.githubusercontent.com/picotech/pyPicoSDK/refs/heads/main/docs/docs/img/pypicosdk-light-300x300.png" alt="Fancy logo">
 </p>
 
 # Welcome to pyPicoSDK Documentation
@@ -14,7 +14,7 @@
 2. In your `main.py` add `import pypicosdk` or `import pypicosdk as psdk`
 
 ### Via GitHub (Inc examples)
-1. Install github repository to folder `git clone https://github.com/JamesPicoTech/pyPicoSDK.git`
+1. Install github repository to folder `git clone https://github.com/picotech/pyPicoSDK.git`
 2. In the root directory (where setup.py is) run `pip install .`
 3. In your `main.py` add `import pypicosdk` or `import pypicosdk as psdk`
 
@@ -46,7 +46,10 @@ scope.close_unit()
 The output should be similar to:
 `JR001/001`
 
-Once tested, try an [example script from github](https://github.com/JamesPicoTech/pyPicoSDK) to get started.
+Once tested, try an [example script from github](https://github.com/picotech/pyPicoSDK/tree/main/examples) to get started.
+
+### Full getting started
+[For our full getting started guide, click here to go to our full knowledge base article.](https://www.picotech.com/library/knowledge-bases/oscilloscopes/pypicosdk-get-started)
 
 ## Compatibility
 Current PicoScope support:
@@ -54,8 +57,8 @@ Current PicoScope support:
 - PicoScope 3000E (psospa drivers)
 
 ## Useful links and references
-- [Documentation & Reference](https://jamespicotech.github.io/pyPicoSDK/)
-- [GitHub Repo (with examples)](https://github.com/JamesPicoTech/pyPicoSDK)
+- [Documentation & Reference](https://picotech.github.io/pyPicoSDK/)
+- [GitHub Repo (with examples)](https://github.com/picotech/pyPicoSDK)
 - [pypi (src repo)](https://pypi.org/project/pypicosdk/)
 - [pypi-nightly (dev repo)](https://pypi.org/project/pypicosdk-nightly/)
 
