@@ -466,7 +466,8 @@ class PicoScopeBase:
             samples: int,
             pre_trig_percent: int = None,
             unit: cst.TimeUnit_L = 'ns',
-            ) -> list:
+            ratio: int = 0
+            ) -> np.ndarray:
         """
         Return an array of time values based on the timebase and number
         of samples
@@ -477,12 +478,15 @@ class PicoScopeBase:
             pre_trig_percent (int): Percent to offset the 0 point by. If None, default is 0.
             unit (str): Unit of seconds the time axis is returned in.
                 Default is 'ns' (nanoseconds).
+            ratio (int): If using a downsampling ratio, this will scale the time interval
+                to reflect the reduced samples.
 
         Returns:
-            list: List of time values in nano-seconds
+            np.ndarray: Array of time values in nano-seconds
         """
+        ratio = max(1, ratio)
         scalar = cst.TimeUnitStd_M['ns'] / cst.TimeUnitStd_M[unit]
-        interval = self.get_timebase(timebase, samples)['Interval(ns)'] / scalar
+        interval = self.get_timebase(timebase, samples)['Interval(ns)'] * ratio / scalar
         time_axis = np.arange(samples) * interval
         if pre_trig_percent is None:
             return time_axis
@@ -1662,12 +1666,13 @@ class PicoScopeBase:
         samples: int,
         segment: int = 0,
         start_index: int = 0,
-        datatype: DATA_TYPE = DATA_TYPE.INT16_T,
-        output_unit: str | output_unit_l = 'mv',
+        datatype: cst.DATA_TYPE = cst.DATA_TYPE.INT16_T,
+        output_unit: str | cst.output_unit_l = 'mv',
+        time_unit: str | cst.TimeUnit_L = 'ns',
         ratio: int = 0,
-        ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
+        ratio_mode: cst.RATIO_MODE = cst.RATIO_MODE.RAW,
         pre_trig_percent: int = 50,
-    ) -> tuple[dict, np.ndarray]:
+    ) -> tuple[dict[int, np.ndarray], np.ndarray]:
         """Perform a complete single block capture.
 
         Args:
@@ -1677,13 +1682,16 @@ class PicoScopeBase:
             start_index: Starting index in the buffer.
             datatype: Data type to use for the capture buffer.
             output_unit (str, optional): Output unit of data, can be ['adc', 'mv', 'v']
+                Default is 'mv'.
+            time_unit (str, optional): Output unit of the time_axis.
+                Default is 'ns'.
             ratio: Downsampling ratio.
             ratio_mode: Downsampling mode.
             pre_trig_percent: Percentage of samples to capture before the trigger.
 
         Returns:
-            tuple[dict, list]: Dictionary of channel buffers (in mV) and the time
-            axis in nano-seconds (numpy array).
+            tuple[dict[int,np.ndarray],np.ndarray]: Dictionary of channel buffers and the
+            time axis (numpy array).
 
         Examples:
             >>> scope.set_channel(CHANNEL.A, RANGE.V1)
@@ -1691,17 +1699,9 @@ class PicoScopeBase:
             >>> buffers = scope.run_simple_block_capture(timebase=3, samples=1000)
         """
 
-        # Create data buffers. If Ratio Mode is TRIGGER, create a trigger buffer
-        if ratio_mode == RATIO_MODE.TRIGGER:
-            channels_buffer = self.set_data_buffer_for_enabled_channels(
-                samples, segment, datatype, RATIO_MODE.RAW)
-            trigger_buffer = self.set_data_buffer_for_enabled_channels(
-                samples, segment, datatype, ratio_mode, clear_buffer=False)
-            ratio_mode = RATIO_MODE.RAW
-        else:
-            channels_buffer = self.set_data_buffer_for_enabled_channels(
-                samples, segment, datatype, ratio_mode)
-            trigger_buffer = None
+        # Create data buffers
+        channel_buffer = \
+            self.set_data_buffer_for_enabled_channels(samples, segment, datatype, ratio_mode)
 
         # Start block capture
         self.run_block_capture(timebase, samples, pre_trig_percent, segment)
@@ -1709,20 +1709,20 @@ class PicoScopeBase:
         # Get values from PicoScope (returning actual samples for time_axis)
         actual_samples = self.get_values(samples, start_index, segment, ratio, ratio_mode)
 
-        # Get trigger buffer if applicable
-        if trigger_buffer is not None:
-            self.get_values(samples, 0, segment, ratio, RATIO_MODE.TRIGGER)
+        # Reduce channels buffer by actual samples
+        for channel in channel_buffer:
+            channel_buffer[channel] = channel_buffer[channel][:actual_samples]
 
         # Convert from ADC to mV or V values
-        if output_unit.lower() == 'mv':
-            channels_buffer = self.adc_to_mv(channels_buffer)
-        if output_unit.lower() == 'v':
-            channels_buffer = self.adc_to_volts(channels_buffer)
+        if output_unit != 'adc':
+            channel_buffer = self._adc_to_(channel_buffer, unit=output_unit)
 
         # Generate the time axis based on actual samples and timebase
-        time_axis = self.get_time_axis(timebase, actual_samples, pre_trig_percent=pre_trig_percent)
+        time_axis = self.get_time_axis(
+            timebase, actual_samples, pre_trig_percent=pre_trig_percent,
+            ratio=ratio, unit=time_unit)
 
-        return channels_buffer, time_axis
+        return channel_buffer, time_axis
 
     def run_simple_rapid_block_capture(
         self,
@@ -1730,12 +1730,13 @@ class PicoScopeBase:
         samples: int,
         captures: int,
         start_index: int = 0,
-        datatype: DATA_TYPE = DATA_TYPE.INT16_T,
-        conv_to_mv: bool = True,
+        datatype: cst.DATA_TYPE = cst.DATA_TYPE.INT16_T,
+        output_unit: str | cst.output_unit_l = 'mv',
+        time_unit: str | cst.TimeUnit_L = 'ns',
         ratio: int = 0,
-        ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
+        ratio_mode: cst.RATIO_MODE = cst.RATIO_MODE.RAW,
         pre_trig_percent: int = 50,
-    ) -> tuple[dict, np.ndarray]:
+    ) -> tuple[dict[int, np.ndarray], np.ndarray]:
         """Run a rapid block capture with X amount of captures/frames/waveforms
 
         Args:
@@ -1744,15 +1745,17 @@ class PicoScopeBase:
             captures: Number of waveforms to capture.
             start_index: Starting index in buffer.
             datatype: Data type to use for the capture buffer.
-            conv_to_mv: If True, function will return a float mV array.
-                If False, function will return a ADC array specified by datatype arg.
+            output_unit (str, optional): Output unit of data, can be ['adc', 'mv', 'v']
+                Default is 'mv'.
+            time_unit (str, optional): Output unit of the time_axis.
+                Default is 'ns'.
             ratio: Downsampling ratio.
             ratio_mode: Downsampling mode.
             pre_trig_percent: Percentage of samples to capture before the trigger.
 
         Returns:
-            tuple[dict, np.ndarray]: Dictionary of channel buffers (in mV) and the time
-            axis in nano-seconds (numpy array).
+            tuple[dict,np.ndarray]: Dictionary of channel buffers and the time
+                axis (numpy array).
         """
 
         # Segment set to 0
@@ -1762,34 +1765,32 @@ class PicoScopeBase:
         self.memory_segments(captures)
         self.set_no_of_captures(captures)
 
-        # Build buffers for data and trigger (if applicable)
-        if ratio_mode == RATIO_MODE.TRIGGER:
-            channels_buffer = self.set_data_buffer_for_enabled_channels(samples, datatype=datatype, ratio_mode=RATIO_MODE.RAW, captures=captures)
-            trigger_buffer = self.set_data_buffer_for_enabled_channels(samples, datatype=datatype, ratio_mode=ratio_mode, clear_buffer=False)
-            ratio_mode = RATIO_MODE.RAW
-        else:
-            channels_buffer = self.set_data_buffer_for_enabled_channels(samples, datatype=datatype, ratio_mode=ratio_mode, captures=captures)
-            trigger_buffer = None
+        # Build buffers for data
+        channel_buffer = self.set_data_buffer_for_enabled_channels(
+            samples, datatype=datatype, ratio_mode=ratio_mode, captures=captures)
 
         # Run block capture
         self.run_block_capture(timebase, samples, pre_trig_percent)
 
         # Return values
-        actual_samples, overflow = self.get_values_bulk(start_index, samples, segment, captures - 1, ratio, ratio_mode)
+        actual_samples, _ = self.get_values_bulk(
+            start_index, samples, segment, captures - 1, ratio, ratio_mode)
 
-        # Get trigger values (if applicable)
-        if trigger_buffer is not None:
-            self.get_values(samples, 0, 0, ratio, RATIO_MODE.TRIGGER)
+        # Reduce samples based on actual samples
+        for channel, array in channel_buffer.items():
+            channel_buffer[channel] = array[:, :actual_samples]
 
         # Convert data to mV
-        if conv_to_mv:
-            channels_buffer = self.adc_to_mv(channels_buffer)
+        if output_unit != 'adc':
+            channel_buffer = self._adc_to_(channel_buffer, unit=output_unit)
 
         # Get time axis
-        time_axis = self.get_time_axis(timebase, actual_samples, pre_trig_percent=pre_trig_percent)
+        time_axis = self.get_time_axis(
+            timebase, actual_samples, pre_trig_percent=pre_trig_percent,
+            ratio=ratio, unit=time_unit)
 
         # Return data
-        return channels_buffer, time_axis
+        return channel_buffer, time_axis
 
     def run_block_capture(self, timebase, samples, pre_trig_percent=50, segment=0) -> int:
         """
