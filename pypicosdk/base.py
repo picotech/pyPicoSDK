@@ -495,7 +495,7 @@ class PicoScopeBase:
 
     def realign_downsampled_data(
             self,
-            buffers: dict[int, np.ndarray],
+            downsampled_buffers: dict[int, np.ndarray],
             total_raw_samples: int,
             returned_samples: int,
             ratio: int,
@@ -515,11 +515,13 @@ class PicoScopeBase:
             total_raw_samples: Length of the raw-sample grid to expand onto.
             returned_samples: Number of downsampled samples returned by the driver.
             ratio: Downsample ratio used for the request.
-            ratio_mode: Downsample mode used for the request (``RATIO_MODE.DECIMATE`` or ``RATIO_MODE.AVERAGE``).
+            ratio_mode: Downsample mode used for the request 
+            (``RATIO_MODE.DECIMATE`` or ``RATIO_MODE.AVERAGE``).
             fill_value: Value used for gaps. Defaults to ``np.nan``.
 
         Returns:
-            dict[int, np.ndarray]: Mapping from CHANNEL to expanded array of length ``total_raw_samples``.
+            dict[int, np.ndarray]: Mapping from CHANNEL to expanded array 
+            of length ``total_raw_samples``.
 
         Raises:
             ValueError: If ``ratio_mode`` is not DECIMATE or AVERAGE.
@@ -537,7 +539,7 @@ class PicoScopeBase:
         indices = (np.arange(returned_samples) * max(1, ratio)) + offset
         indices = indices[indices < total_raw_samples]
 
-        for ch, data in buffers.items():
+        for ch, data in downsampled_buffers.items():
             out = np.full(total_raw_samples, fill_value, dtype=float)
             n = min(len(indices), len(data))
             out[indices[:n]] = data[:n]
