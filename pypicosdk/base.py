@@ -493,6 +493,57 @@ class PicoScopeBase:
             offset = int(time_axis.max() * (pre_trig_percent / 100))
             return time_axis - offset
 
+    def realign_downsampled_data(
+            self,
+            buffers: dict[int, np.ndarray],
+            total_raw_samples: int,
+            returned_samples: int,
+            ratio: int,
+            ratio_mode: cst.RATIO_MODE,
+            fill_value: float = np.nan,
+        ) -> dict[int, np.ndarray]:
+        """
+        Expand downsampled channel buffers onto the raw-sample time grid by inserting NaNs
+        in positions where downsampled data has no corresponding raw sample.
+
+        Supported modes:
+            - DECIMATE: places each returned sample at the FIRST index of its ratio block.
+            - AVERAGE:  places each returned sample at the MIDDLE index of its ratio block.
+
+        Args:
+            buffers: Mapping from CHANNEL to its 1D downsampled data array (ADC or converted).
+            total_raw_samples: Length of the raw-sample grid to expand onto.
+            returned_samples: Number of downsampled samples returned by the driver.
+            ratio: Downsample ratio used for the request.
+            ratio_mode: Downsample mode used for the request (``RATIO_MODE.DECIMATE`` or ``RATIO_MODE.AVERAGE``).
+            fill_value: Value used for gaps. Defaults to ``np.nan``.
+
+        Returns:
+            dict[int, np.ndarray]: Mapping from CHANNEL to expanded array of length ``total_raw_samples``.
+
+        Raises:
+            ValueError: If ``ratio_mode`` is not DECIMATE or AVERAGE.
+        """
+
+        expanded: dict[int, np.ndarray] = {}
+
+        if ratio_mode == cst.RATIO_MODE.DECIMATE:
+            offset = 0
+        elif ratio_mode == cst.RATIO_MODE.AVERAGE:
+            offset = ratio // 2
+        else:
+            raise ValueError("realign_downsampled_data supports only DECIMATE and AVERAGE modes")
+
+        indices = (np.arange(returned_samples) * max(1, ratio)) + offset
+        indices = indices[indices < total_raw_samples]
+
+        for ch, data in buffers.items():
+            out = np.full(total_raw_samples, fill_value, dtype=float)
+            n = min(len(indices), len(data))
+            out[indices[:n]] = data[:n]
+            expanded[ch] = out
+        return expanded
+
 
     def get_trigger_time_offset(self, time_unit: TIME_UNIT, segment_index: int = 0) -> int:
         """
