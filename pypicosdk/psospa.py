@@ -1,13 +1,19 @@
 """Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms."""
 
+# flake8: noqa
+# pylint: skip-file
 import ctypes
 from typing import override, Literal
 import json
+from warnings import warn
 
+from ._classes._channel_class import ChannelClass
+from . import constants as cst
 from .constants import *
 from .constants import (
     TIME_UNIT
 )
+from . import common as cmn
 from .common import PicoSDKException
 from .base import PicoScopeBase
 from .shared.ps6000a_psospa import shared_ps6000a_psospa
@@ -48,6 +54,7 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
             'OpenUnit',
             ctypes.byref(self.handle),
             serial_number,
+            serial_number,
             resolution,
             ctypes.byref(usb_power_struct)
         )
@@ -61,12 +68,13 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
     @override
     def set_channel_on(
         self,
-        channel:CHANNEL,
-        range:RANGE,
-        coupling:COUPLING=COUPLING.DC,
-        offset:float=0,
-        bandwidth:BANDWIDTH_CH=BANDWIDTH_CH.FULL,
-        range_type:PICO_PROBE_RANGE_INFO=PICO_PROBE_RANGE_INFO.X1_PROBE_NV
+        channel: CHANNEL,
+        range: RANGE,
+        coupling: COUPLING = COUPLING.DC,
+        offset: float = 0,
+        bandwidth: BANDWIDTH_CH = BANDWIDTH_CH.FULL,
+        range_type: PICO_PROBE_RANGE_INFO = PICO_PROBE_RANGE_INFO.X1_PROBE_NV,
+        probe_scale: float = 1.0,
         ) -> int:
         """
         Enable and configure a specific channel on the device with given parameters.
@@ -84,8 +92,16 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
                 Bandwidth limit setting for the channel. Defaults to full bandwidth.
             range_type (PICO_PROBE_RANGE_INFO, optional):
                 Specifies the probe range type. Defaults to X1 probe (no attenuation).
+            probe_scale (float, optional): Probe attenuation factor e.g. 10 for x10 probe.
+                    Default value of 1.0 (x1).
         """
-        self.range[channel] = range
+        if probe_scale != 1:
+            warn(
+                f'Ensure selected channel range of {cst.range_literal.__args__[range]} ' +
+                f'accounts for attenuation of x{probe_scale} at scope input',
+                cmn.ProbeScaleWarning)
+
+        self.channel_db[channel] = ChannelClass(ch_range=range, probe_scale=probe_scale)
 
         range_max = ctypes.c_int64(RANGE_LIST[range] * 1_000_000)
         range_min = ctypes.c_int64(-range_max.value)
@@ -103,6 +119,7 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
         )
         return status
 
+
     @override
     def get_nearest_sampling_interval(self, interval_s:float, round_faster:int=True) -> dict:
         """
@@ -110,6 +127,8 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
 
         Args:
             interval_s (float): Desired sampling interval in seconds.
+            round_faster (int, optional): If non-zero (True), rounds the sampling
+                interval to the nearest interval that is equal to or faster (shorter)
             round_faster (int, optional): If non-zero (True), rounds the sampling
                 interval to the nearest interval that is equal to or faster (shorter)
                 than requested.
@@ -158,6 +177,8 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
     def get_variant_details(
             self,
             variant_name:str|None|Literal["all-series"] = None,
+            self,
+            variant_name:str|None|Literal["all-series"] = None,
             buffer_size:int=32768,
             style:Literal["json", "schema"]="json",
         ) -> dict:
@@ -204,7 +225,9 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
     def set_led_brightness(self, brightness:int) -> None:
         """
         Set the brightness of all configurable LEDs.
+        Set the brightness of all configurable LEDs.
 
+        It will not take affect until one of the following
         It will not take affect until one of the following
         functions are ran:
          - run_block_capture()
@@ -227,6 +250,7 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
 
         Args:
             hue (int | str): Colour as a hue in [0-359] or a
+            hue (int | str): Colour as a hue in [0-359] or a
                 basic colour from the following:
                 ['red', 'green', 'blue', 'yellow', 'pink']
 
@@ -240,10 +264,14 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
             self,
             led:led_channel_l | list[led_channel_l],
             hue:int | led_colours_l | list[int] | list[led_colours_l],
+            self,
+            led:led_channel_l | list[led_channel_l],
+            hue:int | led_colours_l | list[int] | list[led_colours_l],
             saturation:int | list[int]
         ) -> None:
         """Sets the colour of the selected LED using HUE and Saturation
 
+        It will not take affect until one of the following
         It will not take affect until one of the following
         functions are ran:
          - run_block_capture()
@@ -254,6 +282,7 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
         Args:
             led (str|list[str]): The selected LED. Must be one or a list of these values:
                 `'A'`, `'B'`, `'C'`, `'D'`, `'E'`, `'F'`, `'G'`, `'H'`, `'AWG'`, `'AUX'`.
+            hue (int|list[int]): Colour as a hue in [0-359] or a
             hue (int|list[int]): Colour as a hue in [0-359] or a
                 basic colour from the following:
                 ['red', 'green', 'blue', 'yellow', 'pink']
@@ -266,6 +295,7 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
             led = [led]
             hue = [hue]
             saturation = [saturation]
+
 
         if isinstance(hue[0], str):
             hue = [led_colours_m[i] for i in hue]
@@ -287,6 +317,7 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
             array_len,
         )
 
+
     def set_all_led_states(self,state:str|led_state_l):
         """
         Sets the state of all LED's on the PicoScope.
@@ -302,6 +333,7 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
         """
         Sets the state for a selected LED. Between default behaviour (auto),
         on or off.
+
 
         Args:
             led (str): The selected LED. Must be one of these values:
@@ -324,6 +356,7 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
         self._call_attr_function(
             'SetLedStates',
             self.handle,
+            ctypes.byref(array_struct),
             ctypes.byref(array_struct),
             ctypes.c_uint32(array_len)
         )

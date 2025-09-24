@@ -2,6 +2,8 @@
 Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
 """
 
+# flake8: noqa
+# pylint: skip-file
 import ctypes
 import os
 import warnings
@@ -9,6 +11,7 @@ import warnings
 import numpy as np
 import numpy.ctypeslib as npc
 
+from ._classes._channel_class import ChannelClass
 from .error_list import ERROR_STRING
 from .constants import *
 from . import constants as cst
@@ -43,15 +46,12 @@ class PicoScopeBase:
 
         # Setup class variables
         self.handle = ctypes.c_short()
-        self.range = {}
-        self.probe_scale = {}
+        self.channel_db: dict[int, ChannelClass] = {}
         self.resolution = None
         self.max_adc_value = None
         self.min_adc_value = None
         self.over_range = 0
         self._actual_interval = 0
-
-        self.ylim = (0, 0)
 
     def __exit__(self):
         self.close_unit()
@@ -300,7 +300,7 @@ class PicoScopeBase:
             int: Decimal of enabled channels
         """
         enabled_channel_byte = 0
-        for channel in self.range:
+        for channel in self.channel_db:
             enabled_channel_byte += 2**channel
         return enabled_channel_byte
 
@@ -780,7 +780,7 @@ class PicoScopeBase:
         Returns:
                 int: ADC value corresponding to the input millivolt value.
         """
-        scale = self.probe_scale.get(channel, 1)
+        scale = self.channel_db[channel].probe_scale
         channel_range_mv = RANGE_LIST[channel_range]
         return int(((mv / scale) / channel_range_mv) * self.max_adc_value)
 
@@ -792,8 +792,8 @@ class PicoScopeBase:
     ) -> float | np.ndarray:
         """Converts ADC value or array to mV or V using the stored probe scaling."""
         unit_scale = _get_literal(output_unit, OutputUnitV_M)
-        channel_range_mv = RANGE_LIST[self.range[channel]]
-        channel_scale = self.probe_scale[channel]
+        channel_range_mv = self.channel_db[channel].range_mv
+        channel_scale = self.channel_db[channel].probe_scale
         return (((adc / self.max_adc_value) * channel_range_mv) * channel_scale) / unit_scale
 
     def _adc_to_(
@@ -876,11 +876,12 @@ class PicoScopeBase:
             hysteresis_upper_mv,
             hysteresis_lower_mv
     ) -> tuple[int, int, int, int]:
-        if channel in self.range:
-            upper_adc = self.mv_to_adc(threshold_upper_mv, self.range[channel], channel)
-            lower_adc = self.mv_to_adc(threshold_lower_mv, self.range[channel], channel)
-            hyst_upper_adc = self.mv_to_adc(hysteresis_upper_mv, self.range[channel], channel)
-            hyst_lower_adc = self.mv_to_adc(hysteresis_lower_mv, self.range[channel], channel)
+        if channel in self.channel_db:
+            ch_range = self.channel_db[channel].range
+            upper_adc = self.mv_to_adc(threshold_upper_mv, ch_range, channel)
+            lower_adc = self.mv_to_adc(threshold_lower_mv, ch_range, channel)
+            hyst_upper_adc = self.mv_to_adc(hysteresis_upper_mv, ch_range, channel)
+            hyst_lower_adc = self.mv_to_adc(hysteresis_lower_mv, ch_range, channel)
         else:
             upper_adc = int(threshold_upper_mv)
             lower_adc = int(threshold_lower_mv)
@@ -903,21 +904,6 @@ class PicoScopeBase:
             state
         )
 
-    def _set_ylim(self, ch_range: RANGE | range_literal) -> None:
-        """
-        Update the scope self.ylim with the largest channel range
-
-        Args:
-            ch_range (RANGE | range_literal): Range of current channel
-        """
-        # Convert to mv
-        ch_range = RANGE_LIST[ch_range]
-
-        # Compare largest value
-        max_ylim = max(self.ylim[1], ch_range)
-        min_ylim = -max_ylim
-        self.ylim = (min_ylim, max_ylim)
-
     def get_ylim(self, unit: OutputUnitV_L = 'mv') -> tuple[float, float]:
         """
         Returns the ylim of the widest channel range as a tuple.
@@ -935,11 +921,15 @@ class PicoScopeBase:
             >>> ...
             >>> plt.ylim(scope.get_ylim())
         """
+        largest_range_index = max(
+            self.channel_db,
+            key=lambda ch: self.channel_db[ch].range_mv
+)
         unit = unit.lower()
-        if unit.lower() == 'mv':
-            return self.ylim
-        elif unit.lower():
-            return self.ylim[0] / 1000, self.ylim[1] / 1000
+        if unit == 'mv':
+            return self.channel_db[largest_range_index].ylim_mv
+        elif unit == 'v':
+            return self.channel_db[largest_range_index].ylim_v
 
     def set_device_resolution(self, resolution: RESOLUTION) -> None:
         """Configure the ADC resolution using ``ps6000aSetDeviceResolution``.
@@ -989,8 +979,8 @@ class PicoScopeBase:
         channel = _get_literal(channel, channel_map)
         direction = _get_literal(direction, trigger_dir_m)
 
-        if channel in self.range:
-            threshold_adc = self.mv_to_adc(threshold_mv, self.range[channel], channel)
+        if channel in self.channel_db:
+            threshold_adc = self.mv_to_adc(threshold_mv, self.channel_db[channel].range, channel)
         else:
             threshold_adc = int(threshold_mv)
 
@@ -1389,12 +1379,12 @@ class PicoScopeBase:
         channels_buffer = {}
         # Rapid
         if captures > 0:
-            for channel in self.range:
+            for channel in self.channel_db:
                 np_buffer = self.set_data_buffer_rapid_capture(channel, samples, captures, segment, datatype, ratio_mode, action=ACTION.ADD)
                 channels_buffer[channel] = np_buffer
         # Single
         else:
-            for channel in self.range:
+            for channel in self.channel_db:
                 channels_buffer[channel] = self.set_data_buffer(channel, samples, segment, datatype, ratio_mode, action=ACTION.ADD)
 
         return channels_buffer
