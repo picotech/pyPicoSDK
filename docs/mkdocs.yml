@@ -37,7 +37,7 @@ nav:
       - ref/psospa/led.md
     - ref/general.md
     - General Constants: ref/constants.md
-    - ref/streaming.md
+    - Config/Overrides: ref/configuration.md
   - Development:
     - Changelog: dev/changelog.md
     - Current Support: dev/current.md
