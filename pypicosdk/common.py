@@ -66,7 +66,7 @@ def _get_lib_path() -> str:
     Returns:
         str: Full path of PicoSDK folder location
     """
-    if _config is not None:
+    if _config._conf.sdk_directory is not None:  # pylint: disable=W0212
         return _config._conf.sdk_directory  # pylint: disable=W0212
 
     system = platform.system()
