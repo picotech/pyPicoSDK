@@ -5,7 +5,6 @@ Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
 import ctypes
 import os
 import warnings
-from typing import Literal
 
 import numpy as np
 import numpy.ctypeslib as npc

@@ -1,7 +1,6 @@
 """
 Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
 """
-
 import ctypes
 import platform
 import os
@@ -10,19 +9,19 @@ from . import _config
 
 
 class PicoSDKNotFoundException(Exception):
-    pass
+    "PicoSDK cannot be found exception."
 
 
 class PicoSDKException(Exception):
-    pass
+    "General PicoSDK Exception."
 
 
 class OverrangeWarning(UserWarning):
-    pass
+    "Warning a channel is overrange."
 
 
 class PowerSupplyWarning(UserWarning):
-    pass
+    "Power supply warning"
 
 
 class BufferTooSmall(UserWarning):
@@ -34,7 +33,7 @@ class ProbeScaleWarning(UserWarning):
 
 
 # General Functions
-def _check_path(location:str, folders:list) -> str:
+def _check_path(location: str, folders: list) -> str:
     """Checks a list of folders in a location i.e. ['Pico Technology']
        in /ProgramFiles/ and returns first full path found
 
@@ -86,7 +85,11 @@ def _get_lib_path() -> str:
     else:
         raise PicoSDKException("Unsupported OS")
 
-def _struct_to_dict(struct_instance: ctypes.Structure, format=False) -> dict:
+
+def _struct_to_dict(
+        struct_instance: ctypes.Structure,
+        format=False  # pylint: disable=W0622
+        ) -> dict:
     """Takes a ctypes struct and returns the values as a python dict
 
     Args:
@@ -96,7 +99,7 @@ def _struct_to_dict(struct_instance: ctypes.Structure, format=False) -> dict:
         dict: python dictionary of struct values
     """
     result = {}
-    for field_name, _ in struct_instance._fields_:
+    for field_name, _ in struct_instance._fields_:  # pylint: disable=W0212
         if format:
             result[field_name.replace('_', '')] = getattr(struct_instance, field_name)
         else:

@@ -204,7 +204,6 @@ class shared_ps6000a_psospa(_ProtocolBase):
             dir_len = len(channel)
             dir_struct = (PICO_DIRECTION * dir_len)()
             for i in range(dir_len):
-                print(channel[i], direction[i], threshold_mode[i])
                 dir_struct[i] = PICO_DIRECTION(channel[i], direction[i], threshold_mode[i])
         else:
             dir_len = 1
