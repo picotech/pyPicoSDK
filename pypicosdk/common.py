@@ -6,6 +6,8 @@ import ctypes
 import platform
 import os
 from typing import Any
+from . import _config
+
 
 class PicoSDKNotFoundException(Exception):
     pass
@@ -54,9 +56,10 @@ def _check_path(location:str, folders:list) -> str:
         "No PicoSDK or PicoScope 7 drivers installed, get them from http://picotech.com/downloads"
     )
 
+
 def _get_lib_path() -> str:
     """Looks for PicoSDK folder based on OS and returns folder
-       path
+       path. Can be overriden using _config.override_directory(path).
 
     Raises:
         PicoSDKException: If unsupported OS
@@ -64,6 +67,9 @@ def _get_lib_path() -> str:
     Returns:
         str: Full path of PicoSDK folder location
     """
+    if _config is not None:
+        return _config._conf.sdk_directory  # pylint: disable=W0212
+
     system = platform.system()
     if system == "Windows":
         program_files = os.environ.get("PROGRAMFILES")
