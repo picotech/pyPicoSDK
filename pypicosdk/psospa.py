@@ -129,6 +129,8 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
             interval_s (float): Desired sampling interval in seconds.
             round_faster (int, optional): If non-zero (True), rounds the sampling
                 interval to the nearest interval that is equal to or faster (shorter)
+            round_faster (int, optional): If non-zero (True), rounds the sampling
+                interval to the nearest interval that is equal to or faster (shorter)
                 than requested.
                 If zero (False), rounds to the nearest interval equal to or slower.
                 Defaults to True.
@@ -269,6 +271,7 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
         ) -> None:
         """Sets the colour of the selected LED using HUE and Saturation
 
+        It will not take affect until one of the following
         It will not take affect until one of the following
         functions are ran:
          - run_block_capture()
