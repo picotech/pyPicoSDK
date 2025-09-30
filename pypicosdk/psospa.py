@@ -54,7 +54,6 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
             'OpenUnit',
             ctypes.byref(self.handle),
             serial_number,
-            serial_number,
             resolution,
             ctypes.byref(usb_power_struct)
         )
@@ -262,7 +261,6 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
         """Sets the colour of the selected LED using HUE and Saturation
 
         It will not take affect until one of the following
-        It will not take affect until one of the following
         functions are ran:
          - run_block_capture()
          - run_streaming()
@@ -272,7 +270,6 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
         Args:
             led (str|list[str]): The selected LED. Must be one or a list of these values:
                 `'A'`, `'B'`, `'C'`, `'D'`, `'E'`, `'F'`, `'G'`, `'H'`, `'AWG'`, `'AUX'`.
-            hue (int|list[int]): Colour as a hue in [0-359] or a
             hue (int|list[int]): Colour as a hue in [0-359] or a
                 basic colour from the following:
                 ['red', 'green', 'blue', 'yellow', 'pink']
