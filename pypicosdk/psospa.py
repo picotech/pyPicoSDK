@@ -129,8 +129,6 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
             interval_s (float): Desired sampling interval in seconds.
             round_faster (int, optional): If non-zero (True), rounds the sampling
                 interval to the nearest interval that is equal to or faster (shorter)
-            round_faster (int, optional): If non-zero (True), rounds the sampling
-                interval to the nearest interval that is equal to or faster (shorter)
                 than requested.
                 If zero (False), rounds to the nearest interval equal to or slower.
                 Defaults to True.
@@ -175,8 +173,6 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
         return list(values)
 
     def get_variant_details(
-            self,
-            variant_name:str|None|Literal["all-series"] = None,
             self,
             variant_name:str|None|Literal["all-series"] = None,
             buffer_size:int=32768,
@@ -225,9 +221,7 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
     def set_led_brightness(self, brightness:int) -> None:
         """
         Set the brightness of all configurable LEDs.
-        Set the brightness of all configurable LEDs.
 
-        It will not take affect until one of the following
         It will not take affect until one of the following
         functions are ran:
          - run_block_capture()
@@ -250,7 +244,6 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
 
         Args:
             hue (int | str): Colour as a hue in [0-359] or a
-            hue (int | str): Colour as a hue in [0-359] or a
                 basic colour from the following:
                 ['red', 'green', 'blue', 'yellow', 'pink']
 
@@ -261,9 +254,6 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
         self.set_led_colours(led_list, [hue] * len(led_list), [saturation] * len(led_list))
 
     def set_led_colours(
-            self,
-            led:led_channel_l | list[led_channel_l],
-            hue:int | led_colours_l | list[int] | list[led_colours_l],
             self,
             led:led_channel_l | list[led_channel_l],
             hue:int | led_colours_l | list[int] | list[led_colours_l],
@@ -356,7 +346,6 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
         self._call_attr_function(
             'SetLedStates',
             self.handle,
-            ctypes.byref(array_struct),
             ctypes.byref(array_struct),
             ctypes.c_uint32(array_len)
         )
