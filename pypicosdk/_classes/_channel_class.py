@@ -16,7 +16,6 @@ class ChannelClass:
     range: cst.RANGE
     range_mv: int
     probe_scale: float
-    scaled_range: cst.RANGE
     ylim_mv: int
     ylim_v: float
 
