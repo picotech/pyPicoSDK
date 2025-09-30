@@ -967,7 +967,7 @@ class PicoScopeBase:
                 or Volts.
 
         Returns:
-            tuple[float, float]: Minium and maximum range values
+            tuple[float,float]: Minium and maximum range values
 
         Examples:
             >>> from matplotlib import pyplot as plt
