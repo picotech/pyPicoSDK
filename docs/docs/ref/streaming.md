@@ -1,5 +1,5 @@
-<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
 # Streaming
+<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
 Streaming in a PicoScope is a great tool for monitoring a waveform for a long period of time
 without the delay between block captures. Though this method of capture is fairly limited in
 sample rate and usability in comparison to a `block capture` and especially `rapid block capture`.

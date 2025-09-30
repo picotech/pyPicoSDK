@@ -1,5 +1,5 @@
-<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
 # LED Control
+<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
 
 The LED's on the 3000E are controllable via hue, saturation and brightness. To control them these rules need to be met:
 

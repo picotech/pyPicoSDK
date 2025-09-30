@@ -1,5 +1,5 @@
-<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
 # Initializing psospa
+<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
 
 ## Setup
 The psospa drivers are intended for PicoScope 3000E Series.

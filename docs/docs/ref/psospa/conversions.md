@@ -1,5 +1,5 @@
-<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
 # Built-in Conversions
+<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
 These functions are general functions to convert data to another format.
 This is particularly useful for converting ADC data to mV or calculating
 the needed timebase for your PicoScope.
