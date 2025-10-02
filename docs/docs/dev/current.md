@@ -1,15 +1,13 @@
 <!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
 # Functions available pyPicoSDK v0.1
-## 6000 (A) API
- - Block Mode
- - Rapid Block Mode
- - Streaming Mode
+## 6000 (A) API (PicoScope 6000E Series)
+ - Simple/Advanced Block Mode
+ - Simple/Advanced Rapid Block Mode
  - Signal Generator
+ - All other direct driver functions
 
-## PSOSPA API
- - Block Mode
- - Rapid Block Mode
- - Streaming Mode
+## PSOSPA API (PicoScope 3000E Series)
+ - Simple/Advanced Block Mode
+ - Simple/Advanced Rapid Block Mode
  - Signal Generator
-
-
+ - All other direct driver functions

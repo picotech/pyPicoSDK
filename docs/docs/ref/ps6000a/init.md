@@ -1,5 +1,5 @@
-<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
 # Initializing ps6000a
+<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
 
 ## Setup
 The ps6000a drivers are intended for PicoScope 6000E Series.

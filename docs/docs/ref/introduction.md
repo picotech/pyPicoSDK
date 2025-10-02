@@ -1,5 +1,5 @@
-<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
 # Introduction
+<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
 
 Each picoSDK class is built from a common class (PicoScopeBase) and a specific sub-class (ps####a).
 This allows each PicoScope to have shared, common functions such as opening the unit, while certain models have additional, hardware-specific functions.

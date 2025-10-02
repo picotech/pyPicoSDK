@@ -1,16 +1,8 @@
 <!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
 # Roadmap for pyPicoSDK
 ## WIP
-- 6000 (A) API Signal Generator
-- Documentation
-    - Complete docStrings for pypicoSDK
-        - Adding constants docstrings
-    - Extend ref introduction
-- Upload & test pypi (pip)
-    - `setup.py` created, needs refining
-    - Current in [test pypi](https://test.pypi.org/project/pypicosdk/)
+- Streaming examples (inc. downsampling)
 
-## To-Do
-- 6000 (A) streaming support
-- Add support for 3000 (A) drivers
-- Test & add support for macOS & linux
+## To-do:
+- PS2000 Driver support
+- PS2000(A) Driver support

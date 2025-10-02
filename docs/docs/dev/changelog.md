@@ -1,3 +1,12 @@
 <!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
 # Changelog
-The changelog will be released upon the availability of an initial stable version.
+You can find a list of all changes in github tags in the link below:
+
+<div style="text-align: center;">
+  <a href="https://github.com/picotech/pyPicoSDK/releases"
+     class="btn btn-neutral"
+     title="Current Support">
+    GitHub Releases <span class="icon icon-github"></span>
+  </a>
+</div>
+

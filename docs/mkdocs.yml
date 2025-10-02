@@ -36,7 +36,7 @@ nav:
       - ref/psospa/retrieval.md
       - ref/psospa/led.md
     - ref/general.md
-    - General Constants: ref/constants.md
+    - ref/constants.md
     - Config/Overrides: ref/configuration.md
   - Development:
     - Changelog: dev/changelog.md
