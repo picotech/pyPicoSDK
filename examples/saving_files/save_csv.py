@@ -40,14 +40,14 @@ scope.close_unit()
 
 # If you'd like to plot the data before saving, do it here
 
-# Combine the arrays *vertically* using column_stack
+# Combine the "time_axis" & "channel_buffer" arrays *vertically* using column_stack
 a_buffer_time = np.column_stack([time_axis, channel_buffer[psdk.CHANNEL.A]])
 
-# Save the 2D array to a_buffer_time.csv using np.savetxt
+# Save the combined 2D array to a_buffer_time.csv using np.savetxt
 np.savetxt(
     'a_buffer_time.csv',         # Name of file (must end in .csv)
     a_buffer_time,               # 2D Numpy array to be saved
     delimiter=',',               # ',' is commonly used as delimiter in CSV files
     header='Time,ChannelA',      # Column headers, seperated by delimiter
-    comments=''                  # NumPy automatically adds a header using '#', '' removes.
+    comments=''                  # NumPy uses #code comments as column headings, force clean headers
     )
