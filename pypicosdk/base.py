@@ -819,14 +819,13 @@ class PicoScopeBase:
         }
 
     # Data conversion ADC/mV & ctypes/int
-    def mv_to_adc(self, mv: float, channel_range: int, channel: CHANNEL = None) -> int:
+    def mv_to_adc(self, mv: float, channel: CHANNEL = None) -> int:
         """
         Converts a millivolt (mV) value to an ADC value based on the device's
         maximum ADC range.
 
         Args:
                 mv (float): Voltage in millivolts to be converted.
-                channel_range (int): Range of channel in millivolts i.e. 500 mV.
                 channel (CHANNEL, optional): Channel associated with ``mv``. The
                         probe scaling for the channel will be applied if provided.
 
@@ -834,7 +833,7 @@ class PicoScopeBase:
                 int: ADC value corresponding to the input millivolt value.
         """
         scale = self.channel_db[channel].probe_scale
-        channel_range_mv = RANGE_LIST[channel_range]
+        channel_range_mv = self.channel_db[channel].range_mv
         return int(((mv / scale) / channel_range_mv) * self.max_adc_value)
 
     def _adc_conversion(
@@ -931,10 +930,10 @@ class PicoScopeBase:
     ) -> tuple[int, int, int, int]:
         if channel in self.channel_db:
             ch_range = self.channel_db[channel].range
-            upper_adc = self.mv_to_adc(threshold_upper_mv, ch_range, channel)
-            lower_adc = self.mv_to_adc(threshold_lower_mv, ch_range, channel)
-            hyst_upper_adc = self.mv_to_adc(hysteresis_upper_mv, ch_range, channel)
-            hyst_lower_adc = self.mv_to_adc(hysteresis_lower_mv, ch_range, channel)
+            upper_adc = self.mv_to_adc(threshold_upper_mv, channel)
+            lower_adc = self.mv_to_adc(threshold_lower_mv, channel)
+            hyst_upper_adc = self.mv_to_adc(hysteresis_upper_mv, channel)
+            hyst_lower_adc = self.mv_to_adc(hysteresis_lower_mv, channel)
         else:
             upper_adc = int(threshold_upper_mv)
             lower_adc = int(threshold_lower_mv)
@@ -1033,7 +1032,7 @@ class PicoScopeBase:
         direction = _get_literal(direction, trigger_dir_m)
 
         if channel in self.channel_db:
-            threshold_adc = self.mv_to_adc(threshold_mv, self.channel_db[channel].range, channel)
+            threshold_adc = self.mv_to_adc(threshold_mv, channel)
         else:
             threshold_adc = int(threshold_mv)
 
