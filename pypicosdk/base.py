@@ -52,6 +52,7 @@ class PicoScopeBase:
         self.min_adc_value = None
         self.over_range = 0
         self._actual_interval = 0
+        self.last_used_volt_unit: str = 'mv'
 
     def __exit__(self):
         self.close_unit()
@@ -869,6 +870,10 @@ class PicoScopeBase:
         Returns:
             dict | float | np.ndarray: _description_
         """
+
+        # Update last used
+        self.last_used_volt_unit = unit
+
         if isinstance(data, dict):
             for channel, adc in data.items():
                 data[channel] = self._adc_conversion(adc, channel, output_unit=unit)
@@ -897,6 +902,7 @@ class PicoScopeBase:
         Returns:
             dict, int, float, np.ndarray: Data converted into millivolts (mV)
         """
+        self.last_used_volt_unit = 'mv'  # Update last used
         return self._adc_to_(data, channel, unit='mv')
 
     def adc_to_volts(
@@ -918,6 +924,7 @@ class PicoScopeBase:
         Returns:
             dict, int, float, np.ndarray: Data converted into volts (V)
         """
+        self.last_used_volt_unit = 'v'  # Update last used
         return self._adc_to_(data, channel, unit='v')
 
     def _thr_hyst_mv_to_adc(
@@ -956,14 +963,16 @@ class PicoScopeBase:
             state
         )
 
-    def get_ylim(self, unit: OutputUnitV_L = 'mv') -> tuple[float, float]:
+    def get_ylim(self, unit: str | None | OutputUnitV_L = None) -> tuple[float, float]:
         """
-        Returns the ylim of the widest channel range as a tuple.
+        Returns the ylim of the widest channel range as a tuple. The unit is taken from
+        the last used adc to voltage conversion, but can be overwritten by declaring a
+        `unit` variable.
         Ideal for pyplot ylim function.
 
         Args:
-            unit (str): 'mv' or 'v'. Depending on whether your data is in mV
-                or Volts.
+            unit (str | None, optional): Overwrite the ylim unit using `'mv'` or `'v'`.
+                If None, The unit will be taken from the last voltage unit conversion.
 
         Returns:
             tuple[float,float]: Minium and maximum range values
@@ -973,10 +982,15 @@ class PicoScopeBase:
             >>> ...
             >>> plt.ylim(scope.get_ylim())
         """
+        if unit is None:
+            # Collect last used voltage unit
+            unit = self.last_used_volt_unit
+
+        # Get largest channel range
         largest_range_index = max(
             self.channel_db,
             key=lambda ch: self.channel_db[ch].range_mv
-)
+            )
         unit = unit.lower()
         if unit == 'mv':
             return self.channel_db[largest_range_index].ylim_mv
@@ -1740,6 +1754,9 @@ class PicoScopeBase:
             >>> buffers = scope.run_simple_block_capture(timebase=3, samples=1000)
         """
 
+        # Update last used
+        self.last_used_volt_unit = output_unit
+
         # Create data buffers
         channel_buffer = \
             self.set_data_buffer_for_enabled_channels(samples, segment, datatype, ratio_mode)
@@ -1798,6 +1815,8 @@ class PicoScopeBase:
             tuple[dict,np.ndarray]: Dictionary of channel buffers and the time
                 axis (numpy array).
         """
+        # Update last used
+        self.last_used_volt_unit = output_unit
 
         # Segment set to 0
         segment = 0
