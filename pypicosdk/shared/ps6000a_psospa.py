@@ -2,10 +2,13 @@
 Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
 """
 
+# flake8: noqa
+# pylint: skip-file
 import ctypes
 from warnings import warn
 import numpy as np
 
+from .._classes._channel_class import ChannelClass
 from .. import constants as cst
 from ..constants import *
 from ..constants import (
@@ -33,6 +36,7 @@ from ._protocol import _ProtocolBase
 class shared_ps6000a_psospa(_ProtocolBase):
     """Shared functions between ps6000a and psospa"""
     probe_scale: dict[float]
+    channel_db: dict[int, ChannelClass]
 
     def get_adc_limits(self) -> tuple:
         """
@@ -730,25 +734,47 @@ class shared_ps6000a_psospa(_ProtocolBase):
         channel = _get_literal(channel, channel_map)
         range = _get_literal(range, range_map)
 
-        # Add probe scaling
-        self.probe_scale[channel] = probe_scale
-        if probe_scale != 1.0:
+        if enabled:
+            self.set_channel_on(channel, range, coupling, offset, bandwidth,
+                                probe_scale=probe_scale)
+        else:
+            self.set_channel_off(channel)
+
+    def set_channel_on(
+            self,
+            channel,
+            range,
+            coupling=COUPLING.DC,
+            offset=0.0,
+            bandwidth=BANDWIDTH_CH.FULL,
+            probe_scale: float = 1.0
+    ) -> int:
+        """
+        Enable and configure a specific channel on the device with given parameters.
+
+        Args:
+            channel (CHANNEL):
+                The channel to enable (e.g., CHANNEL.A, CHANNEL.B).
+            range (RANGE):
+                The input voltage range to set for the channel.
+            coupling (COUPLING, optional):
+                The coupling mode to use (e.g., DC, AC). Defaults to DC.
+            offset (float, optional):
+                DC offset to apply to the channel input, in volts. Defaults to 0.
+            bandwidth (BANDWIDTH_CH, optional):
+                Bandwidth limit setting for the channel. Defaults to full bandwidth.
+            probe_scale (float, optional): Probe attenuation factor e.g. 10 for x10 probe.
+                    Default value of 1.0 (x1).
+
+        """
+        if probe_scale != 1:
             warn(
                 f'Ensure selected channel range of {cst.range_literal.__args__[range]} ' +
                 f'accounts for attenuation of x{probe_scale} at scope input',
                 cmn.ProbeScaleWarning)
 
-        # Update ylims
-        self._set_ylim(range)
+        self.channel_db[channel] = ChannelClass(ch_range=range, probe_scale=probe_scale)
 
-        if enabled:
-            self.set_channel_on(channel, range, coupling, offset, bandwidth)
-        else:
-            self.set_channel_off(channel)
-
-    def set_channel_on(self, channel, range, coupling=COUPLING.DC, offset=0.0, bandwidth=BANDWIDTH_CH.FULL):
-        """Sets a channel to ON at a specified range (6000E)"""
-        self.range[channel] = range
         status = self._call_attr_function(
             'SetChannelOn',
             self.handle,

@@ -12,7 +12,7 @@ the PicoScope needs to be initialized using `scope.open_unit()` followed by the 
 >>> import pypicosdk as psdk
 >>> scope = psdk.psospa()
 >>> scope.open_unit(resolution=psdk.RESOLUTION._8BIT)
->>> scope.mv_to_adc(100, channel_range=psdk.RANGE.V1)
+>>> scope.mv_to_adc(100, channel=psdk.CHANNEL.A)
 3251
 >>> scope.close_unit()
 ```

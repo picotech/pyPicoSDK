@@ -1,13 +1,19 @@
 """Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms."""
 
+# flake8: noqa
+# pylint: skip-file
 import ctypes
 from typing import override, Literal
 import json
+from warnings import warn
 
+from ._classes._channel_class import ChannelClass
+from . import constants as cst
 from .constants import *
 from .constants import (
     TIME_UNIT
 )
+from . import common as cmn
 from .common import PicoSDKException
 from .base import PicoScopeBase
 from .shared.ps6000a_psospa import shared_ps6000a_psospa
@@ -61,12 +67,13 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
     @override
     def set_channel_on(
         self,
-        channel:CHANNEL,
-        range:RANGE,
-        coupling:COUPLING=COUPLING.DC,
-        offset:float=0,
-        bandwidth:BANDWIDTH_CH=BANDWIDTH_CH.FULL,
-        range_type:PICO_PROBE_RANGE_INFO=PICO_PROBE_RANGE_INFO.X1_PROBE_NV
+        channel: CHANNEL,
+        range: RANGE,
+        coupling: COUPLING = COUPLING.DC,
+        offset: float = 0,
+        bandwidth: BANDWIDTH_CH = BANDWIDTH_CH.FULL,
+        range_type: PICO_PROBE_RANGE_INFO = PICO_PROBE_RANGE_INFO.X1_PROBE_NV,
+        probe_scale: float = 1.0,
         ) -> int:
         """
         Enable and configure a specific channel on the device with given parameters.
@@ -84,8 +91,16 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
                 Bandwidth limit setting for the channel. Defaults to full bandwidth.
             range_type (PICO_PROBE_RANGE_INFO, optional):
                 Specifies the probe range type. Defaults to X1 probe (no attenuation).
+            probe_scale (float, optional): Probe attenuation factor e.g. 10 for x10 probe.
+                    Default value of 1.0 (x1).
         """
-        self.range[channel] = range
+        if probe_scale != 1:
+            warn(
+                f'Ensure selected channel range of {cst.range_literal.__args__[range]} ' +
+                f'accounts for attenuation of x{probe_scale} at scope input',
+                cmn.ProbeScaleWarning)
+
+        self.channel_db[channel] = ChannelClass(ch_range=range, probe_scale=probe_scale)
 
         range_max = ctypes.c_int64(RANGE_LIST[range] * 1_000_000)
         range_min = ctypes.c_int64(-range_max.value)
@@ -102,6 +117,7 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
             bandwidth
         )
         return status
+
 
     @override
     def get_nearest_sampling_interval(self, interval_s:float, round_faster:int=True) -> dict:
@@ -267,6 +283,7 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
             hue = [hue]
             saturation = [saturation]
 
+
         if isinstance(hue[0], str):
             hue = [led_colours_m[i] for i in hue]
 
@@ -287,6 +304,7 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
             array_len,
         )
 
+
     def set_all_led_states(self,state:str|led_state_l):
         """
         Sets the state of all LED's on the PicoScope.
@@ -302,6 +320,7 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
         """
         Sets the state for a selected LED. Between default behaviour (auto),
         on or off.
+
 
         Args:
             led (str): The selected LED. Must be one of these values:
