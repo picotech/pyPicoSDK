@@ -25,7 +25,7 @@ SAMPLES = 1000
 CAPTURES = 200
 
 # Create "scope" class and initialize PicoScope
-scope = psdk.ps6000a()
+scope = psdk.psospa()
 scope.open_unit()
 
 # Set siggen to 20MHz & 3Vpkpk output square wave

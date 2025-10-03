@@ -14,7 +14,7 @@ from matplotlib import pyplot as plt
 SAMPLES = 1000
 
 # Create "scope" class and initialize PicoScope
-scope = psdk.ps6000a()
+scope = psdk.psospa()
 scope.open_unit()
 
 # Generate a square wave and loopback to Channel A.

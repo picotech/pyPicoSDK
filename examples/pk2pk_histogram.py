@@ -28,8 +28,8 @@ SAMPLES = 500
 CAPTURES = 1000
 
 # Create "scope" class and initialize PicoScope
-scope = psdk.ps6000a()
-scope.open_unit(resolution="12bit")
+scope = psdk.psospa()
+scope.open_unit(resolution="10bit")
 
 # Enable channel A with +/- 500mV range (1V total dynamic range)
 scope.set_channel(channel=psdk.CHANNEL.A, coupling=psdk.COUPLING.DC, range=psdk.RANGE.mV500)

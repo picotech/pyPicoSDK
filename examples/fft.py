@@ -28,7 +28,7 @@ import pypicosdk as psdk
 SAMPLES = 5_000_000
 
 # Create "scope" class and initialize PicoScope
-scope = psdk.ps6000a()
+scope = psdk.psospa()
 scope.open_unit()
 
 # Set siggen to 10MHz & 800mVpkpk output square wave

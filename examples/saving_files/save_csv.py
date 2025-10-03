@@ -25,7 +25,7 @@ import pypicosdk as psdk
 SAMPLES = 5_000
 
 # This example uses the same setup as 'simple_block_capture.py', setup comments are skipped.
-scope = psdk.ps6000a()
+scope = psdk.psospa()
 scope.open_unit()
 scope.set_siggen(frequency=50_000, pk2pk=1.8, wave_type=psdk.WAVEFORM.SINE)
 scope.set_channel(channel=psdk.CHANNEL.A, range=psdk.RANGE.V1)

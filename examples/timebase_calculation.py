@@ -20,10 +20,10 @@ Requirements:
 
 # Instead of importing the whole pyPicoSDK lib, here we unpack only the needed enums
 # allowing them to be referenced directly in below methods
-from pypicosdk import ps6000a, CHANNEL, RANGE, SAMPLE_RATE, TIME_UNIT
+from pypicosdk import psospa, CHANNEL, RANGE, SAMPLE_RATE, TIME_UNIT
 
 # Create "scope" class and initialize PicoScope
-scope = ps6000a()
+scope = psospa()
 scope.open_unit()
 
 # Setup channels to make sure sample interval is accurate (direct enum reference)

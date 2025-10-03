@@ -5,7 +5,7 @@ import pypicosdk as psdk
 
 # Pico examples use inline argument values for clarity
 
-scope = psdk.ps6000a()
+scope = psdk.psospa()
 
 scope.open_unit()
 

@@ -29,7 +29,7 @@ DOWNSAMPLE_RATIO = 10
 RATIO_MODE = psdk.RATIO_MODE.DECIMATE  # alternatives: RAW, DECIMATE, AGGREGATE, TRIGGER
 
 # Create "scope" class and initialize PicoScope
-scope = psdk.ps6000a()
+scope = psdk.psospa()
 scope.open_unit()
 
 # Print the returned serial number of the initialized instrument

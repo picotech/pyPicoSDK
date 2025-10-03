@@ -20,7 +20,7 @@ BINS = 32
 THRESHOLD = 0
 
 # Initialize PicoScope 6000
-scope = psdk.ps6000a()
+scope = psdk.psospa()
 scope.open_unit()
 
 # Setup channel and trigger

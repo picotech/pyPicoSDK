@@ -11,9 +11,9 @@ Setup:
     - Connect channel A to SigGen output.
 """
 import time
-from pypicosdk import ps6000a, CHANNEL, RANGE, WAVEFORM, TIME_UNIT
+from pypicosdk import psospa, CHANNEL, RANGE, WAVEFORM, TIME_UNIT
 
-scope = ps6000a()
+scope = psospa()
 
 # Channel setup
 channel = CHANNEL.A

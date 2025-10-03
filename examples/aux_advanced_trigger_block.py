@@ -25,7 +25,7 @@ from matplotlib import pyplot as plt
 SAMPLES = 50_000
 
 # Create "scope" class and initialise PicoScope
-scope = psdk.ps6000a()
+scope = psdk.psospa()
 scope.open_unit()
 
 # Set siggen to 1KHz & 3Vpkpk output

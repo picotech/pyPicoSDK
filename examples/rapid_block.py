@@ -27,7 +27,7 @@ SAMPLES = 1000
 CAPTURES = 20
 
 # Create "scope" class and initialize PicoScope
-scope = psdk.ps6000a()
+scope = psdk.psospa()
 scope.open_unit()
 
 # Setup capture parameters (inline arguments)

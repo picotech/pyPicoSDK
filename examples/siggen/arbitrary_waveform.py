@@ -18,7 +18,7 @@ from matplotlib import pyplot as plt
 import pypicosdk as psdk
 
 # Open PicoScope
-scope = psdk.ps6000a()
+scope = psdk.psospa()
 scope.open_unit()
 scope.set_channel(channel=psdk.CHANNEL.A, range=psdk.RANGE.V1)
 scope.set_simple_trigger(channel=psdk.CHANNEL.A)

@@ -13,7 +13,7 @@ Setup:
 import pypicosdk as psdk
 
 # Open PicoScope
-scope = psdk.ps6000a()
+scope = psdk.psospa()
 scope.open_unit()
 
 # Create sweeping sine waveform
