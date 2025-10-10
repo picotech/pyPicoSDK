@@ -79,7 +79,7 @@ def _get_lib_path() -> str:
         ]
         return _check_path(program_files, checklist)
     elif system == "Linux":
-        return _check_path('opt', 'picoscope')
+        return _check_path('/opt', ['picoscope/lib'])
     elif system == "Darwin":
         raise PicoSDKException("macOS is not yet tested and supported")
     else:

@@ -4,6 +4,7 @@ Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
 
 import ctypes
 import os
+import platform
 import warnings
 
 import numpy as np
@@ -38,7 +39,18 @@ class PicoScopeBase:
         if self._pytest:
             self.dll = None
         else:
-            self.dll = ctypes.CDLL(os.path.join(_get_lib_path(), dll_name + ".dll"))
+            # Determine file extension and naming convention based on OS
+            system = platform.system()
+            if system == "Windows":
+                lib_name = dll_name + ".dll"
+            elif system == "Linux":
+                lib_name = "lib" + dll_name + ".so"
+            elif system == "Darwin":
+                lib_name = "lib" + dll_name + ".dylib"
+            else:
+                lib_name = "lib" + dll_name + ".so"  # Default to Unix-like naming
+            
+            self.dll = ctypes.CDLL(os.path.join(_get_lib_path(), lib_name))
         self._unit_prefix_n = dll_name
 
         # Setup class variables
