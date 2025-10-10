@@ -490,7 +490,7 @@ class PicoScopeBase:
         if pre_trig_percent is None:
             return time_axis
         else:
-            offset = int(time_axis.max() * (pre_trig_percent / 100))
+            offset = time_axis.max() * (pre_trig_percent / 100)
             return time_axis - offset
 
     def realign_downsampled_data(
