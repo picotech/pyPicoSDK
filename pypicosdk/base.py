@@ -39,18 +39,18 @@ class PicoScopeBase:
         if self._pytest:
             self.dll = None
         else:
-            # Determine file extension based on OS
+            # Determine file extension and naming convention based on OS
             system = platform.system()
             if system == "Windows":
-                lib_extension = ".dll"
+                lib_name = dll_name + ".dll"
             elif system == "Linux":
-                lib_extension = ".so"
+                lib_name = "lib" + dll_name + ".so"
             elif system == "Darwin":
-                lib_extension = ".dylib"
+                lib_name = "lib" + dll_name + ".dylib"
             else:
-                lib_extension = ".so"  # Default to .so for other Unix-like systems
+                lib_name = "lib" + dll_name + ".so"  # Default to Unix-like naming
             
-            self.dll = ctypes.CDLL(os.path.join(_get_lib_path(), dll_name + lib_extension))
+            self.dll = ctypes.CDLL(os.path.join(_get_lib_path(), lib_name))
         self._unit_prefix_n = dll_name
 
         # Setup class variables
