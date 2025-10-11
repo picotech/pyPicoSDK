@@ -288,7 +288,7 @@ class shared_ps6000a_psospa(_ProtocolBase):
             pk2pk (float): Peak-to-peak voltage in volts (V).
             wave_type (WAVEFORM): Waveform type (e.g., WAVEFORM.SINE, WAVEFORM.SQUARE).
             offset (float, optional): Voltage offset in volts (V).
-            duty (int or float, optional): Duty cycle as a percentage (0–100).
+            duty (int or float, optional): Duty cycle as a percentage (0-100).
             sweep: If True, sweep is enabled, fill in the following:
             stop_freq: Frequency to stop sweep at in Hertz (Hz). Defaults to None.
             inc_freq: Frequency to increment (or step) in hertz (Hz). Defaults to 1 Hz.
