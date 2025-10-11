@@ -32,6 +32,10 @@ class ProbeScaleWarning(UserWarning):
     "User warning for probe scaling"
 
 
+class ParameterNotSupported(UserWarning):
+    "User warning for a parameter not supported in this PicoScope"
+
+
 # General Functions
 def _check_path(location: str, folders: list) -> str:
     """Checks a list of folders in a location i.e. ['Pico Technology']
