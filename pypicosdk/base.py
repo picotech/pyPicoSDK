@@ -28,7 +28,8 @@ from .constants import (
 from .common import *
 from .common import (
     _get_literal,
-    ProbeScaleWarning
+    ProbeScaleWarning,
+    PicoSDKException
 )
 from ._classes import _general
 
@@ -106,14 +107,11 @@ class PicoScopeBase:
         """
         error_code = ERROR_STRING[status]
         if status != 0:
-            if status in [POWER_SOURCE.SUPPLY_NOT_CONNECTED]:
-                warnings.warn('Power supply not connected.',
-                              PowerSupplyWarning)
-                return
-            # Certain status codes indicate that the driver is busy or waiting
-            # for more data rather than an actual failure. These should not
-            # raise an exception as callers may poll until data is ready.
-            if status == 407:  # PICO_WAITING_FOR_DATA_BUFFERS
+            # Ignore codes as they are warnings or status updates.
+            # 407 - Pico Waiting For Data Buffers
+            # 282 - Pico Power Supply Not Connected
+            # 290 - Pico Channel Disabled Due To Usb Powered
+            if status in [407, 282, 290]:
                 return
             self.close_unit()
             raise PicoSDKException(error_code)
@@ -147,7 +145,7 @@ class PicoScopeBase:
 
         if serial_number is not None:
             serial_number = serial_number.encode()
-        self._call_attr_function(
+        status = self._call_attr_function(
             'OpenUnit',
             ctypes.byref(self.handle),
             serial_number,
@@ -155,6 +153,7 @@ class PicoScopeBase:
         )
         self.resolution = resolution
         self.set_all_channels_off()
+        return status
 
     def close_unit(self) -> None:
         """
@@ -343,6 +342,7 @@ class PicoScopeBase:
             self._get_enabled_channel_flags(),
             ctypes.c_double(interval_s),
             self.resolution,
+            0,
             ctypes.byref(timebase),
             ctypes.byref(time_interval),
         )
@@ -458,23 +458,6 @@ class PicoScopeBase:
         """
         interval_s = interval / unit
         return self.get_nearest_sampling_interval(interval_s)["timebase"]
-
-    def _get_maximum_adc_value(self) -> int:
-        """
-        Gets the ADC limits for specified devices.
-
-        Currently tested on: 6000a.
-
-        Returns:
-                int: Maximum ADC value.
-        """
-        max_value = ctypes.c_int16()
-        self._call_attr_function(
-            'MaximumValue',
-            self.handle,
-            ctypes.byref(max_value)
-        )
-        return max_value.value
 
     def get_time_axis(
             self,
@@ -993,20 +976,7 @@ class PicoScopeBase:
         return upper_adc, lower_adc, hyst_upper_adc, hyst_lower_adc
 
     # Set methods for PicoScope configuration
-    def _change_power_source(self, state: POWER_SOURCE) -> 0:
-        """
-        Change the power source of a device to/from USB only or DC + USB.
-
-        Args:
-                state (POWER_SOURCE): Power source variable (i.e. POWER_SOURCE.SUPPLY_NOT_CONNECTED).
-        """
-        self._call_attr_function(
-            'ChangePowerSource',
-            self.handle,
-            state
-        )
-
-    def get_ylim(self, unit: str | None | OutputUnitV_L = None) -> tuple[float, float]:
+    def _set_ylim(self, ch_range: RANGE | range_literal) -> None:
         """
         Returns the ylim of the widest channel range as a tuple. The unit is taken from
         the last used adc to voltage conversion, but can be overwritten by declaring a

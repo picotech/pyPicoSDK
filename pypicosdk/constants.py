@@ -62,6 +62,13 @@ class RESOLUTION:
     _15BIT = 3
     _16BIT = 4
 
+    BIT_8 = 0
+    BIT_10 = 10
+    BIT_12 = 1
+    BIT_14 = 2
+    BIT_15 = 3
+    BIT_16 = 4
+
 resolution_literal = Literal['8bit', '10bit', '12bit', '14bit', '15bit', '16bit']
 resolution_map = {'8bit':0, '10bit':10, '12bit':1, '14bit':2, '15bit':3, '16bit':4}
 
@@ -425,6 +432,7 @@ class RATIO_MODE:
         TRIGGER: Trigger mode for event-based data. If manually setting buffers, TRIGGER will need its own buffer set.
         RAW: Raw data mode, without any processing.
     """
+    NONE = 0
     AGGREGATE = 1
     DECIMATE = 2
     AVERAGE = 4
@@ -451,7 +459,16 @@ class POWER_SOURCE:
     """
     SUPPLY_CONNECTED = 0x00000119
     SUPPLY_NOT_CONNECTED = 0x0000011A
-    USB3_0_DEVICE_NON_USB3_0_PORT= 0x0000011E
+    USB3_0_DEVICE_NON_USB3_0_PORT = 0x0000011E
+
+
+PwrSrc_L = Literal['AC PSU', 'USB', '2-channel']
+PwrSrc_M = {
+    'AC PSU': POWER_SOURCE.SUPPLY_CONNECTED,
+    'USB': POWER_SOURCE.SUPPLY_NOT_CONNECTED,
+    '2-channel': POWER_SOURCE.USB3_0_DEVICE_NON_USB3_0_PORT,
+}
+
 
 class SAMPLE_RATE(IntEnum):
     SPS = 1
