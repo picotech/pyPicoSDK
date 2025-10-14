@@ -838,7 +838,7 @@ class PicoScopeBase:
 
         Args:
             volts (float): Voltage in volts (V) to be converted
-            channel (cst.CHANNEL): Channel associated with `volts`. The probe scaling will
+            channel (CHANNEL): Channel associated with `volts`. The probe scaling will
                 be applied if provided.
 
         Returns:
