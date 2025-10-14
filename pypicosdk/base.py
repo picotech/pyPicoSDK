@@ -831,6 +831,23 @@ class PicoScopeBase:
             "time_interval": time_interval.value,
         }
 
+    def volts_to_adc(self, volts: float, channel: cst.CHANNEL) -> int:
+        """
+        Coverts a volt (V) value to an ADC value based on the channel range and device's maximum
+        ADC value.
+
+        Args:
+            volts (float): Voltage in volts (V) to be converted
+            channel (cst.CHANNEL): Channel associated with `volts`. The probe scaling will
+                be applied if provided.
+
+        Returns:
+            int: ADC value corresponding to the input voltage.
+        """
+        scale = self.channel_db[channel].probe_scale
+        channel_range_v = self.channel_db[channel].range_v
+        return int(((volts / scale) / channel_range_v) * self.max_adc_value)
+
     # Data conversion ADC/mV & ctypes/int
     def mv_to_adc(self, mv: float, channel: CHANNEL = None) -> int:
         """
