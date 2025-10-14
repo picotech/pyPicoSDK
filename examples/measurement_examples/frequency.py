@@ -23,7 +23,7 @@ scope.open_unit()
 
 # Setup channel and trigger
 scope.set_channel(channel=CHANNEL, range=RANGE)
-scope.set_simple_trigger(channel=CHANNEL, threshold_mv=THRESHOLD)
+scope.set_simple_trigger(channel=CHANNEL, threshold=THRESHOLD)
 
 scope.set_siggen(0.05E6, 1.0, psdk.WAVEFORM.SINE)
 
