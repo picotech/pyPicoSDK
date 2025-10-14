@@ -16,6 +16,14 @@ def test_ps6000a_mv_to_adc():
     assert scope.mv_to_adc(5.0, channel) == 160
 
 
+def test_ps6000a_volts_to_adc():
+    """Test mv_to_adc function"""
+    scope = ps6000a('pytest')
+    scope.max_adc_value = 32000
+    scope.channel_db[channel] = ChannelClass(RANGE.V1, 1)
+    assert scope.volts_to_adc(5.0, channel) == 160000
+
+
 def test_ps6000a_adc_to_mv():
     """Test adc_to_mv function"""
     scope = ps6000a('pytest')

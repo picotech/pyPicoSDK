@@ -831,15 +831,32 @@ class PicoScopeBase:
             "time_interval": time_interval.value,
         }
 
+    def volts_to_adc(self, volts: float, channel: cst.CHANNEL) -> int:
+        """
+        Coverts a volt (V) value to an ADC value based on the channel range and device's maximum
+        ADC value.
+
+        Args:
+            volts (float): Voltage in volts (V) to be converted
+            channel (CHANNEL): Channel associated with `volts`. The probe scaling will
+                be applied if provided.
+
+        Returns:
+            int: ADC value corresponding to the input voltage.
+        """
+        scale = self.channel_db[channel].probe_scale
+        channel_range_v = self.channel_db[channel].range_v
+        return int(((volts / scale) / channel_range_v) * self.max_adc_value)
+
     # Data conversion ADC/mV & ctypes/int
-    def mv_to_adc(self, mv: float, channel: CHANNEL = None) -> int:
+    def mv_to_adc(self, mv: float, channel: cst.CHANNEL) -> int:
         """
         Converts a millivolt (mV) value to an ADC value based on the device's
         maximum ADC range.
 
         Args:
-                mv (float): Voltage in millivolts to be converted.
-                channel (CHANNEL, optional): Channel associated with ``mv``. The
+                mv (float): Voltage in millivolts (mV) to be converted.
+                channel (CHANNEL): Channel associated with ``mv``. The
                         probe scaling for the channel will be applied if provided.
 
         Returns:
@@ -1032,18 +1049,20 @@ class PicoScopeBase:
     def set_simple_trigger(
             self,
             channel: CHANNEL | channel_literal,
-            threshold_mv:int=0,
-            enable:bool=True,
-            direction:TRIGGER_DIR | trigger_dir_l = TRIGGER_DIR.RISING,
-            delay:int=0,
-            auto_trigger:int=0
+            threshold: int = 0,
+            threshold_unit: cst.output_unit_l = 'mv',
+            enable: bool = True,
+            direction: TRIGGER_DIR | trigger_dir_l = TRIGGER_DIR.RISING,
+            delay: int = 0,
+            auto_trigger: int = 0,
         ) -> None:
         """
         Sets up a simple trigger from a specified channel and threshold in mV.
 
         Args:
             channel (CHANNEL | str): The input channel to apply the trigger to.
-            threshold_mv (int, optional): Trigger threshold level in millivolts.
+            threshold (int, optional): Trigger threshold level.
+            threshold_unit (str, optional): Trigger threshold unit. Default is 'mv'.
             enable (bool, optional): Enables or disables the trigger.
             direction (TRIGGER_DIR | str, optional): Trigger direction (e.g., ``TRIGGER_DIR.RISING``).
             delay (int, optional): Delay in samples after the trigger condition is met before starting capture.
@@ -1057,10 +1076,12 @@ class PicoScopeBase:
         channel = _get_literal(channel, channel_map)
         direction = _get_literal(direction, trigger_dir_m)
 
-        if channel in self.channel_db:
-            threshold_adc = self.mv_to_adc(threshold_mv, channel)
+        if threshold_unit == 'mv':
+            threshold_adc = self.mv_to_adc(threshold, channel)
+        elif threshold_unit == 'v':
+            threshold_adc = self.volts_to_adc(threshold, channel)
         else:
-            threshold_adc = int(threshold_mv)
+            threshold_adc = int(threshold)
 
         self._call_attr_function(
             'SetSimpleTrigger',

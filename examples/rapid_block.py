@@ -34,7 +34,7 @@ scope.open_unit()
 scope.set_channel(channel=psdk.CHANNEL.A, range=psdk.RANGE.V1)
 
 # Configure a simple rising edge trigger for channel A, wait indefinitely (do not auto trigger)
-scope.set_simple_trigger(channel=psdk.CHANNEL.A, threshold_mv=0, auto_trigger=0)
+scope.set_simple_trigger(channel=psdk.CHANNEL.A, threshold=0, auto_trigger=0)
 
 # Set siggen to 100kHz & 0.8Vpkpk output sine wave
 scope.set_siggen(frequency=100_000, pk2pk=0.8, wave_type=psdk.WAVEFORM.SINE)
