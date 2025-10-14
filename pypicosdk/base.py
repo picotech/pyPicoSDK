@@ -849,14 +849,14 @@ class PicoScopeBase:
         return int(((volts / scale) / channel_range_v) * self.max_adc_value)
 
     # Data conversion ADC/mV & ctypes/int
-    def mv_to_adc(self, mv: float, channel: CHANNEL = None) -> int:
+    def mv_to_adc(self, mv: float, channel: cst.CHANNEL) -> int:
         """
         Converts a millivolt (mV) value to an ADC value based on the device's
         maximum ADC range.
 
         Args:
-                mv (float): Voltage in millivolts to be converted.
-                channel (CHANNEL, optional): Channel associated with ``mv``. The
+                mv (float): Voltage in millivolts (mV) to be converted.
+                channel (CHANNEL): Channel associated with ``mv``. The
                         probe scaling for the channel will be applied if provided.
 
         Returns:
