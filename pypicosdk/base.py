@@ -29,6 +29,7 @@ from .common import *
 from .common import (
     _get_literal,
 )
+from ._classes import _general
 
 
 class PicoScopeBase:
@@ -65,6 +66,8 @@ class PicoScopeBase:
         self.over_range = 0
         self._actual_interval = 0
         self.last_used_volt_unit: str = 'mv'
+
+        self.base_dataclass = _general.BaseDataClass()
 
     def __exit__(self):
         self.close_unit()
