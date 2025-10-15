@@ -26,9 +26,11 @@ from ..constants import (
 )
 from .. import common as cmn
 from ..common import (
-    PicoSDKException,
     _struct_to_dict,
     _get_literal,
+)
+from .._exceptions import (
+    PicoSDKException
 )
 
 from ._protocol import _ProtocolBase
@@ -730,6 +732,11 @@ class shared_ps6000a_psospa(_ProtocolBase):
             probe_scale (float, optional): Probe attenuation factor e.g. 10 for x10 probe.
                 Default value of 1.0 (x1).
         """
+        # Constrain probe scale
+        if probe_scale <= 0.0:
+            raise PicoSDKException(
+                f'Invalid probe scale: {probe_scale}. Value must be greater than 0.0.')
+
         # Check if typing Literals
         channel = _get_literal(channel, channel_map)
         range = _get_literal(range, range_map)
