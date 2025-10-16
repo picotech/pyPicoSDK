@@ -4,5 +4,5 @@
 - Streaming examples (inc. downsampling)
 
 ## To-do:
-- PS2000 Driver support
-- PS2000(A) Driver support
+- ps5000(A) API - PicoScope 5000D Series
+- ps4000(A) API - PicoScope 4000A Series
