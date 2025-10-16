@@ -39,6 +39,7 @@ nav:
     - ref/constants.md
     - Config/Overrides: ref/configuration.md
   - Development:
+    - Issues: dev/issues.md
     - Changelog: dev/changelog.md
     - Current Support: dev/current.md
     - Upcoming Roadmap: dev/roadmap.md
