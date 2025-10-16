@@ -366,10 +366,10 @@ class shared_ps6000a_psospa(_ProtocolBase):
 
     def siggen_set_duty_cycle(self, duty:float) -> None:
         """
-        Set duty cycle of SigGen in percentage
+        Set duty cycle of SigGen in percentage.
 
         Args:
-                duty cycle (int): Duty cycle in %.
+            duty (float): Duty cycle in %.
         """
         self._call_attr_function(
             'SigGenWaveformDutyCycle',
