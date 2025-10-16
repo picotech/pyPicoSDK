@@ -51,6 +51,9 @@ Once tested, try an [example script from github](https://github.com/picotech/pyP
 ### Full getting started
 [For our full getting started guide, click here to go to our full knowledge base article.](https://www.picotech.com/library/knowledge-bases/oscilloscopes/pypicosdk-get-started)
 
+## Issues
+For details on raising an issue, find information here: [Issue documentation](https://picotech.github.io/pyPicoSDK/dev/issues/)
+
 ## Compatibility
 Current PicoScope support:
 - PicoScope 6000E (ps6000a drivers)
@@ -65,4 +68,4 @@ Current PicoScope support:
 ## Version Control
 pyPicoSDK: 1.6.2
 
-Docs: 0.4.0
+Docs: 0.4.1
