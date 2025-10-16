@@ -732,15 +732,6 @@ class shared_ps6000a_psospa(_ProtocolBase):
             probe_scale (float, optional): Probe attenuation factor e.g. 10 for x10 probe.
                 Default value of 1.0 (x1).
         """
-        # Constrain probe scale
-        if probe_scale <= 0.0:
-            raise PicoSDKException(
-                f'Invalid probe scale: {probe_scale}. Value must be greater than 0.0.')
-
-        # Check if typing Literals
-        channel = _get_literal(channel, channel_map)
-        range = _get_literal(range, range_map)
-
         if enabled:
             self.set_channel_on(channel, range, coupling, offset, bandwidth,
                                 probe_scale=probe_scale)
@@ -774,11 +765,21 @@ class shared_ps6000a_psospa(_ProtocolBase):
                     Default value of 1.0 (x1).
 
         """
+        # Constrain probe scale
+        if probe_scale <= 0.0:
+            raise PicoSDKException(
+                f'Invalid probe scale: {probe_scale}. Value must be greater than 0.0.')
+
+        # Give warning a non-default probe scale
         if probe_scale != 1:
             warn(
                 f'Ensure selected channel range of {cst.range_literal.__args__[range]} ' +
                 f'accounts for attenuation of x{probe_scale} at scope input',
                 cmn.ProbeScaleWarning)
+
+        # Check if typing Literals
+        channel = _get_literal(channel, channel_map)
+        range = _get_literal(range, range_map)
 
         self.channel_db[channel] = ChannelClass(ch_range=range, probe_scale=probe_scale)
 
@@ -793,8 +794,27 @@ class shared_ps6000a_psospa(_ProtocolBase):
         )
         return status
 
-    def set_channel_off(self, channel):
-        """Sets a channel to OFF (6000E)"""
+    def set_channel_off(
+            self,
+            channel: str | cst.channel_literal | cst.CHANNEL
+        ) -> int:
+        """
+        Turn off (disable) a specified channel.
+
+        Args:
+            channel (str | CHANNEL): Specified channel to turn off.
+
+        Returns:
+            int: Status from PicoScope.
+        """
+
+        # Check if typing Literals
+        channel = _get_literal(channel, channel_map)
+
+        # Remove it from the channel database
+        if channel in self.channel_db:
+            self.channel_db.pop(channel)
+
         status = self._call_attr_function(
             'SetChannelOff',
             self.handle,
