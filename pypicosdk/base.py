@@ -29,6 +29,7 @@ from .common import *
 from .common import (
     _get_literal,
 )
+from ._classes import _general
 
 
 class PicoScopeBase:
@@ -65,6 +66,8 @@ class PicoScopeBase:
         self.over_range = 0
         self._actual_interval = 0
         self.last_used_volt_unit: str = 'mv'
+
+        self.base_dataclass = _general.BaseDataClass()
 
     def __exit__(self):
         self.close_unit()
@@ -487,7 +490,8 @@ class PicoScopeBase:
         Args:
             timebase (int): PicoScope timebase
             samples (int): Number of samples captured
-            pre_trig_percent (int): Percent to offset the 0 point by. If None, default is 0.
+            pre_trig_percent (int): Percent to offset the 0 point by. If None, defaults to last
+                used pre_trig_percent or 50.
             unit (str): Unit of seconds the time axis is returned in.
                 Default is 'ns' (nanoseconds).
             ratio (int): If using a downsampling ratio, this will scale the time interval
@@ -496,15 +500,24 @@ class PicoScopeBase:
         Returns:
             np.ndarray: Array of time values in nano-seconds
         """
+        # Check and save pre_trig to base dataclass
+        if pre_trig_percent == None:
+            pre_trig_percent = self.base_dataclass.last_pre_trig
+        self.base_dataclass.last_pre_trig = pre_trig_percent
+
+        # Default to 1 when using ratio
         ratio = max(1, ratio)
+
+        # Get unit scalar value
         scalar = cst.TimeUnitStd_M['ns'] / cst.TimeUnitStd_M[unit]
+
+        # Get the interval for the specified timebase/samples
         interval = self.get_timebase(timebase, samples)['Interval(ns)'] * ratio / scalar
+
+        # Maths
         time_axis = np.arange(samples) * interval
-        if pre_trig_percent is None:
-            return time_axis
-        else:
-            offset = int(time_axis.max() * (pre_trig_percent / 100))
-            return time_axis - offset
+        offset = time_axis.max() * (pre_trig_percent / 100)
+        return time_axis - offset
 
     def realign_downsampled_data(
             self,
@@ -1885,7 +1898,13 @@ class PicoScopeBase:
         # Return data
         return channel_buffer, time_axis
 
-    def run_block_capture(self, timebase, samples, pre_trig_percent=50, segment=0) -> int:
+    def run_block_capture(
+            self,
+            timebase: int,
+            samples: int,
+            pre_trig_percent: float | None = None,
+            segment: int = 0,
+        ) -> int:
         """
         Runs a block capture using the specified timebase and number of samples.
 
@@ -1893,14 +1912,20 @@ class PicoScopeBase:
         pre-trigger and post-trigger samples. It uses the PicoSDK `RunBlock` function.
 
         Args:
-                timebase (int): Timebase value determining sample interval (refer to PicoSDK guide).
-                samples (int): Total number of samples to capture.
-                pre_trig_percent (int, optional): Percentage of samples to capture before the trigger.
-                segment (int, optional): Memory segment index to use.
+            timebase (int): Timebase value determining sample interval (refer to PicoSDK guide).
+            samples (int): Total number of samples to capture.
+            pre_trig_percent (int | None, optional):
+                Percentage of samples to capture before the trigger. If None, defaults to
+                last called pre_trig_percent or 50.
+            segment (int, optional): Memory segment index to use.
 
         Returns:
-                int: Estimated time (in milliseconds) the device will be busy capturing data.
+            int: Estimated time (in milliseconds) the device will be busy capturing data.
         """
+        # Check and add pre-trig to base dataclass
+        if pre_trig_percent is None:
+            pre_trig_percent = self.base_dataclass.last_pre_trig
+        self.base_dataclass.last_pre_trig = pre_trig_percent
 
         pre_samples = int((samples * pre_trig_percent) / 100)
         post_samples = int(samples - pre_samples)
