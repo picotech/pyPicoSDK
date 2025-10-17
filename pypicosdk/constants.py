@@ -97,7 +97,7 @@ trigger_dir_m = {'above': 0,
                  'falling': 3,
                  'rising or falling': 4}
 
-class WAVEFORM:
+class WAVEFORM(IntEnum):
     """
     Waveform type constants for PicoScope signal generator configuration.
 
@@ -129,6 +129,21 @@ class WAVEFORM:
     WHITENOISE = 0x00002001
     PRBS = 0x00002002
     ARBITRARY = 0x10000000
+
+
+ps5000a_waveform_map = {
+    WAVEFORM.SINE: 0,
+    WAVEFORM.SQUARE: 1,
+    WAVEFORM.TRIANGLE: 2,
+    WAVEFORM.RAMP_UP: 3,
+    WAVEFORM.RAMP_DOWN: 4,
+    WAVEFORM.SINC: 5,
+    WAVEFORM.GAUSSIAN: 6,
+    WAVEFORM.HALF_SINE: 7,
+    WAVEFORM.DC_VOLTAGE: 8,
+    WAVEFORM.WHITENOISE: 9
+}
+
 
 waveform_literal = Literal[
     'sine',
