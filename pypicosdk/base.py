@@ -899,16 +899,16 @@ class PicoScopeBase:
 
     def _adc_to_(
         self,
-        data: dict | int | np.ndarray,
+        buffer: dict | int | np.ndarray,
         channel: int | CHANNEL | str | channel_literal = None,
         unit: OutputUnitV_L = 'mv',
     ) -> dict | float | np.ndarray:
         """
-        Middle-function between adc conversion to direct data based on if it's a dict or
+        Middle-function between adc conversion to direct buffer based on if it's a dict or
         adc values.
 
         Args:
-            data (dict, int, float, np.ndarray):
+            buffer (dict, int, float, np.ndarray):
                 ADC values to be converted to millivolt values
             channel (int, CHANNEL, str, optional):
                 Channel the ADC data is from. If the data is a channel buffer dict,
@@ -922,58 +922,58 @@ class PicoScopeBase:
         # Update last used
         self.last_used_volt_unit = unit
 
-        if isinstance(data, dict):
-            for channel, adc in data.items():
-                data[channel] = self._adc_conversion(adc, channel, output_unit=unit)
+        if isinstance(buffer, dict):
+            for channel, adc in buffer.items():
+                buffer[channel] = self._adc_conversion(adc, channel, output_unit=unit)
         else:
             if isinstance(channel, str):
                 channel = _get_literal(channel, channel_map)
-            data = self._adc_conversion(data, channel, output_unit=unit)
-        return data
+            buffer = self._adc_conversion(buffer, channel, output_unit=unit)
+        return buffer
 
     def adc_to_mv(
         self,
-        data: dict | int | np.ndarray,
+        buffer: dict | int | np.ndarray,
         channel: int | CHANNEL | str | channel_literal = None,
     ) -> dict | float | np.ndarray:
         """
         Converts ADC values into millivolt (mV) values.
-        The data can be from a channel buffer (dict), numpy array or single value.
+        The buffer can be from a channel buffer (dict), numpy array or single value.
 
         Args:
-            data (dict, int, float, np.ndarray):
+            buffer (dict, int, float, np.ndarray):
                 ADC values to be converted to millivolt values
             channel (int, CHANNEL, str, optional):
-                Channel the ADC data is from. If the data is a channel buffer dict,
+                Channel the ADC buffer is from. If the buffer is a channel buffer dict,
                 set to None. Defaults to None.
 
         Returns:
-            dict, int, float, np.ndarray: Data converted into millivolts (mV)
+            dict, int, float, np.ndarray: buffer converted into millivolts (mV)
         """
         self.last_used_volt_unit = 'mv'  # Update last used
-        return self._adc_to_(data, channel, unit='mv')
+        return self._adc_to_(buffer, channel, unit='mv')
 
     def adc_to_volts(
         self,
-        data: dict | int | np.ndarray,
+        buffer: dict | int | np.ndarray,
         channel: int | CHANNEL | str | channel_literal = None,
     ) -> dict | float | np.ndarray:
         """
         Converts ADC values into voltage (V) values.
-        The data can be from a channel buffer (dict), numpy array or single value.
+        The buffer can be from a channel buffer (dict), numpy array or single value.
 
         Args:
-            data (dict, int, float, np.ndarray):
+            buffer (dict, int, float, np.ndarray):
                 ADC values to be converted to millivolt values
             channel (int, CHANNEL, str, optional):
-                Channel the ADC data is from. If the data is a channel buffer dict,
+                Channel the ADC buffer is from. If the buffer is a channel buffer dict,
                 set to None. Defaults to None.
 
         Returns:
-            dict, int, float, np.ndarray: Data converted into volts (V)
+            dict, int, float, np.ndarray: buffer converted into volts (V)
         """
         self.last_used_volt_unit = 'v'  # Update last used
-        return self._adc_to_(data, channel, unit='v')
+        return self._adc_to_(buffer, channel, unit='v')
 
     def _thr_hyst_mv_to_adc(
             self,
@@ -1112,7 +1112,7 @@ class PicoScopeBase:
         else:
             threshold_adc = int(threshold)
 
-        self._call_attr_function(
+        return self._call_attr_function(
             'SetSimpleTrigger',
             self.handle,
             enable,
