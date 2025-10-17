@@ -355,7 +355,6 @@ class PicoScopeBase:
             self._get_enabled_channel_flags(),
             ctypes.c_double(interval_s),
             self.resolution,
-            0,
             ctypes.byref(timebase),
             ctypes.byref(time_interval),
         )
