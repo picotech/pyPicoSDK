@@ -13,6 +13,8 @@ from ..common import (
     ParameterNotSupported
 )
 from ..base import PicoScopeBase
+from .._classes._channel_class import ChannelClass
+from .._exceptions import PicoSDKException
 
 
 class ps5000a(PicoScopeBase):  # pylint: disable=C0103
@@ -93,17 +95,11 @@ class ps5000a(PicoScopeBase):  # pylint: disable=C0103
         range = _get_literal(range, cst.range_map)
 
         if enabled:
-            self.range[channel] = range
-        else:
-            try:
-                self.range.pop(channel)
-            except KeyError:
-                pass
+            self.channel_db[channel] = ChannelClass(range, probe_scale)
+        elif channel in self.channel_db:
+            self.channel_db.pop(channel)
 
-        self.probe_scale[channel] = probe_scale
-        self._set_ylim(range)
-
-        super()._call_attr_function(
+        self._call_attr_function(
             'SetChannel',
             self.handle,
             channel,
@@ -126,36 +122,30 @@ class ps5000a(PicoScopeBase):  # pylint: disable=C0103
             self.set_channel(channel, enabled=False)
 
     @override
-    def set_simple_trigger(
-        self,
-        channel: str | cst.channel_literal | cst.CHANNEL,
-        threshold_mv: int = 0,
-        enable: bool = True,
-        direction: str | cst.trigger_dir_l | cst.TRIGGER_DIR = cst.TRIGGER_DIR.RISING,
-        delay: int = 0,
-        auto_trigger: int = 0,
-    ) -> None:
+    def set_simple_trigger(self, channel, threshold=0, threshold_unit='mv', enable=True,
+                           direction=cst.TRIGGER_DIR.RISING, delay=0, auto_trigger=0):
+        status = super().set_simple_trigger(channel, threshold, threshold_unit, enable, direction,
+                                            delay, auto_trigger=0)
+        self.set_auto_trigger_microseconds(auto_trigger)
+        return status
+
+    def set_auto_trigger_microseconds(self, auto_trigger: int) -> int:
         """
-        Sets up a simple trigger from a specified channel and threshold in mV.
+        Set auto_trigger in microseconds.
+        This will override or be overridden by calling `set_simple_trigger()`.
 
         Args:
-            channel (str | CHANNEL): The input channel to apply the trigger to.
-            threshold_mv (int, optional): Trigger threshold level in millivolts.
-                Defaults to 0.
-            enable (bool, optional): Enables or disables the trigger.
-                Defaults to True.
-            direction (str | TRIGGER_DIR, optional): Trigger direction.
-                Defaults to cst.TRIGGER_DIR.RISING.
-            delay (int, optional): Delay in no. of samples. Defaults to 0.
-            auto_trigger (int, optional): Auto trigger timeout in **milliseconds**.
-                Defaults to 0.
+            auto_trigger (int): Number of microseconds the PicoScope will wait before timing out
+                and auto-triggering.
 
-        Examples:
-            When using TRIGGER_AUX, threshold is fixed to 1.25 V
-            >>> scope.set_simple_trigger(channel=psdk.CHANNEL.TRIGGER_AUX)
+        Returns:
+            int: Status from device.
         """
-        return super().set_simple_trigger(
-            channel, threshold_mv, enable, direction, delay, auto_trigger * 1000)
+        return self._call_attr_function(
+            'SetAutoTriggerMicroSeconds',
+            self.handle,
+            auto_trigger
+        )
 
     @override
     def set_data_buffer(  # pylint: disable=W0221
@@ -282,6 +272,12 @@ class ps5000a(PicoScopeBase):  # pylint: disable=C0103
 
         return buffer_min, buffer_max
 
+    @override
+    def get_values(self, samples, start_index=0, segment=0, ratio=0, ratio_mode=cst.RATIO_MODE.RAW):
+        if ratio_mode == cst.RATIO_MODE.RAW:
+            ratio_mode = cst.RATIO_MODE.NONE
+        return super().get_values(samples, start_index, segment, ratio, ratio_mode)
+
     def set_siggen(
         self,
         frequency: float,
@@ -294,21 +290,115 @@ class ps5000a(PicoScopeBase):  # pylint: disable=C0103
         dwell_time: float = 1,
         sweep_type: cst.SWEEP_TYPE = cst.SWEEP_TYPE.UP,
         **kwargs,
-    ) -> None:
+    ) -> int:
+        """
+        Set the Signal Generator to the following specifications.
+
+        Args:
+            frequency (float): Frequency the SigGen will initially produce.
+            pk2pk (float): Peak-to-peak voltage in volts (V)
+            wave_type (str | WAVEFORM): Type of waveform to be generated.
+            offset (int, optional): Offset in volts (V). Defaults to 0.
+            sweep (bool, optional): If sweep is enabled, specify a stop_freq.
+                Defaults to False.
+            stop_freq (float, optional): Stop frequency in sweep mode. Defaults to None.
+            inc_freq (float, optional): Frequency to increment in sweep mode. Defaults to 0.
+            dwell_time (float, optional): Time of each step in sweep mode in seconds.
+                Defaults to 1.
+            sweep_type (SWEEP_TYPE, optional): Sweep direction in sweep mode.
+                Defaults to SWEEP_TYPE.UP.
+            operation (int, optional): Extra operations for the signal generator.
+                Defaults to 0.
+            shots (int, optional): Sweep the frequency as specified by sweeps.
+                Defaults to 0.
+            sweeps (int, optional): Produce number of cycles specified by shots.
+                Defaults to 0.
+            trigger_type (int, optional): Type of trigger (edge or level) that will be applied to
+                signal generator. Defaults to 0.
+            trigger_source (int, optional): The source that will trigger the signal generator.
+                Defaults to 0.
+            ext_in_threshold (int, optinal): Used to set trigger level for external trigger.
+                Defaults to 0.
+
+        Returns:
+            int: Returned status of device.
+        """
         if sweep is False:
             stop_freq = frequency
 
-        # Convert to uV
+        # Convert V to uV
         offset = int(offset * 1e6)
         pk2pk = int(pk2pk * 1e6)
 
-        wavetype = ctypes.c_int32(1)
-        sweepType = ctypes.c_int32(0)
-        triggertype = ctypes.c_int32(0)
-        triggerSource = ctypes.c_int32(0)
+        # Get wavetype and map to ps5000a enums
+        wave_type = _get_literal(wave_type, cst.waveform_map)
+        wave_type = cst.ps5000a_waveform_map.get(wave_type, None)
+        if wave_type is None:
+            raise PicoSDKException(f'Wave type of {wave_type} is invalid for this device.')
 
-        print(self.handle)
+        status = self._call_attr_function(
+            'SetSigGenBuiltInV2',
+            self.handle,
+            offset,
+            pk2pk,
+            wave_type,
+            ctypes.c_double(frequency),
+            ctypes.c_double(stop_freq),
+            ctypes.c_double(inc_freq),
+            ctypes.c_double(dwell_time),
+            sweep_type,
+            kwargs.get('operation', 0),
+            kwargs.get('shots', 0),
+            kwargs.get('sweeps', 0),
+            kwargs.get('trigger_type', 0),
+            kwargs.get('trigger_source', 0),
+            kwargs.get('ext_in_threshold', 0)
+        )
+        return status
 
-        print(self.dll.ps5000aSetSigGenBuiltInV2(
-            self.handle, 0, 2000000, wavetype, 10000, 100000, 5000, 1, sweepType, 0, 0, 0,
-            triggertype, triggerSource, 0))
+    @override
+    def set_data_buffer_for_enabled_channels(
+        self,
+        samples,
+        segment=0,
+        datatype=cst.DATA_TYPE.INT16_T,
+        ratio_mode=cst.RATIO_MODE.RAW,
+        clear_buffer=False,
+        captures=0
+    ):
+        clear_buffer = False
+        return super().set_data_buffer_for_enabled_channels(
+            samples, segment, datatype, ratio_mode, clear_buffer, captures)
+
+    @override
+    def get_timebase(self, timebase, samples, segment=0):
+        time_interval_ns = ctypes.c_float()
+        max_samples = ctypes.c_uint64()
+        status = self._call_attr_function(
+            'GetTimebase2',
+            self.handle,
+            timebase,
+            samples,
+            ctypes.byref(time_interval_ns),
+            ctypes.byref(max_samples),
+            segment,
+        )
+        return {'Interval(ns)': time_interval_ns.value,
+                'Samples': max_samples.value,
+                'Status': status}
+
+    @override
+    def get_nearest_sampling_interval(self, interval_s):
+        timebase = ctypes.c_uint32()
+        time_interval = ctypes.c_double()
+        self._call_attr_function(
+            'NearestSampleIntervalStateless',
+            self.handle,
+            self._get_enabled_channel_flags(),
+            ctypes.c_double(interval_s),
+            self.resolution,
+            0,
+            ctypes.byref(timebase),
+            ctypes.byref(time_interval),
+        )
+        return {"timebase": timebase.value, "actual_sample_interval": time_interval.value}
