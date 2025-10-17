@@ -998,7 +998,7 @@ class PicoScopeBase:
         return upper_adc, lower_adc, hyst_upper_adc, hyst_lower_adc
 
     # Set methods for PicoScope configuration
-    def _set_ylim(self, ch_range: RANGE | range_literal) -> None:
+    def get_ylim(self, ch_range: RANGE | range_literal) -> None:
         """
         Returns the ylim of the widest channel range as a tuple. The unit is taken from
         the last used adc to voltage conversion, but can be overwritten by declaring a
