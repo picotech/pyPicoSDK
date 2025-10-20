@@ -64,11 +64,10 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
 
         return usb_power_struct
 
-    @override
     def set_channel_on(
         self,
-        channel: CHANNEL,
-        range: RANGE,
+        channel: str | cst.channel_literal | CHANNEL,
+        range: str | cst.range_literal | RANGE,
         coupling: COUPLING = COUPLING.DC,
         offset: float = 0,
         bandwidth: BANDWIDTH_CH = BANDWIDTH_CH.FULL,
@@ -94,13 +93,12 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
             probe_scale (float, optional): Probe attenuation factor e.g. 10 for x10 probe.
                     Default value of 1.0 (x1).
         """
-        if probe_scale != 1:
-            warn(
-                f'Ensure selected channel range of {cst.range_literal.__args__[range]} ' +
-                f'accounts for attenuation of x{probe_scale} at scope input',
-                cmn.ProbeScaleWarning)
 
-        self.channel_db[channel] = ChannelClass(ch_range=range, probe_scale=probe_scale)
+        # Check if typing Literals
+        channel = cmn._get_literal(channel, channel_map)
+        range = cmn._get_literal(range, range_map)
+
+        self._set_channel_on(channel, range, probe_scale)
 
         range_max = ctypes.c_int64(RANGE_LIST[range] * 1_000_000)
         range_min = ctypes.c_int64(-range_max.value)

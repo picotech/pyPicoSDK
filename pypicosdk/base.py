@@ -28,6 +28,7 @@ from .constants import (
 from .common import *
 from .common import (
     _get_literal,
+    ProbeScaleWarning
 )
 from ._classes import _general
 
@@ -53,7 +54,7 @@ class PicoScopeBase:
                 lib_name = "lib" + dll_name + ".dylib"
             else:
                 lib_name = "lib" + dll_name + ".so"  # Default to Unix-like naming
-            
+
             self.dll = ctypes.CDLL(os.path.join(_get_lib_path(), lib_name))
         self._unit_prefix_n = dll_name
 
@@ -541,12 +542,12 @@ class PicoScopeBase:
             total_raw_samples: Length of the raw-sample grid to expand onto.
             returned_samples: Number of downsampled samples returned by the driver.
             ratio: Downsample ratio used for the request.
-            ratio_mode: Downsample mode used for the request 
+            ratio_mode: Downsample mode used for the request
             (``RATIO_MODE.DECIMATE`` or ``RATIO_MODE.AVERAGE``).
             fill_value: Value used for gaps. Defaults to ``np.nan``.
 
         Returns:
-            dict[int, np.ndarray]: Mapping from CHANNEL to expanded array 
+            dict[int, np.ndarray]: Mapping from CHANNEL to expanded array
             of length ``total_raw_samples``.
 
         Raises:
@@ -1052,6 +1053,27 @@ class PicoScopeBase:
         )
         self.resolution = resolution
         self.min_adc_value, self.max_adc_value = self.get_adc_limits()
+
+    def _set_channel_on(self, channel, range, probe_scale):
+        # Constrain probe scale
+        if not probe_scale >= 1.0:
+            raise PicoSDKException(
+                f'Invalid probe scale: {probe_scale}. Value must be equal or greater than 1.0.')
+
+        # Give warning a non-default probe scale
+        if probe_scale != 1:
+            warnings.warn(
+                f'Ensure selected channel range of {cst.range_literal.__args__[range]} ' +
+                f'accounts for attenuation of x{probe_scale} at scope input',
+                ProbeScaleWarning)
+
+        self.channel_db[channel] = ChannelClass(ch_range=range, probe_scale=probe_scale)
+
+    def _set_channel_off(self, channel):
+        # Remove it from the channel database
+        if channel in self.channel_db:
+            self.channel_db.pop(channel)
+
 
     def set_all_channels_off(self):
         """Turns all channels off, based on unit number of channels"""

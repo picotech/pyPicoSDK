@@ -732,69 +732,30 @@ class shared_ps6000a_psospa(_ProtocolBase):
             probe_scale (float, optional): Probe attenuation factor e.g. 10 for x10 probe.
                 Default value of 1.0 (x1).
         """
-        # Constrain probe scale
-        if probe_scale <= 0.0:
-            raise PicoSDKException(
-                f'Invalid probe scale: {probe_scale}. Value must be greater than 0.0.')
-
-        # Check if typing Literals
-        channel = _get_literal(channel, channel_map)
-        range = _get_literal(range, range_map)
-
         if enabled:
             self.set_channel_on(channel, range, coupling, offset, bandwidth,
                                 probe_scale=probe_scale)
         else:
             self.set_channel_off(channel)
 
-    def set_channel_on(
+    def set_channel_off(
             self,
-            channel,
-            range,
-            coupling=COUPLING.DC,
-            offset=0.0,
-            bandwidth=BANDWIDTH_CH.FULL,
-            probe_scale: float = 1.0
-    ) -> int:
+            channel: str | cst.channel_literal | cst.CHANNEL
+        ) -> int:
         """
-        Enable and configure a specific channel on the device with given parameters.
+        Turn off (disable) a specified channel.
 
         Args:
-            channel (CHANNEL):
-                The channel to enable (e.g., CHANNEL.A, CHANNEL.B).
-            range (RANGE):
-                The input voltage range to set for the channel.
-            coupling (COUPLING, optional):
-                The coupling mode to use (e.g., DC, AC). Defaults to DC.
-            offset (float, optional):
-                DC offset to apply to the channel input, in volts. Defaults to 0.
-            bandwidth (BANDWIDTH_CH, optional):
-                Bandwidth limit setting for the channel. Defaults to full bandwidth.
-            probe_scale (float, optional): Probe attenuation factor e.g. 10 for x10 probe.
-                    Default value of 1.0 (x1).
+            channel (str | CHANNEL): Specified channel to turn off.
 
+        Returns:
+            int: Status from PicoScope.
         """
-        if probe_scale != 1:
-            warn(
-                f'Ensure selected channel range of {cst.range_literal.__args__[range]} ' +
-                f'accounts for attenuation of x{probe_scale} at scope input',
-                cmn.ProbeScaleWarning)
+        # Check if typing Literals
+        channel = _get_literal(channel, channel_map)
 
-        self.channel_db[channel] = ChannelClass(ch_range=range, probe_scale=probe_scale)
+        self._set_channel_off(channel)
 
-        status = self._call_attr_function(
-            'SetChannelOn',
-            self.handle,
-            channel,
-            coupling,
-            range,
-            ctypes.c_double(offset),
-            bandwidth
-        )
-        return status
-
-    def set_channel_off(self, channel):
-        """Sets a channel to OFF (6000E)"""
         status = self._call_attr_function(
             'SetChannelOff',
             self.handle,

@@ -4,10 +4,12 @@ import ctypes
 from typing import override
 
 from .constants import *
-from .common import PicoSDKException
+from . import constants as cst
+from .common import PicoSDKException, _get_literal
 from .base import PicoScopeBase
 from .shared.ps6000a_psospa import shared_ps6000a_psospa
 from .shared.ps6000a_ps4000a import shared_4000a_6000a
+
 
 class ps6000a(PicoScopeBase, shared_ps6000a_psospa, shared_4000a_6000a):
     """PicoScope 6000 (A) API specific functions"""
@@ -115,5 +117,51 @@ class ps6000a(PicoScopeBase, shared_ps6000a_psospa, shared_4000a_6000a):
             self.handle,
             filter_state,
         )
+
+    def set_channel_on(
+        self,
+        channel: str | cst.channel_literal | cst.CHANNEL,
+        range: str | cst.range_literal | cst.RANGE,  # pylint: disable=W0622
+        coupling=cst.COUPLING.DC,
+        offset=0.0,
+        bandwidth=cst.BANDWIDTH_CH.FULL,
+        probe_scale: float = 1.0
+    ) -> int:
+        """
+        Enable and configure a specific channel on the device with given parameters.
+
+        Args:
+            channel (CHANNEL):
+                The channel to enable (e.g., CHANNEL.A, CHANNEL.B).
+            range (RANGE):
+                The input voltage range to set for the channel.
+            coupling (COUPLING, optional):
+                The coupling mode to use (e.g., DC, AC). Defaults to DC.
+            offset (float, optional):
+                DC offset to apply to the channel input, in volts. Defaults to 0.
+            bandwidth (BANDWIDTH_CH, optional):
+                Bandwidth limit setting for the channel. Defaults to full bandwidth.
+            probe_scale (float, optional): Probe attenuation factor e.g. 10 for x10 probe.
+                    Default value of 1.0 (x1).
+
+        """
+
+        # Check if typing Literals
+        channel = _get_literal(channel, cst.channel_map)
+        range = _get_literal(range, cst.range_map)
+
+        self._set_channel_on(channel, range, probe_scale)
+
+        status = self._call_attr_function(
+            'SetChannelOn',
+            self.handle,
+            channel,
+            coupling,
+            range,
+            ctypes.c_double(offset),
+            bandwidth
+        )
+        return status
+
 
 __all__ = ['ps6000a']
