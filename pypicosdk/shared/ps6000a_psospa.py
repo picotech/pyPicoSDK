@@ -751,13 +751,10 @@ class shared_ps6000a_psospa(_ProtocolBase):
         Returns:
             int: Status from PicoScope.
         """
-
         # Check if typing Literals
         channel = _get_literal(channel, channel_map)
 
-        # Remove it from the channel database
-        if channel in self.channel_db:
-            self.channel_db.pop(channel)
+        self._set_channel_off(channel)
 
         status = self._call_attr_function(
             'SetChannelOff',
