@@ -651,7 +651,7 @@ class PicoScopeBase:
         self._call_attr_function(
             "SetNoOfCaptures",
             self.handle,
-            ctypes.c_uint64(n_captures),
+            n_captures,
         )
 
     def get_no_of_captures(self) -> int:
