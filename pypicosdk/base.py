@@ -1586,6 +1586,7 @@ class PicoScopeBase:
         Raises:
             PicoSDKException: If an unsupported data type is provided.
         """
+        # If no samples, set buffer to None
         if samples == 0:
             buffer = None
             buf_ptr = None
@@ -1602,21 +1603,20 @@ class PicoScopeBase:
             np_dtype = dtype_map.get(datatype)
             if np_dtype is None:
                 raise PicoSDKException("Invalid datatype selected for buffer")
+             
+            # Create buffer based on ratio mode
+            if ratio_mode == cst.RATIO_MODE.AGGREGATE:
+                buffer = np.zeros((captures, samples, 2), dtype=np_dtype)
+            else:
+                buffer = np.zeros((captures, samples), dtype=np_dtype)
 
-            buffer = np.zeros((captures, samples), dtype=np_dtype)
-
+        # Set data buffers
         for i in range(captures):
-            self._call_attr_function(
-                "SetDataBuffer",
-                self.handle,
-                channel,
-                npc.as_ctypes(buffer[i]),
-                samples,
-                datatype,
-                segment + i,
-                ratio_mode,
-                action,
-            )
+            # Set data buffers based on ratio mode
+            if ratio_mode == cst.RATIO_MODE.AGGREGATE:
+                self.set_data_buffers(channel, samples, segment + i, datatype, ratio_mode, action, buffers=buffer[i])
+            else:
+                self.set_data_buffer(channel, samples, segment + i, datatype, ratio_mode, action, buffer=buffer[i])
 
         return buffer
 
@@ -1687,70 +1687,6 @@ class PicoScopeBase:
         )
 
         return buffer_min, buffer_max
-
-    def set_data_buffers_rapid_capture(
-            self,
-            channel,
-            samples,
-            captures,
-            segment=0,
-            datatype=DATA_TYPE.INT16_T,
-            ratio_mode=RATIO_MODE.RAW,
-            action=ACTION.CLEAR_ALL | ACTION.ADD,
-        ) -> np.ndarray | None:
-        """
-        Allocate and assign max and min NumPy-backed data buffers for rapid block
-        capture on a specified channel.
-
-        Args:
-            channel (int): The channel to associate the buffer with (e.g., CHANNEL.A).
-            samples (int): Number of samples to allocate in the buffer.
-            captures (int): Number of rapid block captures
-            segment (int, optional): Memory segment to start at.
-            datatype (DATA_TYPE, optional): C data type for the buffer (e.g., INT16_T).
-            ratio_mode (RATIO_MODE, optional): Downsampling mode.
-            action (ACTION, optional): Action to apply to the data buffer (e.g., CLEAR_ALL | ADD).
-
-        Returns:
-            np.array | None: The allocated buffer or ``None`` when clearing existing buffers.
-
-        Raises:
-            PicoSDKException: If an unsupported data type is provided.
-        """
-        if samples == 0:
-            buffer = None
-            buf_ptr = None
-        else:
-            # Map to NumPy dtype
-            dtype_map = {
-                DATA_TYPE.INT8_T: np.int8,
-                DATA_TYPE.INT16_T: np.int16,
-                DATA_TYPE.INT32_T: np.int32,
-                DATA_TYPE.INT64_T: np.int64,
-                DATA_TYPE.UINT32_T: np.uint32,
-            }
-
-            np_dtype = dtype_map.get(datatype)
-            if np_dtype is None:
-                raise PicoSDKException("Invalid datatype selected for buffer")
-
-            buffer = np.zeros((captures, samples, 2), dtype=np_dtype)
-
-        for i in range(captures):
-            self._call_attr_function(
-                "SetDataBuffers",
-                self.handle,
-                channel,
-                npc.as_ctypes(buffer[i][0]),
-                npc.as_ctypes(buffer[i][1]),
-                samples,
-                datatype,
-                segment + i,
-                ratio_mode,
-                action,
-            )
-
-        return buffer
 
     # Run functions
     def run_simple_block_capture(
