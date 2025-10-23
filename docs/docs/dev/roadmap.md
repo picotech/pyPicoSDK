@@ -2,7 +2,10 @@
 # Roadmap for pyPicoSDK
 ## WIP
 - Streaming examples (inc. downsampling)
+- ps5000a API
+    - Streaming
+    - Advanced Triggering 
+    - Extra functions
 
 ## To-do:
-- ps5000(A) API - PicoScope 5000D Series
-- ps4000(A) API - PicoScope 4000A Series
+- ps4000a API - PicoScope 4000A Series
