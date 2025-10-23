@@ -387,35 +387,6 @@ class PicoScopeBase:
         return {"Interval(ns)": time_interval_ns.value,
                 "Samples":          max_samples.value}
 
-    def _get_timebase_2(self, timebase: int, samples: int, segment:int=0):
-        """
-        Calculates the sampling rate and maximum number of samples for a given
-        timebase under the specified conditions.
-
-        Args:
-                timebase (int): Selected timebase multiplier (refer to programmer's guide).
-                samples (int): Number of samples.
-                segment (int, optional): Index of the memory segment to use.
-
-        Returns:
-                dict: Dictionary containing:
-                        - 'interval' (ns): Time interval between samples.
-                        - 'max_samples': Maximum number of samples.
-        """
-        time_interval_ns = ctypes.c_float()
-        max_samples = ctypes.c_int32()
-        status = self._call_attr_function(
-            'GetTimeBase2',
-            self.handle,
-            timebase,
-            samples,
-            ctypes.byref(time_interval_ns),
-            ctypes.byref(max_samples),
-            segment
-        )
-        return {"Interval(ns)": time_interval_ns.value,
-                "Samples":          max_samples.value}
-
     def get_actual_interval(self):
         """
         Returns the actual interval set by device in seconds (s).
@@ -667,26 +638,23 @@ class PicoScopeBase:
 
     def get_values_bulk(
         self,
-        start_index: int,
-        no_of_samples: int,
+        samples: int,
         from_segment_index: int,
         to_segment_index: int,
-        down_sample_ratio: int,
-        down_sample_ratio_mode: int,
-        wait_for_ready: bool = True,
+        start_index: int = 0,
+        ratio: int = 0,
+        ratio_mode: cst.RATIO_MODE = cst.RATIO_MODE.RAW,
     ) -> tuple[int, list[list[str]]]:
         """Retrieve data from multiple memory segments.
 
         Args:
-            start_index: Index within each segment to begin copying from.
-            no_of_samples: Total number of samples to read from each segment.
+            samples: Total number of samples to read from each segment.
             from_segment_index: Index of the first segment to read.
             to_segment_index: Index of the last segment. If this value is
                 less than ``from_segment_index`` the driver wraps around.
-            down_sample_ratio: Downsampling ratio to apply before copying.
-            down_sample_ratio_mode: Downsampling mode from
-                :class:`RATIO_MODE`.
-            wait_for_ready (bool, optional): Whether to wait for the device to be ready.
+            start_index: Index within each segment to begin copying from.
+            ratio: Downsampling ratio to apply before copying.
+            ratio_mode: Downsampling mode from :class:`RATIO_MODE`.
 
         Returns:
             tuple[int, list[list[str]]]: ``(samples, overflow)list)`` where ``samples`` is the
@@ -694,11 +662,8 @@ class PicoScopeBase:
             channnels have exceeded their voltage range.
         """
 
-        # If wait_for_ready is True, wait for the device to be ready before getting values
-        if wait_for_ready:
-            self.is_ready()
-            
-        no_samples = ctypes.c_uint64(no_of_samples)
+        self.is_ready()
+        no_samples = ctypes.c_uint64(samples)
         overflow = np.zeros(to_segment_index + 1, dtype=np.int16)
         self._call_attr_function(
             "GetValuesBulk",
@@ -707,8 +672,8 @@ class PicoScopeBase:
             ctypes.byref(no_samples),
             ctypes.c_uint64(from_segment_index),
             ctypes.c_uint64(to_segment_index),
-            ctypes.c_uint64(down_sample_ratio),
-            down_sample_ratio_mode,
+            ctypes.c_uint64(ratio),
+            ratio_mode,
             npc.as_ctypes(overflow),
         )
         overflow_list = []
@@ -1869,7 +1834,8 @@ class PicoScopeBase:
 
         # Return values
         actual_samples, _ = self.get_values_bulk(
-            start_index, samples, segment, captures - 1, ratio, ratio_mode)
+            samples, from_segment_index=segment, to_segment_index=captures - 1, ratio=ratio, 
+            ratio_mode=ratio_mode, start_index=start_index)
 
         # Reduce samples based on actual samples
         for channel, array in channel_buffer.items():
