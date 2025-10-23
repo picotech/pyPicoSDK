@@ -342,7 +342,6 @@ class PicoScopeBase:
             self._get_enabled_channel_flags(),
             ctypes.c_double(interval_s),
             self.resolution,
-            0,
             ctypes.byref(timebase),
             ctypes.byref(time_interval),
         )
@@ -639,7 +638,7 @@ class PicoScopeBase:
         self._call_attr_function(
             "SetNoOfCaptures",
             self.handle,
-            ctypes.c_uint64(n_captures),
+            n_captures,
         )
 
     def get_no_of_captures(self) -> int:
