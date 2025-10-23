@@ -5,7 +5,7 @@ import numpy as np
 
 from . import constants as _constants
 from .constants import *
-from .version import VERSION
+from .version import __version__
 from .ps6000a import ps6000a
 from .psospa import psospa
 from ._drivers._ps5000a import ps5000a
@@ -143,5 +143,5 @@ __all__ = list(_constants.__all__) + [
     'ps6000a',
     'psospa',
     'ps5000a',
-    'VERSION',
+    '__version__',
 ]
