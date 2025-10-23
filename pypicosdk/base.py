@@ -1602,6 +1602,7 @@ class PicoScopeBase:
         Raises:
             PicoSDKException: If an unsupported data type is provided.
         """
+        # If no samples, set buffer to None
         if samples == 0:
             buffer = None
             buf_ptr = None
@@ -1611,21 +1612,20 @@ class PicoScopeBase:
             np_dtype = cst.DataTypeNPMap.get(datatype, None)
             if np_dtype is None:
                 raise PicoSDKException("Invalid datatype selected for buffer")
+             
+            # Create buffer based on ratio mode
+            if ratio_mode == cst.RATIO_MODE.AGGREGATE:
+                buffer = np.zeros((captures, samples, 2), dtype=np_dtype)
+            else:
+                buffer = np.zeros((captures, samples), dtype=np_dtype)
 
-            buffer = np.zeros((captures, samples), dtype=np_dtype)
-
+        # Set data buffers
         for i in range(captures):
-            self._call_attr_function(
-                "SetDataBuffer",
-                self.handle,
-                channel,
-                npc.as_ctypes(buffer[i]),
-                samples,
-                datatype,
-                segment + i,
-                ratio_mode,
-                action,
-            )
+            # Set data buffers based on ratio mode
+            if ratio_mode == cst.RATIO_MODE.AGGREGATE:
+                self.set_data_buffers(channel, samples, segment + i, datatype, ratio_mode, action, buffers=buffer[i])
+            else:
+                self.set_data_buffer(channel, samples, segment + i, datatype, ratio_mode, action, buffer=buffer[i])
 
         return buffer
 
