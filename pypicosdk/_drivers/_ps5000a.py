@@ -166,7 +166,7 @@ class ps5000a(PicoScopeBase):  # pylint: disable=C0103
             samples (int): Number of samples to allocate.
             segment (int, optional): Memory segment to use. Defaults to 0.
             ratio_mode (RATIO_MODE, optional): Downsampling mode. Defaults to AGGREGATE.
-            buffers (np.ndarray | None, optional):
+            buffer (np.ndarray | None, optional):
                 Send a preallocated data buffer to be populated. Min buffer first.
                 If left as none, this function creates and returns its own buffer.
 
@@ -307,17 +307,19 @@ class ps5000a(PicoScopeBase):  # pylint: disable=C0103
                 Defaults to 1.
             sweep_type (SWEEP_TYPE, optional): Sweep direction in sweep mode.
                 Defaults to SWEEP_TYPE.UP.
-            operation (int, optional): Extra operations for the signal generator.
+
+        Other Args:
+            operation (int): Extra operations for the signal generator.
                 Defaults to 0.
-            shots (int, optional): Sweep the frequency as specified by sweeps.
+            shots (int): Sweep the frequency as specified by sweeps.
                 Defaults to 0.
-            sweeps (int, optional): Produce number of cycles specified by shots.
+            sweeps (int): Produce number of cycles specified by shots.
                 Defaults to 0.
-            trigger_type (int, optional): Type of trigger (edge or level) that will be applied to
+            trigger_type (int): Type of trigger (edge or level) that will be applied to
                 signal generator. Defaults to 0.
-            trigger_source (int, optional): The source that will trigger the signal generator.
+            trigger_source (int): The source that will trigger the signal generator.
                 Defaults to 0.
-            ext_in_threshold (int, optinal): Used to set trigger level for external trigger.
+            ext_in_threshold (int): Used to set trigger level for external trigger.
                 Defaults to 0.
 
         Returns:
