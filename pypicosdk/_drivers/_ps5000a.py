@@ -189,7 +189,7 @@ class ps5000a(PicoScopeBase):  # pylint: disable=C0103
         if samples == 0:
             buffer = None
         # Else create new buffer
-        else:
+        elif buffer is None:
             buffer = np.zeros(samples, dtype=np.int16)
 
         # Create pointer
@@ -402,3 +402,70 @@ class ps5000a(PicoScopeBase):  # pylint: disable=C0103
             ctypes.byref(time_interval),
         )
         return {"timebase": timebase.value, "actual_sample_interval": time_interval.value}
+
+    @override
+    def memory_segments(self, n_segments: int) -> int:
+        """
+        Configure the number of memory segments for the ps5000a.
+
+        Args:
+            n_segments (int): Desired number of memory segments.
+
+        Returns:
+            int: Number of samples available in each segment.
+        """
+        max_samples = ctypes.c_uint32()
+        self._call_attr_function(
+            "MemorySegments",
+            self.handle,
+            ctypes.c_uint32(n_segments),
+            ctypes.byref(max_samples),
+        )
+        return max_samples.value
+
+    @override
+    def get_values_bulk(  # pylint: disable=W0221
+        self,
+        samples: int,
+        from_segment_index: int,
+        to_segment_index: int,
+        ratio: int = 0,
+        ratio_mode: cst.RATIO_MODE = cst.RATIO_MODE.NONE,
+        **_,
+    ) -> tuple[int, list[list[str]]]:
+        """Retrieve data from multiple memory segments.
+
+        Args:
+            samples: Total number of samples to read from each segment.
+            from_segment_index: Index of the first segment to read.
+            to_segment_index: Index of the last segment. If this value is
+                less than ``from_segment_index`` the driver wraps around.
+            ratio: Downsampling ratio to apply before copying.
+            ratio_mode: Downsampling mode from :class:`RATIO_MODE`.
+
+        Returns:
+            tuple[int, list[list[str]]]: ``(samples, overflow)list)`` where ``samples`` is the
+            number of samples copied and ``overflow`` is list of captures with where
+            channnels have exceeded their voltage range.
+        """
+        if ratio_mode == cst.RATIO_MODE.RAW:
+            ratio_mode = cst.RATIO_MODE.NONE
+
+        self.is_ready()
+        no_samples = ctypes.c_uint32(samples)
+        overflow = np.zeros(to_segment_index + 1, dtype=np.int16)
+        self._call_attr_function(
+            "GetValuesBulk",
+            self.handle,
+            ctypes.byref(no_samples),
+            ctypes.c_uint32(from_segment_index),
+            ctypes.c_uint32(to_segment_index),
+            ctypes.c_uint32(ratio),
+            ratio_mode,
+            npc.as_ctypes(overflow),
+        )
+        overflow_list = []
+        for i in overflow:
+            self.over_range = i
+            overflow_list.append(self.is_over_range())
+        return no_samples.value, overflow_list
