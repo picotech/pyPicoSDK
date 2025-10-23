@@ -35,6 +35,17 @@ nav:
       - ref/psospa/run.md
       - ref/psospa/retrieval.md
       - ref/psospa/led.md
+    - PicoScope 5000D (ps5000a) Specific Functions:
+      - ref/ps5000a/init.md
+      - ref/ps5000a/setup.md
+      - ref/ps5000a/channel.md
+      - ref/ps5000a/trigger.md
+      - ref/ps5000a/siggen.md
+      - ref/ps5000a/buffers.md
+      - ref/ps5000a/conversions.md
+      - ref/ps5000a/captures.md
+      - ref/ps5000a/run.md
+      - ref/ps5000a/retrieval.md
     - ref/general.md
     - ref/constants.md
     - Config/Overrides: ref/configuration.md
