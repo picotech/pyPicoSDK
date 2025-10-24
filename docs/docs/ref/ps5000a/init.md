@@ -2,7 +2,7 @@
 <!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
 
 ## Setup
-The ps5000a drivers are intended for PicoScope 6000E Series.
+The ps5000a drivers are intended for PicoScope 5000D Series.
 
 ## Quickstart Code
 To get started, use the following code:
@@ -22,4 +22,5 @@ scope.close_unit()
 ```
 
 # Troubleshooting
- - 6000E needs USB **and** an external power supply to function fully. USB on its own will not initiate the USB driver.
+ - Without an external power supply the PicoScope 5000D 4-channel units disable channels C and D.
+   To get the full usage, use the 5V power supply provided in addition to the USB.
