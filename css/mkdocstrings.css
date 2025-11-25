@@ -1,0 +1,14 @@
+/* Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
+Indentation. */
+div.doc-contents:not(.first) {
+    padding-left: 25px;
+    border-left: .05rem solid rgba(200, 200, 200, 0.2);
+  }
+
+  .doc-contents code {
+    font-size: 0.9rem;
+  }
+
+div.wy-side-nav-search {
+  background-color: #0d63a0;
+}
