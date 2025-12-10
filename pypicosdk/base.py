@@ -678,6 +678,7 @@ class PicoScopeBase:
         to_segment_index: int,
         down_sample_ratio: int,
         down_sample_ratio_mode: int,
+        wait_for_ready: bool = True,
     ) -> tuple[int, list[list[str]]]:
         """Retrieve data from multiple memory segments.
 
@@ -690,6 +691,7 @@ class PicoScopeBase:
             down_sample_ratio: Downsampling ratio to apply before copying.
             down_sample_ratio_mode: Downsampling mode from
                 :class:`RATIO_MODE`.
+            wait_for_ready (bool, optional): Whether to wait for the device to be ready.
 
         Returns:
             tuple[int, list[list[str]]]: ``(samples, overflow)list)`` where ``samples`` is the
@@ -697,7 +699,10 @@ class PicoScopeBase:
             channnels have exceeded their voltage range.
         """
 
-        self.is_ready()
+        # If wait_for_ready is True, wait for the device to be ready before getting values
+        if wait_for_ready:
+            self.is_ready()
+            
         no_samples = ctypes.c_uint64(no_of_samples)
         overflow = np.zeros(to_segment_index + 1, dtype=np.int16)
         self._call_attr_function(
@@ -726,6 +731,7 @@ class PicoScopeBase:
         from_segment_index: int,
         to_segment_index: int,
         overflow: ctypes.c_int16,
+        wait_for_ready: bool = True,
     ) -> int:
         """Retrieve overlapped data from multiple segments for block or rapid block mode.
 
@@ -747,6 +753,7 @@ class PicoScopeBase:
             to_segment_index: Last segment index to read.
             overflow: ``ctypes.c_int16`` instance that receives any overflow
                 flags.
+            wait_for_ready (bool, optional): Whether to wait for the device to be ready.
 
         Returns:
             int: Actual number of samples copied from each segment.
@@ -766,7 +773,10 @@ class PicoScopeBase:
             (1024, 0)
         """
 
-        self.is_ready()
+        # If wait_for_ready is True, wait for the device to be ready before getting values
+        if wait_for_ready:
+            self.is_ready()
+
         c_samples = ctypes.c_uint64(no_of_samples)
         self._call_attr_function(
             "GetValuesOverlapped",
@@ -2027,7 +2037,16 @@ class PicoScopeBase:
         )
         return count.value, serials.value.decode(), serial_length.value
 
-    def get_values(self, samples, start_index=0, segment=0, ratio=0, ratio_mode=RATIO_MODE.RAW) -> int:
+    def get_values(
+        self,
+        samples,
+        start_index: int =0,
+        segment: int = 0,
+        ratio: int = 0,
+        ratio_mode: RATIO_MODE = RATIO_MODE.RAW,
+        data_type: DATA_TYPE = DATA_TYPE.INT16_T,
+        wait_for_ready: bool = True,
+    ) -> int:
         """
         Retrieves a block of captured samples from the device once it's ready.
         If a channel goes over-range a warning will appear.
@@ -2041,14 +2060,21 @@ class PicoScopeBase:
                 segment (int, optional): Memory segment index to retrieve data from.
                 ratio (int, optional): Downsampling ratio.
                 ratio_mode (RATIO_MODE, optional): Ratio mode for downsampling.
+                wait_for_ready (bool, optional): Whether to wait for the device to be ready.
 
         Returns:
                 int: Actual number of samples retrieved.
         """
 
-        self.is_ready()
+        # If wait_for_ready is True, wait for the device to be ready before getting values
+        if wait_for_ready:
+            self.is_ready()
+
+        # Create ctypes for total samples and over range
         total_samples = ctypes.c_uint32(samples)
         over_range = ctypes.c_int16()
+
+        # Call the GetValues function
         self._call_attr_function(
             'GetValues',
             self.handle,
@@ -2059,8 +2085,12 @@ class PicoScopeBase:
             segment,
             ctypes.byref(over_range)
         )
+
+        # Verify if any channels are over range
         self.over_range = over_range.value
         self.is_over_range()
+
+        # Return the number of samples retrieved
         return total_samples.value
 
     def get_streaming_latest_values(
