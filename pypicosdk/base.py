@@ -66,7 +66,7 @@ class PicoScopeBase:
         self.min_adc_value = None
         self.over_range = 0
         self._actual_interval = 0
-        self.last_used_volt_unit: str = 'mv'
+        self.last_used_volt_unit: str = 'adc'
 
         self.base_dataclass = _general.BaseDataClass()
 
@@ -1038,6 +1038,8 @@ class PicoScopeBase:
             return self.channel_db[largest_range_index].ylim_mv
         elif unit == 'v':
             return self.channel_db[largest_range_index].ylim_v
+        elif unit == 'adc':
+            return (self.min_adc_value, self.max_adc_value)
 
     def set_device_resolution(self, resolution: RESOLUTION) -> None:
         """Configure the ADC resolution using ``ps6000aSetDeviceResolution``.
