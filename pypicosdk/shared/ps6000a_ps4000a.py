@@ -62,6 +62,6 @@ class shared_4000a_6000a:
         if complete.value:
             self.handle = handle
             self.resolution = getattr(self, "_pending_resolution", 0)
-            self.min_adc_value, self.max_adc_value = self.get_adc_limits()
+            self.get_adc_limits()
 
         return handle.value, progress.value, complete.value
