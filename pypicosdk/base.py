@@ -285,7 +285,7 @@ class PicoScopeBase:
         Returns:
             str: Returns data from device.
         """
-        string = ctypes.create_string_buffer(16)
+        string = ctypes.create_string_buffer(1024)
         string_length = ctypes.c_int16(32)
         required_size = ctypes.c_int16(32)
         status = self._call_attr_function(
