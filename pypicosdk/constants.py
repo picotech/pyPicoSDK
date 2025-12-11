@@ -3,6 +3,7 @@
 from enum import IntEnum
 import ctypes
 from typing import Literal
+import numpy as np
 
 class UNIT_INFO:
     """
@@ -389,6 +390,24 @@ class DATA_TYPE:
     INT32_T = 2
     UINT32_T = 3
     INT64_T = 4
+
+
+DataTypeNPMap = {
+    DATA_TYPE.INT8_T: np.int8,
+    DATA_TYPE.INT16_T: np.int16,
+    DATA_TYPE.INT32_T: np.int32,
+    DATA_TYPE.INT64_T: np.int64,
+    DATA_TYPE.UINT32_T: np.uint32,
+}
+
+DataTypeScaleMap = {
+    DATA_TYPE.INT8_T: 256,
+    DATA_TYPE.INT16_T: 1,
+    DATA_TYPE.INT32_T: 1,
+    DATA_TYPE.INT64_T: 1,
+    DATA_TYPE.UINT32_T: 1,
+}
+
 
 class ACTION:
     """
