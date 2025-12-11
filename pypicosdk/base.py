@@ -285,17 +285,30 @@ class PicoScopeBase:
         Returns:
             str: Returns data from device.
         """
-        string = ctypes.create_string_buffer(1024)
-        string_length = ctypes.c_int16(32)
-        required_size = ctypes.c_int16(32)
+        # First call to query required buffer size for the info string
+        required_size = ctypes.c_int16()
         status = self._call_attr_function(
             'GetUnitInfo',
             self.handle,
-            string,
+            None,                # No buffer yet, just request the size
+            None,
+            ctypes.byref(required_size),
+            ctypes.c_uint32(unit_info)
+        )
+        # Create string buffer of needed size
+        string = ctypes.create_string_buffer(required_size.value)
+        string_length = required_size.value
+
+        # Second call to retrieve info string into buffer
+        status = self._call_attr_function(
+            'GetUnitInfo',
+            self.handle,
+            string,              # Pass buffer for result
             string_length,
             ctypes.byref(required_size),
             ctypes.c_uint32(unit_info)
         )
+        # Return decoded string from buffer
         return string.value.decode()
 
     def get_unit_serial(self) -> str:
