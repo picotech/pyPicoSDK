@@ -1669,7 +1669,7 @@ class PicoScopeBase:
         ratio_mode=RATIO_MODE.AGGREGATE,
         action=ACTION.CLEAR_ALL | ACTION.ADD,
         buffers:list[np.ndarray, np.ndarray] | np.ndarray | None = None,
-    ) -> tuple[np.ndarray, np.ndarray]:
+    ) -> np.ndarray:
         """
         Allocate and assign max and min NumPy-backed data buffers.
 
@@ -1685,15 +1685,12 @@ class PicoScopeBase:
                 creates its own buffers.
 
         Returns:
-            tuple[np.ndarray, np.ndarray]: Tuple of (buffer_min, buffer_max) NumPy arrays.
+            np.ndarray: NumPy array of buffers.
 
         Raises:
             PicoSDKException: If an unsupported data type is provided.
         """
-        if buffers is not None:
-            buffer_min = buffers[0]
-            buffer_max = buffers[1]
-        else:
+        if buffers is None:
             # Map to NumPy dtype
             dtype_map = {
                 DATA_TYPE.INT8_T: np.int8,
@@ -1707,8 +1704,10 @@ class PicoScopeBase:
             if np_dtype is None:
                 raise PicoSDKException("Invalid datatype selected for buffer")
 
-            buffer_max = np.zeros(samples, dtype=np_dtype)
-            buffer_min = np.zeros(samples, dtype=np_dtype)
+            buffers = np.zeros((2, samples), dtype=np_dtype)
+
+        buffer_min = buffers[0]
+        buffer_max = buffers[1]
 
         buf_max_ptr = npc.as_ctypes(buffer_max)
         buf_min_ptr = npc.as_ctypes(buffer_min)
@@ -1726,7 +1725,7 @@ class PicoScopeBase:
             action,
         )
 
-        return buffer_min, buffer_max
+        return buffers
 
     def set_data_buffers_rapid_capture(
             self,
