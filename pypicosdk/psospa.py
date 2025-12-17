@@ -59,7 +59,7 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
         )
         self.resolution = resolution
         self.set_all_channels_off()
-        self.min_adc_value, self.max_adc_value = super().get_adc_limits()
+        super().get_adc_limits()
         self.n_channels = self.get_variant_details()['NumberOfAnalogueChannels']
 
         return usb_power_struct

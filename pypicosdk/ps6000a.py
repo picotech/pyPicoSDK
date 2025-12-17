@@ -25,7 +25,7 @@ class ps6000a(PicoScopeBase, shared_ps6000a_psospa, shared_4000a_6000a):
             resolution = resolution_map[resolution]
 
         super().open_unit(serial_number, resolution)
-        self.min_adc_value, self.max_adc_value = super().get_adc_limits()
+        super().get_adc_limits()
 
     def get_channel_combinations(self, timebase: int) -> list[int]:
         """Return valid channel flag combinations for a proposed timebase.
