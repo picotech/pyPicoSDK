@@ -25,8 +25,8 @@ import pypicosdk as psdk
 SAMPLES = 100_000
 
 # Create "scope" class and initialize PicoScope
-scope = psdk.ps6000a()
-scope.open_unit(resolution=psdk.RESOLUTION._12BIT)
+scope = psdk.psospa()
+scope.open_unit()
 
 # Print the returned serial number of the initialized instrument
 print(scope.get_unit_serial())
@@ -35,7 +35,7 @@ print(scope.get_unit_serial())
 scope.set_siggen(frequency=50_000, pk2pk=1.8, wave_type=psdk.WAVEFORM.SINE)
 
 # Enable channel A with +/- 1V range (2V total dynamic range)
-scope.set_channel(channel=psdk.CHANNEL.A, range=psdk.RANGE.V2)
+scope.set_channel(channel=psdk.CHANNEL.A, range=psdk.RANGE.V1)
 
 # Configure a simple rising edge trigger for channel A, wait indefinitely (do not auto trigger)
 scope.set_simple_trigger(channel=psdk.CHANNEL.A, threshold=0, auto_trigger=0)
@@ -51,7 +51,7 @@ TIMEBASE = scope.sample_rate_to_timebase(sample_rate=50, unit=psdk.SAMPLE_RATE.M
 print(scope.get_actual_sample_rate())
 
 # Create buffers in this application space to hold returned sample array
-channels_buffer = scope.set_data_buffer_for_enabled_channels(samples=SAMPLES, datatype=psdk.DATA_TYPE.INT16_T)
+channels_buffer = scope.set_data_buffer_for_enabled_channels(samples=SAMPLES)
 
 # Run the aqusition using the selected timebase and numbver of samples from above
 scope.run_block_capture(timebase=TIMEBASE, samples=SAMPLES)
@@ -60,25 +60,23 @@ scope.run_block_capture(timebase=TIMEBASE, samples=SAMPLES)
 scope.get_values(SAMPLES)
 
 # Scale the raw ADC values to mV values according to the selected timebase
-#channels_buffer = scope.adc_to_mv(channels_buffer)
+channels_buffer = scope.adc_to_mv(channels_buffer)
 
 # Create an array of time values in nano seconds, to align with each sample point
 time_axis = scope.get_time_axis(TIMEBASE, SAMPLES)
 
-
-print(scope.get_adc_limits())
 # Release the device from the driver
+scope.close_unit()
 
 # Use matplotlib to setup the graph and plot the data
 plt.plot(time_axis, channels_buffer[psdk.CHANNEL.A])
 plt.title('Example plot for Channel A')
 plt.xlabel('Time (ns)')
-plt.ylabel('adc counts')
+plt.ylabel('Voltage (mV)')
 plt.grid(True)
 
 # Set the Y axis of the graph to the largest voltage range selected for enabled channels, in mV
-plt.ylim(scope.get_ylim(unit="adc"))
+plt.ylim(scope.get_ylim(unit='mv'))
 
 # Display the completed plot
 plt.show()
-scope.close_unit()
