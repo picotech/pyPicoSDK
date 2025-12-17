@@ -17,13 +17,14 @@ Setup:
 from matplotlib import pyplot as plt
 import pypicosdk as psdk
 
+#psdk.override_directory('C:/Program Files/Pico Technology/PicoScope 7 T&M Stable')
 # Create a local variable to hold number of samples for use in later functions
 SAMPLES = 5_000
 
 # Create "scope" class and initialize PicoScope
-scope = psdk.ps6000a()
+scope = psdk.psospa()
 scope.open_unit()
-
+print(scope.get_unit_info(psdk.UNIT_INFO.PICO_DRIVER_VERSION))
 # Print the returned serial number of the initialized instrument
 print(scope.get_unit_serial())
 
@@ -31,7 +32,7 @@ print(scope.get_unit_serial())
 scope.set_siggen(frequency=10_000, pk2pk=1.8, wave_type=psdk.WAVEFORM.SINE)
 
 # Enable channel A with +/- 1V range (2V total dynamic range)
-scope.set_channel(channel=psdk.CHANNEL.A, range=psdk.RANGE.V1)
+scope.set_channel(channel=psdk.CHANNEL.A, range=psdk.RANGE.V1, probe_scale=10)
 
 # Configure a simple rising edge trigger for channel A, wait indefinitely (do not auto trigger)
 scope.set_simple_trigger(channel=psdk.CHANNEL.A, threshold=0, auto_trigger=0)

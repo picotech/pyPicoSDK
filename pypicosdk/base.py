@@ -1013,7 +1013,7 @@ class PicoScopeBase:
         Ideal for pyplot ylim function.
 
         Args:
-            unit (str | None, optional): Overwrite the ylim unit using `'mv'` or `'v'`.
+            unit (str | None, optional): Overwrite the ylim unit using `'mv'`, `'v'` or `'adc'`.
                 If None, The unit will be taken from the last voltage unit conversion.
 
         Returns:
