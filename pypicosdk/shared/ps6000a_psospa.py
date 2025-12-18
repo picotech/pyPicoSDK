@@ -40,11 +40,17 @@ class shared_ps6000a_psospa(_ProtocolBase):
     probe_scale: dict[float]
     channel_db: dict[int, ChannelClass]
 
-    def get_adc_limits(self) -> tuple:
+    def get_adc_limits(
+        self,
+        datatype: cst.DATA_TYPE = None,
+    ) -> tuple:
         """
         Gets the ADC limits for specified devices.
-
-        Currently tested on: 6000a.
+        
+        Args:
+            datatype: The datatype to update the ADC limits for.
+                If None, the last datatype will be used.
+                Defaults to Int16.
 
         Returns:
                 tuple: (minimum value, maximum value)
@@ -54,6 +60,7 @@ class shared_ps6000a_psospa(_ProtocolBase):
         """
         if self.resolution is None:
             raise PicoSDKException("Device has not been initialized, use open_unit()")
+
         min_value = ctypes.c_int16()
         max_value = ctypes.c_int16()
         self._call_attr_function(
@@ -63,7 +70,13 @@ class shared_ps6000a_psospa(_ProtocolBase):
             ctypes.byref(min_value),
             ctypes.byref(max_value)
         )
-        return min_value.value, max_value.value
+        if datatype is not None:
+            self.base_dataclass.last_datatype = datatype
+        datatype_scale = cst.DataTypeScaleMap.get(self.base_dataclass.last_datatype, 1)
+
+        self.min_adc_value = int(min_value.value / datatype_scale)
+        self.max_adc_value = int(max_value.value / datatype_scale)
+        return self.min_adc_value, self.max_adc_value
 
     def get_trigger_info(
         self,

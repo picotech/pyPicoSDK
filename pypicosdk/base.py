@@ -66,7 +66,7 @@ class PicoScopeBase:
         self.min_adc_value = None
         self.over_range = 0
         self._actual_interval = 0
-        self.last_used_volt_unit: str = 'mv'
+        self.last_used_volt_unit: str = 'adc'
 
         self.base_dataclass = _general.BaseDataClass()
 
@@ -285,17 +285,30 @@ class PicoScopeBase:
         Returns:
             str: Returns data from device.
         """
-        string = ctypes.create_string_buffer(16)
-        string_length = ctypes.c_int16(32)
-        required_size = ctypes.c_int16(32)
+        # First call to query required buffer size for the info string
+        required_size = ctypes.c_int16()
         status = self._call_attr_function(
             'GetUnitInfo',
             self.handle,
-            string,
+            None,                # No buffer yet, just request the size
+            None,
+            ctypes.byref(required_size),
+            ctypes.c_uint32(unit_info)
+        )
+        # Create string buffer of needed size
+        string = ctypes.create_string_buffer(required_size.value)
+        string_length = required_size.value
+
+        # Second call to retrieve info string into buffer
+        status = self._call_attr_function(
+            'GetUnitInfo',
+            self.handle,
+            string,              # Pass buffer for result
             string_length,
             ctypes.byref(required_size),
             ctypes.c_uint32(unit_info)
         )
+        # Return decoded string from buffer
         return string.value.decode()
 
     def get_unit_serial(self) -> str:
@@ -805,9 +818,8 @@ class PicoScopeBase:
             self.handle,
             ctypes.byref(resolution),
         )
-        self.resolution = RESOLUTION(resolution.value)
-        self.min_adc_value, self.max_adc_value = self.get_adc_limits()
-        return RESOLUTION(resolution.value)
+        self.resolution = resolution.value
+        return resolution.value
 
     def no_of_streaming_values(self) -> int:
         """Return the number of values currently available while streaming."""
@@ -1024,7 +1036,7 @@ class PicoScopeBase:
         Ideal for pyplot ylim function.
 
         Args:
-            unit (str | None, optional): Overwrite the ylim unit using `'mv'` or `'v'`.
+            unit (str | None, optional): Overwrite the ylim unit using `'mv'`, `'v'` or `'adc'`.
                 If None, The unit will be taken from the last voltage unit conversion.
 
         Returns:
@@ -1049,6 +1061,8 @@ class PicoScopeBase:
             return self.channel_db[largest_range_index].ylim_mv
         elif unit == 'v':
             return self.channel_db[largest_range_index].ylim_v
+        elif unit == 'adc':
+            return (self.min_adc_value, self.max_adc_value)
 
     def set_device_resolution(self, resolution: RESOLUTION) -> None:
         """Configure the ADC resolution using ``ps6000aSetDeviceResolution``.
@@ -1062,7 +1076,7 @@ class PicoScopeBase:
             resolution,
         )
         self.resolution = resolution
-        self.min_adc_value, self.max_adc_value = self.get_adc_limits()
+        self.get_adc_limits()
 
     def _set_channel_on(self, channel, range, probe_scale):
         # Constrain probe scale
@@ -1568,16 +1582,9 @@ class PicoScopeBase:
         elif buffer is not None:
             buf_ptr = npc.as_ctypes(buffer)
         else:
-            # Map to NumPy dtype
-            dtype_map = {
-                DATA_TYPE.INT8_T: np.int8,
-                DATA_TYPE.INT16_T: np.int16,
-                DATA_TYPE.INT32_T: np.int32,
-                DATA_TYPE.INT64_T: np.int64,
-                DATA_TYPE.UINT32_T: np.uint32,
-            }
-
-            np_dtype = dtype_map.get(datatype)
+            # Map to NumPy dtype and update ADC limits
+            self.get_adc_limits(datatype)
+            np_dtype = cst.DataTypeNPMap.get(datatype, None)
             if np_dtype is None:
                 raise PicoSDKException("Invalid datatype selected for buffer")
 
@@ -1630,16 +1637,9 @@ class PicoScopeBase:
             buffer = None
             buf_ptr = None
         else:
-            # Map to NumPy dtype
-            dtype_map = {
-                DATA_TYPE.INT8_T: np.int8,
-                DATA_TYPE.INT16_T: np.int16,
-                DATA_TYPE.INT32_T: np.int32,
-                DATA_TYPE.INT64_T: np.int64,
-                DATA_TYPE.UINT32_T: np.uint32,
-            }
-
-            np_dtype = dtype_map.get(datatype)
+            # Map to NumPy dtype and update ADC limits
+            self.get_adc_limits(datatype)
+            np_dtype = cst.DataTypeNPMap.get(datatype, None)
             if np_dtype is None:
                 raise PicoSDKException("Invalid datatype selected for buffer")
 
@@ -1690,17 +1690,13 @@ class PicoScopeBase:
         Raises:
             PicoSDKException: If an unsupported data type is provided.
         """
-        if buffers is None:
-            # Map to NumPy dtype
-            dtype_map = {
-                DATA_TYPE.INT8_T: np.int8,
-                DATA_TYPE.INT16_T: np.int16,
-                DATA_TYPE.INT32_T: np.int32,
-                DATA_TYPE.INT64_T: np.int64,
-                DATA_TYPE.UINT32_T: np.uint32,
-            }
-
-            np_dtype = dtype_map.get(datatype)
+        if buffers is not None:
+            buffer_min = buffers[0]
+            buffer_max = buffers[1]
+        else:
+            # Map to NumPy dtype and update ADC limits
+            self.get_adc_limits(datatype)
+            np_dtype = cst.DataTypeNPMap.get(datatype, None)
             if np_dtype is None:
                 raise PicoSDKException("Invalid datatype selected for buffer")
 
@@ -1760,16 +1756,9 @@ class PicoScopeBase:
             buffer = None
             buf_ptr = None
         else:
-            # Map to NumPy dtype
-            dtype_map = {
-                DATA_TYPE.INT8_T: np.int8,
-                DATA_TYPE.INT16_T: np.int16,
-                DATA_TYPE.INT32_T: np.int32,
-                DATA_TYPE.INT64_T: np.int64,
-                DATA_TYPE.UINT32_T: np.uint32,
-            }
-
-            np_dtype = dtype_map.get(datatype)
+            # Map to NumPy dtype and update ADC limits
+            self.get_adc_limits(datatype)
+            np_dtype = cst.DataTypeNPMap.get(datatype, None)
             if np_dtype is None:
                 raise PicoSDKException("Invalid datatype selected for buffer")
 
