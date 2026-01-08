@@ -9,9 +9,10 @@ from .common import PicoSDKException, _get_literal
 from .base import PicoScopeBase
 from .shared.ps6000a_psospa import shared_ps6000a_psospa
 from .shared.ps6000a_ps4000a import shared_4000a_6000a
+from .shared._ps5000a_ps6000a import Sharedps5000aPs6000a
 
 
-class ps6000a(PicoScopeBase, shared_ps6000a_psospa, shared_4000a_6000a):
+class ps6000a(PicoScopeBase, shared_ps6000a_psospa, shared_4000a_6000a, Sharedps5000aPs6000a):
     """PicoScope 6000 (A) API specific functions"""
 
     @override
@@ -25,25 +26,35 @@ class ps6000a(PicoScopeBase, shared_ps6000a_psospa, shared_4000a_6000a):
             resolution = resolution_map[resolution]
 
         super().open_unit(serial_number, resolution)
-        super().get_adc_limits()
+        self.min_adc_value, self.max_adc_value = super().get_adc_limits()
 
-    def get_channel_combinations(self, timebase: int) -> list[int]:
-        """Return valid channel flag combinations for a proposed timebase.
-        This wraps ``ps6000aChannelCombinationsStateless`` and requires the
-        device to be opened first.
-        Args:
-            timebase: Proposed timebase value to test.
-        Returns:
-            list[int]: Sequence of bit masks using :class:`PICO_CHANNEL_FLAGS`.
-        Raises:
-            PicoSDKException: If the device has not been opened.
+    def get_channel_combinations(
+        self,
+        timebase: int,
+        return_type: cst.ReturnTypeMap = 'string',
+    ) -> list[list[str] | list[int]]:
         """
+        Get the available channel combinations at a given timebase for the ps6000a.
 
+        Args:
+            timebase: Timebase to use for the channel combinations. Can be calculated using
+                either `sample_rate_to_timebase()` or `interval_to_timebase()`.
+            return_type: Type of return value. Defaults to 'string'.
+                Can be 'string' or 'enum'.
+                If 'string', returns the channel combinations as a list of strings.
+                If 'enum', returns the channel combinations as a list of enums.
+
+        Returns:
+            list[list[str] | list[int]]: List of channel combinations.
+                Each list contains the channel combinations for a given timebase.
+                If return_type is 'string', the list contains the channel combinations as a list of
+                strings. If return_type is 'enum', the list contains the channel combinations as a
+                list of channel enum values.
+        """
         if self.resolution is None:
             raise PicoSDKException("Device has not been initialized, use open_unit()")
 
         n_combos = ctypes.c_uint32()
-        # First call obtains the required array size
         self._call_attr_function(
             "ChannelCombinationsStateless",
             self.handle,
@@ -57,13 +68,21 @@ class ps6000a(PicoScopeBase, shared_ps6000a_psospa, shared_4000a_6000a):
         self._call_attr_function(
             "ChannelCombinationsStateless",
             self.handle,
-            combo_array,
+            ctypes.byref(combo_array),
             ctypes.byref(n_combos),
             self.resolution,
             ctypes.c_uint32(timebase),
         )
-
-        return list(combo_array)
+        combo_array = list(combo_array)
+        channel_combinations = []
+        for n, i in enumerate(combo_array):
+            channel_combinations.append([])
+            for j in cst.PICO_CHANNEL_FLAGS:
+                if i & j == j and return_type == 'string':
+                    channel_combinations[n].append(cst.PicoChannelFlagsMap[j])
+                elif i & j == j and return_type == 'enum':
+                    channel_combinations[n].append(cst.PicoChannelFlagsEnumMap[j])
+        return channel_combinations
 
     def get_accessory_info(self, channel: CHANNEL, info: UNIT_INFO) -> str:
         """Return accessory details for the given channel.
