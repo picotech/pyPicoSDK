@@ -55,8 +55,8 @@ class shared_ps6000a_psospa(_ProtocolBase):
         """
         if self.resolution is None:
             raise PicoSDKException("Device has not been initialized, use open_unit()")
-        min_value = ctypes.c_int32()
-        max_value = ctypes.c_int32()
+        min_value = ctypes.c_int16()
+        max_value = ctypes.c_int16()
         self._call_attr_function(
             'GetAdcLimits',
             self.handle,
