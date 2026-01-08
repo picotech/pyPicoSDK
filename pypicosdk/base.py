@@ -9,6 +9,7 @@ import os
 import platform
 import warnings
 
+from matplotlib.lines import segment_hits
 import numpy as np
 import numpy.ctypeslib as npc
 
@@ -252,9 +253,7 @@ class PicoScopeBase:
         )
 
     def memory_segments(self, n_segments: int) -> int:
-        """Configure the number of memory segments.
-
-        This wraps the ``ps6000aMemorySegments`` API call.
+        """Configure the number of memory segments that the PicoScope will use.
 
         Args:
             n_segments: Desired number of memory segments.
@@ -263,11 +262,15 @@ class PicoScopeBase:
             int: Number of samples available in each segment.
         """
 
-        max_samples = ctypes.c_uint64()
+        if self._unit_prefix_n in ['ps5000a']:
+            max_samples = ctypes.c_uint32()
+        else:
+            max_samples = ctypes.c_uint64()
+
         self._call_attr_function(
             "MemorySegments",
             self.handle,
-            ctypes.c_uint64(n_segments),
+            int(n_segments),
             ctypes.byref(max_samples),
         )
         return max_samples.value
@@ -552,18 +555,62 @@ class PicoScopeBase:
         time = ctypes.c_int64()
         returned_unit = ctypes.c_int32()
 
+        if self._unit_prefix_n in ['ps5000a']:
+            call = "GetTriggerTimeOffset64"
+        else:
+            call = "GetTriggerTimeOffset"
+
         self._call_attr_function(
-            'GetTriggerTimeOffset',
+            call,
             self.handle,
             ctypes.byref(time),
             ctypes.byref(returned_unit),
-            ctypes.c_uint64(segment_index)
+            segment_index,
         )
 
         # Convert the returned time to the requested ``time_unit``
         pico_unit = _PICO_TIME_UNIT(returned_unit.value)
         time_s = time.value / TIME_UNIT[pico_unit.name]
         return int(time_s * TIME_UNIT[time_unit.name])
+
+    def get_trigger_info(
+        self,
+        first_segment_index: int,
+        to_segment_index: int,
+    ) -> list[dict]:
+        """Retrieve trigger timing information for one or more segments.
+
+        Args:
+            first_segment_index: Index of the first memory segment to query.
+            segment_count: Number of consecutive segments starting at
+                ``first_segment_index``.
+
+        Returns:
+            List of dictionaries for each trigger event
+
+        Raises:
+            PicoSDKException: If the function call fails or preconditions are
+                not met.
+        """
+
+        if self._unit_prefix_n in ['ps5000a']:
+            call = "GetTriggerInfoBulk"
+            array_struct = cst.PICO_TRIGGER_INFO_PS5000A
+        else:
+            call = "GetTriggerInfo"
+            array_struct = cst.PICO_TRIGGER_INFO
+
+        info_array = (array_struct * to_segment_index)()
+
+        self._call_attr_function(
+            call,
+            self.handle,
+            ctypes.byref(info_array),
+            first_segment_index,
+            first_segment_index + to_segment_index - 1,
+        )
+        # Convert struct to dictionary
+        return [_struct_to_dict(info, format=True) for info in info_array]
 
     def get_values_trigger_time_offset_bulk(
         self,
@@ -589,13 +636,18 @@ class PicoScopeBase:
         times = (ctypes.c_int64 * count)()
         units = (ctypes.c_int32 * count)()
 
+        if self._unit_prefix_n in ['ps5000a']:
+            call = "GetValuesTriggerTimeOffsetBulk64"
+        else:
+            call = "GetValuesTriggerTimeOffsetBulk"
+
         self._call_attr_function(
-            "GetValuesTriggerTimeOffsetBulk",
+            call,
             self.handle,
             ctypes.byref(times),
             ctypes.byref(units),
-            ctypes.c_uint64(from_segment_index),
-            ctypes.c_uint64(to_segment_index),
+            from_segment_index,
+            to_segment_index,
         )
 
         results = []
@@ -1285,6 +1337,66 @@ class PicoScopeBase:
             action,
         )
 
+    def set_pulse_width_qualifier_directions(
+        self,
+        channel: int,
+        direction: int,
+        threshold_mode: int,
+    ) -> None:
+        """Set pulse width qualifier direction for ``channel``.
+        If multiple directions are needed, channel, direction and threshold_mode
+        can be given a list of values.
+
+        Args:
+            channel (CHANNEL | list): Single or list of channels to configure.
+            direction (THRESHOLD_DIRECTION | list): Single or list of directions to configure.
+            threshold_mode (THRESHOLD_MODE | list): Single or list of threshold modes to configure.
+        """
+        if type(channel) == list:
+            dir_len = len(channel)
+            dir_struct = (PICO_DIRECTION * dir_len)()
+            for i in range(dir_len):
+                dir_struct[i] = PICO_DIRECTION(channel[i], direction[i], threshold_mode[i])
+        else:
+            dir_len = 1
+            dir_struct = PICO_DIRECTION(channel, direction, threshold_mode)
+
+        self._call_attr_function(
+            "SetPulseWidthQualifierDirections",
+            self.handle,
+            ctypes.byref(dir_struct),
+            ctypes.c_int16(dir_len),
+        )
+
+    def set_pulse_width_digital_port_properties(
+        self,
+        port: int,
+        directions: list[PICO_DIGITAL_CHANNEL_DIRECTIONS] | None,
+    ) -> None:
+        """Configure digital port properties for pulse-width triggering.
+        Args:
+            port: Digital port identifier.
+            directions: Optional list of channel directions to set. ``None`` to
+                clear existing configuration.
+        """
+
+        if directions:
+            array_type = PICO_DIGITAL_CHANNEL_DIRECTIONS * len(directions)
+            dir_array = array_type(*directions)
+            ptr = dir_array
+            count = len(directions)
+        else:
+            ptr = None
+            count = 0
+
+        self._call_attr_function(
+            "SetPulseWidthDigitalPortProperties",
+            self.handle,
+            port,
+            ptr,
+            ctypes.c_int16(count),
+        )
+
     def set_pulse_width_trigger(
         self,
         channel:CHANNEL,
@@ -1868,14 +1980,21 @@ class PicoScopeBase:
 
         time_units = _StandardPicoConv[time_units]
 
+        if self._unit_prefix_n == "ps5000a":
+            max_pre_trigger_samples = ctypes.c_uint32(max_pre_trigger_samples)
+            max_post_trigger_samples = ctypes.c_uint32(max_post_trigger_samples)
+        else:
+            max_pre_trigger_samples = ctypes.c_uint64(max_pre_trigger_samples)
+            max_post_trigger_samples = ctypes.c_uint64(max_post_trigger_samples)
+
         c_sample_interval = ctypes.c_double(sample_interval)
         self._call_attr_function(
             "RunStreaming",
             self.handle,
             ctypes.byref(c_sample_interval),
             time_units,
-            int(max_pre_trigger_samples),
-            int(max_post_trigger_samples),
+            max_pre_trigger_samples,
+            max_post_trigger_samples,
             auto_stop,
             ratio,
             ratio_mode,

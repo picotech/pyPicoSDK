@@ -277,22 +277,6 @@ class PICO_CHANNEL_OVERVOLTAGE_TRIPPED(ctypes.Structure):
         ("tripped_", ctypes.c_uint8),
     ]
 
-class PICO_CHANNEL_FLAGS(IntEnum):
-    """Bit flags describing individual channels and digital ports."""
-
-    CHANNEL_A = 1
-    CHANNEL_B = 2
-    CHANNEL_C = 4
-    CHANNEL_D = 8
-    CHANNEL_E = 16
-    CHANNEL_F = 32
-    CHANNEL_G = 64
-    CHANNEL_H = 128
-
-    PORT0 = 65536
-    PORT1 = 131072
-    PORT2 = 262144
-    PORT3 = 524288
 
 class COUPLING(IntEnum):
     """
@@ -306,6 +290,7 @@ class COUPLING(IntEnum):
     AC = 0
     DC = 1
     DC_50OHM = 50
+
 
 class RANGE(IntEnum):
     """
@@ -366,6 +351,20 @@ range_map = {
     '5V': 8,
     '10V': 9,
     '20V': 10,
+}
+
+RangeMapRev = {
+    0: '10mV',
+    1: '20mV',
+    2: '50mV',
+    3: '100mV',
+    4: '200mV',
+    5: '500mV',
+    6: '1V',
+    7: '2V',
+    8: '5V',
+    9: '10V',
+    10: '20V',
 }
 
 ProbeScale_L = Literal['x1', 'x2', 'x5', 'x10', 'x20', 'x50', 'x100', 'x200', 'x500', 'x1000']
@@ -482,6 +481,11 @@ PwrSrc_M = {
     'AC PSU': POWER_SOURCE.SUPPLY_CONNECTED,
     'USB': POWER_SOURCE.SUPPLY_NOT_CONNECTED,
     '2-channel': POWER_SOURCE.USB3_0_DEVICE_NON_USB3_0_PORT,
+}
+PwrSrcMapRev = {
+    POWER_SOURCE.SUPPLY_CONNECTED: 'AC PSU',
+    POWER_SOURCE.SUPPLY_NOT_CONNECTED: 'USB',
+    POWER_SOURCE.USB3_0_DEVICE_NON_USB3_0_PORT: '2-channel',
 }
 
 
@@ -622,6 +626,39 @@ class PICO_CHANNEL_FLAGS(IntEnum):
     PORT1_FLAGS = 131072
     PORT2_FLAGS = 262144
     PORT3_FLAGS = 524288
+
+
+PicoChannelFlagsMap = {
+    PICO_CHANNEL_FLAGS.CHANNEL_A_FLAGS: 'A',
+    PICO_CHANNEL_FLAGS.CHANNEL_B_FLAGS: 'B',
+    PICO_CHANNEL_FLAGS.CHANNEL_C_FLAGS: 'C',
+    PICO_CHANNEL_FLAGS.CHANNEL_D_FLAGS: 'D',
+    PICO_CHANNEL_FLAGS.CHANNEL_E_FLAGS: 'E',
+    PICO_CHANNEL_FLAGS.CHANNEL_F_FLAGS: 'F',
+    PICO_CHANNEL_FLAGS.CHANNEL_G_FLAGS: 'G',
+    PICO_CHANNEL_FLAGS.CHANNEL_H_FLAGS: 'H',
+    PICO_CHANNEL_FLAGS.PORT0_FLAGS: 'PORT0',
+    PICO_CHANNEL_FLAGS.PORT1_FLAGS: 'PORT1',
+    PICO_CHANNEL_FLAGS.PORT2_FLAGS: 'PORT2',
+    PICO_CHANNEL_FLAGS.PORT3_FLAGS: 'PORT3',
+}
+
+PicoChannelFlagsEnumMap = {
+    PICO_CHANNEL_FLAGS.CHANNEL_A_FLAGS: 0,
+    PICO_CHANNEL_FLAGS.CHANNEL_B_FLAGS: 1,
+    PICO_CHANNEL_FLAGS.CHANNEL_C_FLAGS: 2,
+    PICO_CHANNEL_FLAGS.CHANNEL_D_FLAGS: 3,
+    PICO_CHANNEL_FLAGS.CHANNEL_E_FLAGS: 4,
+    PICO_CHANNEL_FLAGS.CHANNEL_F_FLAGS: 5,
+    PICO_CHANNEL_FLAGS.CHANNEL_G_FLAGS: 6,
+    PICO_CHANNEL_FLAGS.CHANNEL_H_FLAGS: 7,
+    PICO_CHANNEL_FLAGS.PORT0_FLAGS: 65536,
+    PICO_CHANNEL_FLAGS.PORT1_FLAGS: 131072,
+    PICO_CHANNEL_FLAGS.PORT2_FLAGS: 262144,
+    PICO_CHANNEL_FLAGS.PORT3_FLAGS: 524288,
+}
+
+ReturnTypeMap = Literal['string', 'enum']
 
 
 class PICO_CONNECT_PROBE_RANGE(IntEnum):
@@ -853,6 +890,18 @@ class PICO_TRIGGER_INFO(ctypes.Structure):
         ("timeUnits_", ctypes.c_int32),
         ("missedTriggers_", ctypes.c_uint64),
         ("timeStampCounter_", ctypes.c_uint64),
+    ]
+
+class PICO_TRIGGER_INFO_PS5000A(ctypes.Structure):
+    """Structure describing trigger information for PS5000A."""
+    _fields_ = [
+        ("status", ctypes.c_int16),
+        ("segmentIndex", ctypes.c_uint32),
+        ("triggerIndex", ctypes.c_uint32),
+        ("triggerTime", ctypes.c_int64),
+        ("timeUnits", ctypes.c_int16),
+        ("reserved0", ctypes.c_int16),
+        ("timeStampCounter", ctypes.c_uint64),
     ]
 
 TIMESTAMP_COUNTER_MASK: int = (1 << 56) - 1

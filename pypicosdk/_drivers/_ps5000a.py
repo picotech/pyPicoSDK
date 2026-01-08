@@ -1,7 +1,7 @@
 """Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms."""
 
 import ctypes
-from typing import override
+from typing import Any, override
 from warnings import warn
 
 import numpy as np
@@ -10,19 +10,21 @@ import numpy.ctypeslib as npc
 from .. import constants as cst
 from ..common import (
     _get_literal,
+    _siggen_get_buffer_args,
     ParameterNotSupported
 )
 from ..base import PicoScopeBase
 from .._classes._channel_class import ChannelClass
 from .._exceptions import PicoSDKException
+from ..shared._ps5000a_ps6000a import Sharedps5000aPs6000a
 
 
-class ps5000a(PicoScopeBase):  # pylint: disable=C0103
+class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
     """PicoScope 5000 (A) API specific functions"""
 
     @override
     def __init__(self, *args, **kwargs):
-        self.power_source = None
+        self.ac_adaptor = True
         super().__init__("ps5000a", *args, **kwargs)
 
     @override
@@ -34,6 +36,7 @@ class ps5000a(PicoScopeBase):  # pylint: disable=C0103
         resolution = _get_literal(resolution, cst.resolution_map)
         status = super().open_unit(serial_number, resolution)
         if status == cst.POWER_SOURCE.SUPPLY_NOT_CONNECTED:
+            self.ac_adaptor = False
             self.change_power_source(cst.POWER_SOURCE.SUPPLY_NOT_CONNECTED)
         self.min_adc_value, self.max_adc_value = self.get_adc_limits()
 
@@ -55,6 +58,19 @@ class ps5000a(PicoScopeBase):  # pylint: disable=C0103
             )
             adc_values.append(adc_value.value)
         return adc_values[0], adc_values[1]
+
+    def get_current_power_source(self) -> str:
+        """
+        Returns the current power source of the device.
+
+        Returns:
+            str: Current power source of the device.
+        """
+        status = self._call_attr_function(
+            'CurrentPowerSource',
+            self.handle,
+        )
+        return cst.PwrSrcMapRev[status]
 
     def change_power_source(self, power_source: str | cst.PwrSrc_L | cst.POWER_SOURCE) -> None:
         """
@@ -95,9 +111,9 @@ class ps5000a(PicoScopeBase):  # pylint: disable=C0103
         range = _get_literal(range, cst.range_map)
 
         if enabled:
-            self.channel_db[channel] = ChannelClass(range, probe_scale)
-        elif channel in self.channel_db:
-            self.channel_db.pop(channel)
+            self._set_channel_on(channel, range, probe_scale)
+        else:
+            self._set_channel_off(channel)
 
         self._call_attr_function(
             'SetChannel',
@@ -116,8 +132,6 @@ class ps5000a(PicoScopeBase):  # pylint: disable=C0103
         If the ps5000a has no AC power supply attached, only turns off channela A and B
         """
         channels = int(self.get_unit_info(cst.UNIT_INFO.PICO_VARIANT_INFO)[1])
-        # if self.power_source == cst.POWER_SOURCE.SUPPLY_NOT_CONNECTED:
-        #     channels = min(2, channels)
         for channel in range(int(channels)):
             self.set_channel(channel, enabled=False)
 
@@ -154,7 +168,7 @@ class ps5000a(PicoScopeBase):  # pylint: disable=C0103
         samples: int,
         segment: int = 0,
         datatype=None,
-        ratio_mode: cst.RATIO_MODE = cst.RATIO_MODE.RAW,
+        ratio_mode: cst.RATIO_MODE = cst.RATIO_MODE.NONE,
         action=None,
         buffer: np.ndarray | None = None,
     ) -> np.ndarray | None:
@@ -358,6 +372,46 @@ class ps5000a(PicoScopeBase):  # pylint: disable=C0103
         )
         return status
 
+    def set_siggen_awg(
+        self,
+        frequency: float,
+        pk2pk: float,
+        buffer: np.ndarray | list,
+        offset: float = 0.0,
+        sweep: bool = False,
+        stop_freq: float = None,
+        inc_freq: float = 0,
+        dwell_time: float = 0,
+        sweep_type: cst.SWEEP_TYPE = cst.SWEEP_TYPE.UP,
+        **kwargs,
+    ) -> None:
+        if sweep is False:
+            stop_freq = frequency
+
+        if isinstance(buffer, list):
+            buffer = np.array(buffer)
+        buffer_ptr, buffer_len = _siggen_get_buffer_args(buffer)
+
+        self._call_attr_function(
+            'SetSigGenArbitrary',
+            self.handle,
+            int(offset * 1e6),
+            int(pk2pk * 1e6),
+            frequency,
+            stop_freq,
+            inc_freq,
+            dwell_time,
+            buffer_ptr,
+            buffer_len,
+            sweep_type,
+            kwargs.get('operation', 0),
+            kwargs.get('shots', 0),
+            kwargs.get('sweeps', 0),
+            kwargs.get('trigger_type', 0),
+            kwargs.get('trigger_source', 0),
+            kwargs.get('ext_in_threshold', 0),
+        )
+
     @override
     def set_data_buffer_for_enabled_channels(
         self,
@@ -406,26 +460,6 @@ class ps5000a(PicoScopeBase):  # pylint: disable=C0103
         return {"timebase": timebase.value, "actual_sample_interval": time_interval.value}
 
     @override
-    def memory_segments(self, n_segments: int) -> int:
-        """
-        Configure the number of memory segments for the ps5000a.
-
-        Args:
-            n_segments (int): Desired number of memory segments.
-
-        Returns:
-            int: Number of samples available in each segment.
-        """
-        max_samples = ctypes.c_uint32()
-        self._call_attr_function(
-            "MemorySegments",
-            self.handle,
-            ctypes.c_uint32(n_segments),
-            ctypes.byref(max_samples),
-        )
-        return max_samples.value
-
-    @override
     def get_values_bulk(  # pylint: disable=W0221
         self,
         samples: int,
@@ -471,3 +505,139 @@ class ps5000a(PicoScopeBase):  # pylint: disable=C0103
             self.over_range = i
             overflow_list.append(self.is_over_range())
         return no_samples.value, overflow_list
+
+    def get_channel_combinations(
+        self,
+        timebase: int, ac_adaptor: bool | None = None,
+        return_type: cst.ReturnTypeMap = 'string',
+    ) -> list[list[str] | list[int]]:
+        """
+        Get the avaliable channel combinations at a given timebase for the ps5000a.
+
+        Args:
+            timebase: Timebase to use for the channel combinations. Can be calculated using
+                either `sample_rate_to_timebase()` or `interval_to_timebase()`.
+            ac_adaptor: Whether to use the AC adaptor. Defaults to None, which will use the
+                ac_adaptor of the current device.
+            return_type: Type of return value. Defaults to 'string'.
+                Can be 'string' or 'enum'.
+                If 'string', returns the channel combinations as a list of strings.
+                If 'enum', returns the channel combinations as a list of enums.
+
+        Returns:
+            list[list[str] | list[int]]: List of channel combinations.
+                Each list contains the channel combinations for a given timebase.
+                If return_type is 'string', the list contains the channel combinations as a list of
+                strings. If return_type is 'enum', the list contains the channel combinations as a
+                list of channel enum values.
+        """
+        if ac_adaptor is None:
+            ac_adaptor = self.ac_adaptor
+
+        n_combos = ctypes.c_uint32()
+        self._call_attr_function(
+            "ChannelCombinationsStateless",
+            self.handle,
+            None,
+            ctypes.byref(n_combos),
+            self.resolution,
+            ctypes.c_uint32(timebase),
+            ac_adaptor,
+        )
+
+        combo_array = (ctypes.c_uint32 * n_combos.value)()
+        self._call_attr_function(
+            "ChannelCombinationsStateless",
+            self.handle,
+            ctypes.byref(combo_array),
+            ctypes.byref(n_combos),
+            self.resolution,
+            ctypes.c_uint32(timebase),
+            ac_adaptor,
+        )
+        combo_array = list[Any](combo_array)
+        channel_combinations = []
+        for n, i in enumerate[Any](combo_array):
+            channel_combinations.append([])
+            for j in cst.PICO_CHANNEL_FLAGS:
+                if i & j == j and return_type == 'string':
+                    channel_combinations[n].append(cst.PicoChannelFlagsMap[j])
+                elif i & j == j and return_type == 'enum':
+                    channel_combinations[n].append(cst.PicoChannelFlagsEnumMap[j])
+        return channel_combinations
+
+    def get_avaliable_channel_ranges(
+        self,
+        channel: str | cst.channel_literal | cst.CHANNEL,
+    ) -> dict:
+        """
+        Get the information for a specified channel.
+
+        Args:
+            channel (str | CHANNEL): Channel to get information for.
+
+        Returns:
+            dict: Dictionary of channel information.
+        """
+        channel = _get_literal(channel, cst.channel_map)
+
+        channel_ranges_n = ctypes.c_uint32(64)
+        channel_ranges = (ctypes.c_uint32 * channel_ranges_n.value)()
+        self._call_attr_function(
+            "GetChannelInformation",
+            self.handle,
+            0,
+            0,
+            ctypes.byref(channel_ranges),
+            ctypes.byref(channel_ranges_n),
+            channel,
+        )
+        avaliable_channel_ranges = []
+        for i in channel_ranges:
+            string = cst.RangeMapRev[i]
+            if string not in avaliable_channel_ranges:
+                avaliable_channel_ranges.append(string)
+        return avaliable_channel_ranges
+
+    def get_max_downsample_ratio(
+        self,
+        samples: int,
+        ratio_mode: cst.RATIO_MODE = cst.RATIO_MODE.NONE,
+        segment_index: int = 0,
+    ) -> int:
+        """
+        Get the maximum downsample ratio for a given number of samples and ratio mode.
+
+        Args:
+            samples (int): Number of unprocessed samples to be downsampled.
+            ratio_mode (RATIO_MODE, optional): Downsampling mode. Defaults to NONE.
+            segment_index (int, optional): Segment index. Defaults to 0.
+
+        Returns:
+            int: Maximum downsample ratio.
+        """
+        if ratio_mode == cst.RATIO_MODE.RAW:
+            ratio_mode = cst.RATIO_MODE.NONE
+
+        max_downsample_ratio = ctypes.c_uint32()
+        self._call_attr_function(
+            "GetMaxDownSampleRatio",
+            self.handle,
+            int(samples),
+            ctypes.byref(max_downsample_ratio),
+            ratio_mode,
+            segment_index
+        )
+        return max_downsample_ratio.value
+
+    def get_max_segments(self) -> int:
+        """
+        Get the maximum number of segments for the ps5000a.
+        """
+        max_segments = ctypes.c_uint64()
+        self._call_attr_function(
+            "GetMaxSegments",
+            self.handle,
+            ctypes.byref(max_segments),
+        )
+        return max_segments.value
