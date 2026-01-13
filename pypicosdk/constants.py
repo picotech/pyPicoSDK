@@ -913,8 +913,9 @@ class PICO_TRIGGER_INFO(ctypes.Structure):
 
 class PICO_TRIGGER_INFO_PS5000A(ctypes.Structure):
     """Structure describing trigger information for PS5000A."""
+    _pack_ = 1
     _fields_ = [
-        ("status", ctypes.c_int16),
+        ("status", ctypes.c_uint32),
         ("segmentIndex", ctypes.c_uint32),
         ("triggerIndex", ctypes.c_uint32),
         ("triggerTime", ctypes.c_int64),
