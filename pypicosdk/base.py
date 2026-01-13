@@ -1149,8 +1149,13 @@ class PicoScopeBase:
         for i, (source, state) in enumerate(conditions):
             cond_array[i] = PICO_CONDITION(source, state)
 
+        if self._unit_prefix_n == "ps5000a":
+            call_function = "SetTriggerChannelConditionsV2"
+        else:
+            call_function = "SetTriggerChannelConditions"
+
         self._call_attr_function(
-            "SetTriggerChannelConditions",
+            call_function,
             self.handle,
             ctypes.byref(cond_array),
             ctypes.c_int16(cond_len),
@@ -1189,8 +1194,13 @@ class PicoScopeBase:
             channel,
         )
 
+        if self._unit_prefix_n == "ps5000a":
+            call_function = "SetTriggerChannelPropertiesV2"
+        else:
+            call_function = "SetTriggerChannelProperties"
+
         self._call_attr_function(
-            "SetTriggerChannelProperties",
+            call_function,
             self.handle,
             ctypes.byref(prop),
             ctypes.c_int16(1),
@@ -1224,8 +1234,13 @@ class PicoScopeBase:
             dir_len = 1
             dir_struct = PICO_DIRECTION(channel, direction, threshold_mode)
 
+        if self._unit_prefix_n == "ps5000a":
+            call_function = "SetTriggerChannelDirectionsV2"
+        else:
+            call_function = "SetTriggerChannelDirections"
+
         self._call_attr_function(
-            "SetTriggerChannelDirections",
+            call_function,
             self.handle,
             ctypes.byref(dir_struct),
             ctypes.c_int16(dir_len),
