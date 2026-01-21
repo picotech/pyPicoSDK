@@ -696,6 +696,7 @@ class PicoScopeBase:
         start_index: int = 0,
         ratio: int = 0,
         ratio_mode: cst.RATIO_MODE = cst.RATIO_MODE.RAW,
+        wait_for_ready: bool = True,
     ) -> tuple[int, list[list[str]]]:
         """Retrieve data from multiple memory segments.
 
@@ -707,6 +708,7 @@ class PicoScopeBase:
             start_index: Index within each segment to begin copying from.
             ratio: Downsampling ratio to apply before copying.
             ratio_mode: Downsampling mode from :class:`RATIO_MODE`.
+            wait_for_ready (bool, optional): Whether to wait for the device to be ready.
 
         Returns:
             tuple[int, list[list[str]]]: ``(samples, overflow)list)`` where ``samples`` is the
@@ -714,7 +716,10 @@ class PicoScopeBase:
             channnels have exceeded their voltage range.
         """
 
-        self.is_ready()
+        # If wait_for_ready is True, wait for the device to be ready before getting values
+        if wait_for_ready:
+            self.is_ready()
+            
         no_samples = ctypes.c_uint64(samples)
         overflow = np.zeros(to_segment_index + 1, dtype=np.int16)
         self._call_attr_function(
@@ -1783,63 +1788,6 @@ class PicoScopeBase:
         )
 
         return buffers
-
-    def set_data_buffers_rapid_capture(
-            self,
-            channel,
-            samples,
-            captures,
-            segment=0,
-            datatype=DATA_TYPE.INT16_T,
-            ratio_mode=RATIO_MODE.RAW,
-            action=ACTION.CLEAR_ALL | ACTION.ADD,
-        ) -> np.ndarray | None:
-        """
-        Allocate and assign max and min NumPy-backed data buffers for rapid block
-        capture on a specified channel.
-
-        Args:
-            channel (int): The channel to associate the buffer with (e.g., CHANNEL.A).
-            samples (int): Number of samples to allocate in the buffer.
-            captures (int): Number of rapid block captures
-            segment (int, optional): Memory segment to start at.
-            datatype (DATA_TYPE, optional): C data type for the buffer (e.g., INT16_T).
-            ratio_mode (RATIO_MODE, optional): Downsampling mode.
-            action (ACTION, optional): Action to apply to the data buffer (e.g., CLEAR_ALL | ADD).
-
-        Returns:
-            np.array | None: The allocated buffer or ``None`` when clearing existing buffers.
-
-        Raises:
-            PicoSDKException: If an unsupported data type is provided.
-        """
-        if samples == 0:
-            buffer = None
-            buf_ptr = None
-        else:
-            # Map to NumPy dtype and update ADC limits
-            self.get_adc_limits(datatype)
-            np_dtype = cst.DataTypeNPMap.get(datatype, None)
-            if np_dtype is None:
-                raise PicoSDKException("Invalid datatype selected for buffer")
-
-            buffer = np.zeros((captures, samples, 2), dtype=np_dtype)
-
-        for i in range(captures):
-            self._call_attr_function(
-                "SetDataBuffers",
-                self.handle,
-                channel,
-                npc.as_ctypes(buffer[i][0]),
-                npc.as_ctypes(buffer[i][1]),
-                samples,
-                datatype,
-                segment + i,
-                ratio_mode,
-                action,
-            )
-
-        return buffer
 
     # Run functions
     def run_simple_block_capture(
