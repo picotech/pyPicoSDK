@@ -1,8 +1,11 @@
-"""Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms."""
+"""Copyright (C) 2025-2026 Pico Technology Ltd. See LICENSE file for terms."""
 
 import ctypes
 from typing import Any, override
 from warnings import warn
+from .._exceptions import NoArgumentsNeededWarning
+
+import queue
 
 import numpy as np
 import numpy.ctypeslib as npc
@@ -25,6 +28,7 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
     @override
     def __init__(self, *args, **kwargs):
         self.ac_adaptor = True
+        self._streaming_queue = queue.Queue()
         super().__init__("ps5000a", *args, **kwargs)
 
     @override
@@ -199,6 +203,9 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
         if ratio_mode == cst.RATIO_MODE.RAW:
             ratio_mode = cst.RATIO_MODE.NONE
 
+        # Set the last buffer size
+        self.base_dataclass.last_buffer_size = samples
+
         # If no samples, set buffers to None
         if samples == 0:
             buffer = None
@@ -254,6 +261,9 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
         if action not in [cst.ACTION.ADD, None]:
             warn(f'{self._unit_prefix_n} only supports the "ADD" action. Defaulting to ADD.',
                  ParameterNotSupported)
+
+        # Set the last buffer size
+        self.base_dataclass.last_buffer_size = samples
 
         # Convert RAW (unsupported in ps5000a) to NONE.
         if ratio_mode == cst.RATIO_MODE.RAW:
@@ -641,3 +651,87 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
             ctypes.byref(max_segments),
         )
         return max_segments.value
+
+    @override
+    def get_streaming_latest_values(self, *args, **kwargs) -> dict:
+        if len(args) > 0 or len(kwargs) > 0:
+            warn("ps5000a get_streaming_latest_values() takes no arguments", 
+                NoArgumentsNeededWarning)
+        status = self._call_attr_function(
+            "GetStreamingLatestValues",
+            self.handle,
+            self._streaming_callback_pointer,
+            None,
+        )
+        try:
+            info = self._streaming_queue.get_nowait()
+            info['status'] = status
+            return info
+        except queue.Empty:
+            return {
+            'status': 0,
+            'no of samples': 0,
+            'Buffer index': 0,
+            'start index': 0,
+            'overflowed?': 0,
+            'triggered at': 0,
+            'triggered?': 0,
+            'auto stopped?': 0,
+        }
+
+    @override
+    def run_streaming(
+        self,
+        sample_interval: float,
+        time_units: cst.TIME_UNIT,
+        max_pre_trigger_samples: int,
+        max_post_trigger_samples: int,
+        auto_stop: int = 0,
+        ratio: int = 1,
+        ratio_mode: cst.RATIO_MODE = cst.RATIO_MODE.NONE,
+    ) -> float:
+        # Convert the ratio mode to None for ps5000a
+        if ratio_mode == cst.RATIO_MODE.RAW:
+            ratio_mode = cst.RATIO_MODE.NONE
+        if ratio == 0:
+            ratio = 1
+        # Setup the streaming callback
+        self._setup_streaming_callback()
+        # Run the streaming
+        return super().run_streaming(
+            sample_interval,
+            time_units,
+            max_pre_trigger_samples,
+            max_post_trigger_samples,
+            auto_stop,
+            ratio,
+            ratio_mode,
+        )
+
+    def _setup_streaming_callback(self):
+        self._streaming_callback_pointer = ctypes.CFUNCTYPE(
+            None, ctypes.c_int16, ctypes.c_int32, ctypes.c_uint32, ctypes.c_int16, ctypes.c_int32, 
+            ctypes.c_int16, ctypes.c_int16, ctypes.c_void_p)(self._streaming_callback)
+
+    def _streaming_callback(
+        self, 
+        handle: ctypes.c_int16, 
+        no_samples: ctypes.c_int32, 
+        start_index: ctypes.c_uint32, 
+        overflow: ctypes.c_int16, 
+        trigger_at: ctypes.c_int32, 
+        triggered: ctypes.c_int16, 
+        auto_stop: ctypes.c_int16, 
+        param: ctypes.c_void_p
+    ) -> None:
+        self._streaming_queue.put({
+            'status': None,
+            'no of samples': no_samples,
+            'Buffer index': None,
+            'start index': start_index,
+            'overflowed?': overflow,
+            'triggered at': trigger_at,
+            'triggered?': triggered,
+            'auto stopped?': auto_stop,
+        })
+        

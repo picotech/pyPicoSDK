@@ -1,5 +1,5 @@
 """
-Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
+Copyright (C) 2025-2026 Pico Technology Ltd. See LICENSE file for terms.
 """
 
 # flake8: noqa
@@ -1984,9 +1984,10 @@ class PicoScopeBase:
         time_units: TIME_UNIT,
         max_pre_trigger_samples: int,
         max_post_trigger_samples: int,
-        auto_stop: int,
-        ratio: int,
-        ratio_mode: RATIO_MODE,
+        auto_stop: int = 0,
+        ratio: int = 0,
+        ratio_mode: RATIO_MODE = cst.RATIO_MODE.RAW,
+        overview_buffer_size: int = None,
     ) -> float:
         """Begin a streaming capture.
         This wraps the ``RunStreaming`` driver call and configures the
@@ -1996,23 +1997,24 @@ class PicoScopeBase:
             time_units: Unit for ``sample_interval``.
             max_pre_trigger_samples: Number of pre-trigger samples to collect.
             max_post_trigger_samples: Number of post-trigger samples to collect.
-            auto_stop: Whether the driver should stop when the buffer is full.
-            ratio: Down sampling ratio.
-            ratio_mode: Down sampling mode.
+            auto_stop: Whether the driver should stop when the buffer is full. Defaults to 0.
+            ratio: Down sampling ratio. Defaults to 0.
+            ratio_mode: Down sampling mode. Defaults to RATIO_MODE.RAW.
+            overview_buffer_size: Size of the overview buffer. Only applicable for ps5000a. 
+                Defaults to None.
         Returns:
             float: The actual sample interval configured by the driver.
         """
 
         time_units = _StandardPicoConv[time_units]
-
-        if self._unit_prefix_n == "ps5000a":
-            max_pre_trigger_samples = ctypes.c_uint32(max_pre_trigger_samples)
-            max_post_trigger_samples = ctypes.c_uint32(max_post_trigger_samples)
+        if self._unit_prefix_n == 'ps5000a':
+            c_sample_interval = ctypes.c_uint32(sample_interval)
         else:
-            max_pre_trigger_samples = ctypes.c_uint64(max_pre_trigger_samples)
-            max_post_trigger_samples = ctypes.c_uint64(max_post_trigger_samples)
+            c_sample_interval = ctypes.c_double(sample_interval)
 
-        c_sample_interval = ctypes.c_double(sample_interval)
+        if overview_buffer_size is None:
+            overview_buffer_size = self.base_dataclass.last_buffer_size
+
         self._call_attr_function(
             "RunStreaming",
             self.handle,
@@ -2023,6 +2025,7 @@ class PicoScopeBase:
             auto_stop,
             ratio,
             ratio_mode,
+            overview_buffer_size,
         )
         return c_sample_interval.value
 
