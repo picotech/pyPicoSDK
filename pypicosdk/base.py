@@ -1108,6 +1108,8 @@ class PicoScopeBase:
         ) -> None:
         """
         Sets up a simple trigger from a specified channel and threshold in mV.
+        Be aware if using raw ADC values, threshold is always scaled to a 16-bit ADC value,
+        (Even when using 8-bit resolution).
 
         Args:
             channel (CHANNEL | str): The input channel to apply the trigger to.
@@ -1186,8 +1188,10 @@ class PicoScopeBase:
         aux_output_enable: int = 0,
         auto_trigger_us: int = 0,
     ) -> None:
-        """Configure trigger thresholds for ``channel``. All
-        threshold and hysteresis values are specified in ADC counts.
+        """Configure trigger thresholds for ``channel``. All threshold and hysteresis values are 
+        specified in ADC counts.
+        Be aware if using raw ADC values, threshold is always scaled to a 16-bit ADC value,
+        (Even when using 8-bit resolution).
 
         Args:
             threshold_upper (int): Upper trigger level.
