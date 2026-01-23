@@ -44,9 +44,13 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
             self.change_power_source(cst.POWER_SOURCE.SUPPLY_NOT_CONNECTED)
         self.min_adc_value, self.max_adc_value = self.get_adc_limits()
 
-    def get_adc_limits(self) -> tuple[int, int]:
+    def get_adc_limits(self, datatype = None) -> tuple[int, int]:
         """
         Returns the ADC limits for this device.
+        
+        Args:
+            datatype (DATA_TYPE, optional): The datatype to update the ADC limits for.
+                ps5000a only supports INT16_T. 
 
         Returns:
             tuple[int,int]: Minimum ADC value, Maximum ADC value
