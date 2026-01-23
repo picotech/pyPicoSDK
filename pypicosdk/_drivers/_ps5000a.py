@@ -103,6 +103,7 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
         enabled: bool = True,
         coupling: cst.COUPLING = cst.COUPLING.DC,
         offset: float = 0.0,
+        bandwidth: cst.BANDWIDTH_CH = cst.BANDWIDTH_CH.FULL,
         probe_scale: float = 1.0
     ) -> None:
         """
@@ -114,9 +115,14 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
             coupling (COUPLING, optional): AC/DC Coupling of selected channel.
                 Defaults to COUPLING.DC.
             offset (float, optional): Analog offset in volts (V). Defaults to 0.0.
+            bandwidth (BANDWIDTH_CH, optional): Bandwidth filter to set. Defaults to FULL.
+            probe_scale (float, optional): Probe attenuation factor e.g. 10 for x10 probe.
+                Default value of 1.0 (x1).
         """
         channel = _get_literal(channel, cst.channel_map)
         range = _get_literal(range, cst.range_map)
+        
+        self.set_bandwidth_filter(channel, bandwidth)
 
         if enabled:
             self._set_channel_on(channel, range, probe_scale)
