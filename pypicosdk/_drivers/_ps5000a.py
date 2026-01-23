@@ -734,4 +734,39 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
             'triggered?': triggered,
             'auto stopped?': auto_stop,
         })
-        
+
+    def set_bandwidth_filter(
+        self,
+        channel: str | cst.channel_literal | cst.CHANNEL,
+        bandwidth: cst.BANDWIDTH_CH = cst.BANDWIDTH_CH.FULL
+    ) -> None:
+        """
+        Set the bandwidth filter for a given channel.
+
+        Args:
+            channel (str | CHANNEL): Channel to set the bandwidth filter for.
+            bandwidth (BANDWIDTH_CH, optional): Bandwidth filter to set. Defaults to FULL.
+        """
+        channel = _get_literal(channel, cst.channel_map)
+
+        self._call_attr_function(
+            "SetBandwidthFilter",
+            self.handle,
+            channel,
+            bandwidth
+        )
+
+    def is_led_flashing(self) -> bool:
+        """
+        Check if the LED is flashing.
+
+        Returns:
+            bool: True if the LED is flashing, False otherwise.
+        """
+        is_flashing = ctypes.c_int16()
+        self._call_attr_function(
+            "IsLedFlashing",
+            self.handle,
+            ctypes.byref(is_flashing),
+        )
+        return is_flashing.value == 1
