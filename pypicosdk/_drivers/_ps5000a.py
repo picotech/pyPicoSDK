@@ -780,3 +780,29 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
             ctypes.byref(is_flashing),
         )
         return is_flashing.value == 1
+
+    def set_digital_port(
+        self,
+        port: cst.DIGITAL_PORT,
+        enabled: bool = True,
+        logic_level: int = 0,
+    ) -> int:
+        """
+        This function enables or disables a digital port and sets the logic threshold.
+
+        Args:
+            port (DIGITAL_PORT): Identifier for the digital port.
+            enabled (bool, optional): Enable or disable the digital port. Defaults to True.
+            logic_level (int, optional): Logic level for the digital port in ADC counts. 
+                Between -32767 (-5V) to 32767 (5V). Defaults to 0.
+
+        Returns:
+            int: Status from device.
+        """
+        return self._call_attr_function(
+            "SetDigitalPort",
+            self.handle,
+            port,
+            enabled,
+            logic_level,
+        )
