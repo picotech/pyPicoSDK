@@ -1121,6 +1121,23 @@ class SIGGEN_PARAMETER(IntEnum):
     BUFFER_LENGTH = 2
 
 
+class AWG_INDEX_MODE(IntEnum):
+    """
+    Index mode for the AWG.
+    
+    Attributes:
+        SINGLE: Single index mode.
+        DOUBLE: Double index mode.
+        QUAD: Quad index mode.
+        MAX_INDEX_MODES: Maximum index mode.
+    """
+    
+    SINGLE = 0
+    DOUBLE = 1
+    QUAD = 2
+    MAX_INDEX_MODES = 3
+
+
 class TRIGGER_WITHIN_PRE_TRIGGER(IntEnum):
     """Control for :func:`trigger_within_pre_trigger_samples`."""
 

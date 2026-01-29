@@ -806,3 +806,200 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
             enabled,
             logic_level,
         )
+
+    def set_siggen_properties_arbitrary(
+        self, 
+        start_delta_phase: int,
+        stop_delta_phase: int,
+        increment: int,
+        dwell: int,
+        sweep_type: cst.SWEEP_TYPE = cst.SWEEP_TYPE.UP,
+        shots: int = 0,
+        sweeps: int = 0,
+        trigger_type: cst.PICO_SIGGEN_TRIG_TYPE = cst.PICO_SIGGEN_TRIG_TYPE.PICO_SIGGEN_RISING,
+        trigger_source: cst.PICO_SIGGEN_TRIG_SOURCE = cst.PICO_SIGGEN_TRIG_SOURCE.PICO_SIGGEN_NONE,
+        ext_in_threshold: int = 0,
+    ) -> None:
+        """
+        Set the properties for the arbitrary waveform generator. All values can be reprogrammed
+        while the oscilloscope is waiting for a trigger.
+        
+        Args:
+            start_delta_phase: The start delta phase.
+            stop_delta_phase: The stop delta phase.
+            increment: The increment.
+            dwell: The dwell.
+            sweep_type: The sweep type. Defaults to SWEEP_TYPE.UP.
+            shots: The shots. Defaults to 0.
+            sweeps: The sweeps. Defaults to 0.
+            trigger_type: The trigger type. Defaults to PICO_SIGGEN_TRIG_TYPE.NONE.
+            trigger_source: The trigger source. Defaults to PICO_SIGGEN_TRIG_SOURCE.NONE.
+            ext_in_threshold: The external input threshold. Defaults to 0.
+        """
+        self._call_attr_function(
+            "SetSigGenPropertiesArbitrary",
+            self.handle,
+            start_delta_phase,
+            stop_delta_phase,
+            increment,
+            dwell,
+            sweep_type,
+            shots,
+            sweeps,
+            trigger_type,
+            trigger_source,
+            ext_in_threshold,
+        )
+    
+    def set_siggen_properties_built_in(
+        self,
+        frequency: float,
+        stop_frequency: float,
+        increment: float,
+        dwell_time: float,
+        sweep_type: cst.SWEEP_TYPE = cst.SWEEP_TYPE.UP,
+        shots: int = 0,
+        sweeps: int = 0,
+        trigger_type: cst.PICO_SIGGEN_TRIG_TYPE = cst.PICO_SIGGEN_TRIG_TYPE.PICO_SIGGEN_RISING,
+        trigger_source: cst.PICO_SIGGEN_TRIG_SOURCE = cst.PICO_SIGGEN_TRIG_SOURCE.PICO_SIGGEN_NONE,
+        ext_in_threshold: int = 0,
+    ) -> None:
+        """
+        Set the properties for the built-in waveform generator. All values can be reprogrammed
+        while the oscilloscope is waiting for a trigger.
+        
+        Args:
+            frequency: The startfrequency.
+            stop_frequency: The stop frequency.
+            increment: The increment.
+            dwell_time: The dwell time.
+            sweep_type: The sweep type. Defaults to SWEEP_TYPE.UP.
+            shots: The shots. Defaults to 0.
+            sweeps: The sweeps. Defaults to 0.
+            trigger_type: The trigger type. Defaults to PICO_SIGGEN_TRIG_TYPE.NONE.
+            trigger_source: The trigger source. Defaults to PICO_SIGGEN_TRIG_SOURCE.NONE.
+            ext_in_threshold: The external input threshold. Defaults to 0.
+        """
+        self._call_attr_function(
+            "SetSigGenPropertiesBuiltIn",
+            self.handle,
+            frequency,
+            stop_frequency,
+            increment,
+            dwell_time,
+            sweep_type,
+            shots,
+            sweeps,
+            trigger_type,
+            trigger_source,
+            ext_in_threshold,
+        )
+
+    def siggen_frequency_to_phase(
+        self,
+        frequency: float,
+        buffer_length: int,
+        index_mode: cst.AWG_INDEX_MODE = cst.AWG_INDEX_MODE.SINGLE,
+    ) -> int:
+        """
+        Convert a frequency to a phase count for use with the AWG. This value depends on the
+        length of the AWG buffer.
+
+        Args:
+            frequency: The frequency to convert to a phase count.
+            buffer_length: The length of the AWG buffer.
+            index_mode: The index mode to use. Defaults to AWG_INDEX_MODE.SINGLE.
+
+        Returns:
+            int: The phase count.
+        """
+        phase = ctypes.c_uint32()
+        self._call_attr_function(
+            "SigGenFrequencyToPhase",
+            self.handle,
+            frequency,
+            index_mode,
+            buffer_length,
+            ctypes.byref(phase)
+        )
+        return phase.value
+
+    def siggen_arbitrary_min_max_values(
+        self,
+    ) -> dict[str, int]:
+        """
+        Returns the minimum and maximum values for the arbitrary waveform generator.
+
+        Returns:
+            dict[str, int]: Dictionary with keys "min_value", "max_value", "min_size", and "max_size".
+            min_value: The minimum value.
+            max_value: The maximum value.
+            min_size: The minimum size.
+            max_size: The maximum size.
+        """
+        min_value = ctypes.c_int16()
+        max_value = ctypes.c_int16()
+        min_size = ctypes.c_uint32()
+        max_size = ctypes.c_uint32()
+        self._call_attr_function(
+            "SigGenArbitraryMinMaxValues",
+            self.handle,
+            ctypes.byref(min_value),
+            ctypes.byref(max_value),
+            ctypes.byref(min_size),
+            ctypes.byref(max_size),
+        )
+        return {
+            "min_value": min_value.value,
+            "max_value": max_value.value,
+            "min_size": min_size.value,
+            "max_size": max_size.value,
+        }
+
+    def siggen_software_control(
+        self,
+        state: bool
+    ) -> int:
+        """
+        This function causes a trigger event, or starts and stops gating, for the signal generator. 
+
+        Args:
+            state (bool): True sets the gate signal high, False sets it low.
+
+        Returns:
+            int: The status from the device. 0 for success, >0 for error.
+        """
+        return self._call_attr_function(
+            "SigGenSoftwareControl",
+            self.handle,
+            state,
+        )
+
+    def set_ets(
+        self,
+        mode,
+        cycles,
+        interleave,
+    ) -> int:
+        """
+        This function is used to enable or disable ETS (equivalent-time sampling) and to set 
+        the ETS parameters
+
+        Args:
+            mode: The ETS mode to set.
+            cycles: The number of cycles to sample.
+            interleave: The interleave mode to use.
+
+        Returns:
+            int: The sample time in picoseconds.
+        """
+        sample_time_ps = ctypes.c_int32()
+        self._call_attr_function(
+            "SetEts",
+            self.handle,
+            mode,
+            cycles,
+            interleave,
+            ctypes.byref(sample_time_ps),
+        )
+        return sample_time_ps.value
