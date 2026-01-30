@@ -1,7 +1,10 @@
 """Copyright (C) 2025-2026 Pico Technology Ltd. See LICENSE file for terms."""
 
 import ctypes
-from typing import Any, override
+try:
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override  # type: ignore
 from warnings import warn
 from .._exceptions import NoArgumentsNeededWarning
 
@@ -593,9 +596,9 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
             ctypes.c_uint32(timebase),
             ac_adaptor,
         )
-        combo_array = list[Any](combo_array)
+        combo_array = list(combo_array)
         channel_combinations = []
-        for n, i in enumerate[Any](combo_array):
+        for n, i in enumerate(combo_array):
             channel_combinations.append([])
             for j in cst.PICO_CHANNEL_FLAGS:
                 if i & j == j and return_type == 'string':
