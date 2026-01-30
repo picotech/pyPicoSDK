@@ -109,10 +109,11 @@ class PicoScopeBase:
         error_code = ERROR_STRING[status]
         if status != 0:
             # Ignore codes as they are warnings or status updates.
+            # 39 - Pico Busy
             # 407 - Pico Waiting For Data Buffers
             # 282 - Pico Power Supply Not Connected
             # 290 - Pico Channel Disabled Due To Usb Powered
-            if status in [407, 282, 290]:
+            if status in [407, 282, 290, 39]:
                 return
             self.close_unit()
             raise PicoSDKException(error_code)
