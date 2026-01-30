@@ -38,11 +38,23 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
         resolution: str | cst.resolution_literal | cst.RESOLUTION = cst.RESOLUTION.BIT_8
     ) -> None:
         resolution = _get_literal(resolution, cst.resolution_map)
-        status = super().open_unit(serial_number, resolution)
+        if serial_number is not None:
+            serial_number = serial_number.encode()
+        status = self._call_attr_function(
+            'OpenUnit',
+            ctypes.byref(self.handle),
+            serial_number,
+            resolution
+        )
         if status == cst.POWER_SOURCE.SUPPLY_NOT_CONNECTED:
             self.ac_adaptor = False
             self.change_power_source(cst.POWER_SOURCE.SUPPLY_NOT_CONNECTED)
+            
+        self.resolution = resolution
         self.min_adc_value, self.max_adc_value = self.get_adc_limits()
+        self.set_all_channels_off()
+
+        return status
 
     def get_adc_limits(self, datatype = None) -> tuple[int, int]:
         """
@@ -90,6 +102,10 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
             power_source (str | POWER_SOURCE): Power source selection.
         """
         power_source = _get_literal(power_source, cst.PwrSrc_M)
+        if power_source == cst.POWER_SOURCE.SUPPLY_NOT_CONNECTED:
+            self.ac_adaptor = False
+        else:
+            self.ac_adaptor = True
         self._call_attr_function(
             'ChangePowerSource',
             self.handle,
@@ -143,9 +159,11 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
     def set_all_channels_off(self) -> None:
         """
         Turns all channels off, based on unit number of channels.
-        If the ps5000a has no AC power supply attached, only turns off channela A and B
+        If the ps5000a has no AC power supply attached, only turns off channel A and B.
         """
         channels = int(self.get_unit_info(cst.UNIT_INFO.PICO_VARIANT_INFO)[1])
+        if self.ac_adaptor == False:
+            channels = 2
         for channel in range(int(channels)):
             self.set_channel(channel, enabled=False)
 
@@ -1003,3 +1021,125 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
             ctypes.byref(sample_time_ps),
         )
         return sample_time_ps.value
+
+    def set_ets_time_buffer(
+        self,
+        samples: int,
+        buffer: None | np.ndarray = None
+    ) -> np.ndarray:
+        """
+        This function tells the driver where to find your application's ETS time buffers. 
+        These buffers contain the 64- bit timing information for each ETS sample after you run a
+        block-mode ETS capture.
+
+        Args:
+            samples: The number of samples to set the ETS time buffer for.
+            buffer: A single or double numpy array. If None, a buffer will be created.
+                A single numpy array contains a 64-bit integer for each sample.
+                A double numpy array contains a upper and lower unsinged32-bit integer for each
+                sample.
+
+        Returns:
+            np.ndarray: The buffer set. If created, the buffer will be returned.
+        """
+        if buffer is None:
+            buffer = np.zeros(samples, dtype=np.int64)
+        if buffer.ndim == 1:
+            buffer_ptr = npc.as_ctypes(buffer)
+            buffer_len = buffer.size
+            status = self._call_attr_function(
+                "SetEtsTimeBuffer",
+                self.handle,
+                buffer_ptr,
+                buffer_len,
+            )
+        elif buffer.ndim == 2:
+            buffer_lower_ptr = npc.as_ctypes(buffer[0])
+            buffer_upper_ptr = npc.as_ctypes(buffer[1])
+            buffer_len = buffer.shape[1]
+            print(buffer_lower_ptr, buffer_upper_ptr, buffer_len)
+            status = self._call_attr_function(
+                "SetEtsTimeBuffers",
+                self.handle,
+                buffer_lower_ptr,
+                buffer_upper_ptr,
+                buffer_len,
+            )
+        return buffer
+
+    def set_ets_time_buffers(
+        self,
+        samples: int, 
+        buffers: None | np.ndarray | list[np.ndarray] = None,
+    ) -> np.ndarray:
+        """
+        This function tells the driver where to find your application's ETS time buffers. These 
+        buffers contain the timing information for each ETS sample after you run a block-mode ETS
+        capture. There are two buffers containing the upper and lower 32-bit parts of the timing
+        information, to allow programming languages that do not support 64-bit data to retrieve the
+        timings. If your programming language supports 64-bit data, you can use
+        set_ets_time_buffer(samples, buffer) instead.
+
+        Args:
+            samples (int): The number of samples to set the ETS time buffers for.
+            buffers (None | np.ndarray | list[np.ndarray], optional): A double numpy array or list 
+                of two single numpy arrays. If None, a buffer will be created. 
+
+        Returns:
+            np.ndarray: The buffers set. If created, the buffers will be returned.
+        """
+        if buffers is None:
+            buffers = np.zeros((2, samples), dtype=np.uint32)
+
+        if isinstance(buffers, list):
+            buffers = np.stack(buffers)
+        return self.set_ets_time_buffer(samples, buffers)
+
+    def set_trigger_digital_port_properties(
+        self,
+        channels: cst.DIGITAL_CHANNEL | list[cst.DIGITAL_CHANNEL],
+        directions: cst.DIGITAL_DIRECTION | list[cst.DIGITAL_DIRECTION]
+    ) -> None:
+        """
+        Set the trigger digital port properties.
+        
+        Args:
+            channels: A single channel or a list of channels to set the trigger properties for.
+            directions: A single direction or a list of directions to set the trigger properties
+                for. Must be the same length as the channels list.
+        
+        Returns:
+            int: The status from the device. 0 for success, >0 for error.
+        """
+        if isinstance(channels, int):
+            channels = [channels]
+        if isinstance(directions, int):
+            directions = [directions]
+
+        n_directions = len(channels)
+
+        digital_port_struct = (cst.DIGITAL_CHANNEL_DIRECTIONS * n_directions)()
+        for i in range(n_directions):
+            digital_port_struct[i].channel = channels[i]
+            digital_port_struct[i].direction = directions[i]
+
+        return self._call_attr_function(
+            "SetTriggerDigitalPortProperties",
+            self.handle,
+            digital_port_struct,
+            n_directions,
+        )
+
+    def is_trigger_or_pulse_width_qualifier_enabled(self) -> dict:
+        tirgger_enabled = ctypes.c_int16()
+        pulse_width_qualifier_enabled = ctypes.c_int16()
+        self._call_attr_function(
+            "IsTriggerOrPulseWidthQualifierEnabled",
+            self.handle,
+            ctypes.byref(tirgger_enabled),
+            ctypes.byref(pulse_width_qualifier_enabled),
+        )
+        return {
+            "trigger_enabled": tirgger_enabled.value,
+            "pulse_width_qualifier_enabled": pulse_width_qualifier_enabled.value,
+        }

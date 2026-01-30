@@ -146,7 +146,7 @@ class shared_ps6000a_psospa(_ProtocolBase):
     def set_trigger_digital_port_properties(
         self,
         port: int,
-        directions: list[PICO_DIGITAL_CHANNEL_DIRECTIONS] | None,
+        directions: list[DIGITAL_CHANNEL_DIRECTIONS] | None,
     ) -> None:
         """Configure digital port trigger directions.
         Args:
@@ -156,7 +156,7 @@ class shared_ps6000a_psospa(_ProtocolBase):
         """
 
         if directions:
-            array_type = PICO_DIGITAL_CHANNEL_DIRECTIONS * len(directions)
+            array_type = DIGITAL_CHANNEL_DIRECTIONS * len(directions)
             dir_array = array_type(*directions)
             ptr = dir_array
             count = len(directions)
@@ -170,18 +170,6 @@ class shared_ps6000a_psospa(_ProtocolBase):
             port,
             ptr,
             ctypes.c_int16(count),
-        )
-
-    def trigger_within_pre_trigger_samples(self, state: int) -> None:
-        """Control trigger positioning relative to pre-trigger samples.
-        Args:
-            state: 0 to enable, 1 to disable
-        """
-
-        self._call_attr_function(
-            "TriggerWithinPreTriggerSamples",
-            self.handle,
-            state,
         )
 
     def set_siggen(

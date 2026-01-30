@@ -580,6 +580,14 @@ _StandardPicoConv = {
 }
 
 
+class DIGITAL_PORT(ctypes.Structure):
+    _pack_ = 1
+    _fields_ = [
+        ("channel_", ctypes.c_int32),
+        ("direction_", ctypes.c_int32),
+    ]
+
+
 class PICO_VERSION(ctypes.Structure):
     """Firmware or driver version information.
     Attributes:
@@ -1038,7 +1046,43 @@ class PICO_PORT_DIGITAL_CHANNEL(IntEnum):
     CHANNEL7 = 7
 
 
-class PICO_DIGITAL_DIRECTION(IntEnum):
+class DIGITAL_CHANNEL(IntEnum):
+    """Digital channel identifiers."""
+    CHANNEL0 = 0
+    CHANNEL1 = 1
+    CHANNEL2 = 2
+    CHANNEL3 = 3
+    CHANNEL4 = 4
+    CHANNEL5 = 5
+    CHANNEL6 = 6
+    CHANNEL7 = 7
+    CHANNEL8 = 8
+    CHANNEL9 = 9
+    CHANNEL10 = 10
+    CHANNEL11 = 11
+    CHANNEL12 = 12
+    CHANNEL13 = 13
+    CHANNEL14 = 14
+    CHANNEL15 = 15
+    CHANNEL16 = 16
+    CHANNEL17 = 17
+    CHANNEL18 = 18
+    CHANNEL19 = 19
+    CHANNEL20 = 20
+    CHANNEL21 = 21
+    CHANNEL22 = 22
+    CHANNEL23 = 23
+    CHANNEL24 = 24
+    CHANNEL25 = 25
+    CHANNEL26 = 26
+    CHANNEL27 = 27
+    CHANNEL28 = 28
+    CHANNEL29 = 29
+    CHANNEL30 = 30
+    CHANNEL31 = 31
+
+
+class DIGITAL_DIRECTION(IntEnum):
     """Digital trigger direction settings."""
 
     DONT_CARE = 0
@@ -1049,14 +1093,14 @@ class PICO_DIGITAL_DIRECTION(IntEnum):
     DIRECTION_RISING_OR_FALLING = 5
 
 
-class PICO_DIGITAL_CHANNEL_DIRECTIONS(ctypes.Structure):
+class DIGITAL_CHANNEL_DIRECTIONS(ctypes.Structure):
     """Structure describing a digital channel direction."""
 
     _pack_ = 1
 
     _fields_ = [
-        ("channel_", ctypes.c_int32),
-        ("direction_", ctypes.c_int32),
+        ("channel", ctypes.c_int32),
+        ("direction", ctypes.c_int32),
     ]
 
 
@@ -1124,7 +1168,7 @@ class SIGGEN_PARAMETER(IntEnum):
 class AWG_INDEX_MODE(IntEnum):
     """
     Index mode for the AWG.
-    
+
     Attributes:
         SINGLE: Single index mode.
         DOUBLE: Double index mode.
@@ -1227,8 +1271,8 @@ __all__ = [
     'THRESHOLD_MODE',
     'PICO_DIRECTION',
     'PICO_PORT_DIGITAL_CHANNEL',
-    'PICO_DIGITAL_DIRECTION',
-    'PICO_DIGITAL_CHANNEL_DIRECTIONS',
+    'DIGITAL_DIRECTION',
+    'DIGITAL_CHANNEL_DIRECTIONS',
     'PULSE_WIDTH_TYPE',
     'SWEEP_TYPE',
     'PICO_SIGGEN_TRIG_TYPE',
@@ -1238,6 +1282,7 @@ __all__ = [
     'TRIGGER_WITHIN_PRE_TRIGGER',
     'PICO_LED_COLOUR_PROPERTIES',
     'PICO_LED_STATE_PROPERTIES',
+    'DIGITAL_CHANNEL',
 
     'channel_literal',
     'channel_map',
