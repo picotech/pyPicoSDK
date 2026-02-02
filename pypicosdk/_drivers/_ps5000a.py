@@ -164,9 +164,8 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
         Turns all channels off, based on unit number of channels.
         If the ps5000a has no AC power supply attached, only turns off channel A and B.
         """
-        channels = int(self.get_unit_info(cst.UNIT_INFO.PICO_VARIANT_INFO)[1])
-        if self.ac_adaptor == False:
-            channels = 2
+        # Get the number of active channels based on the AC adaptor. (-2) to remove digital ports.
+        channels = len(self.get_channel_combinations(int(1e6), self.ac_adaptor)[-1]) - 2
         for channel in range(int(channels)):
             self.set_channel(channel, enabled=False)
 
