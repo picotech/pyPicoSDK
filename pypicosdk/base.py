@@ -596,7 +596,7 @@ class PicoScopeBase:
 
         Args:
             first_segment_index: Index of the first memory segment to query.
-            segment_count: Number of consecutive segments starting at
+            to_segment_index: Number of consecutive segments starting at
                 ``first_segment_index``.
 
         Returns:

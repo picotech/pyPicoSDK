@@ -2,6 +2,7 @@
 
 from enum import IntEnum
 import ctypes
+from socket import SO_RCVLOWAT
 from typing import Literal
 import numpy as np
 
@@ -394,6 +395,20 @@ class BANDWIDTH_CH:
     FULL = 0
     BW_20MHZ = 1
     BW_200MHZ = 2
+
+class ETS_MODE(IntEnum):
+    """
+    Class for different ETS modes.
+    Attributes:
+        OFF: ETS is disabled.
+        FAST: ETS is enabled in fast mode.
+        SLOW: ETS is enabled in slow mode.
+        MODES_MAX: Maximum number of ETS modes.
+    """
+    OFF = 0
+    FAST = 1
+    SLOW = 2
+    MODES_MAX = 3
 
 class DATA_TYPE:
     """

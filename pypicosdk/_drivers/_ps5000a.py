@@ -997,18 +997,18 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
 
     def set_ets(
         self,
-        mode,
-        cycles,
-        interleave,
+        mode: cst.ETS_MODE,
+        cycles: int,
+        interleave: int,
     ) -> int:
         """
         This function is used to enable or disable ETS (equivalent-time sampling) and to set 
         the ETS parameters
 
         Args:
-            mode: The ETS mode to set.
-            cycles: The number of cycles to sample.
-            interleave: The interleave mode to use.
+            mode (ETS_MODE): The ETS mode to set.
+            cycles (int): The number of cycles to sample.
+            interleave (int): The interleave mode to use.
 
         Returns:
             int: The sample time in picoseconds.
