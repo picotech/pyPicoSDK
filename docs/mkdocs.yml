@@ -46,6 +46,7 @@ nav:
       - ref/ps5000a/captures.md
       - ref/ps5000a/run.md
       - ref/ps5000a/retrieval.md
+      - ref/ps5000a/ets.md
     - ref/general.md
     - ref/constants.md
     - Config/Overrides: ref/configuration.md
