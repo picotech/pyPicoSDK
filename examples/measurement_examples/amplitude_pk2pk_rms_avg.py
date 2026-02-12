@@ -1,12 +1,12 @@
 """
-Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
+Copyright (C) 2025-2026 Pico Technology Ltd. See LICENSE file for terms.
 
 Simple amplitude measurement using a block capture.
 Uses histogram-based top and base functions to provide a robust amplitude
 measurement. The script can also calculate RMS amplitude.
 """
 
-from measurements import amplitude, pk2pk, rms
+from measurements import amplitude, pk2pk, rms, average
 
 from matplotlib import pyplot as plt
 import pypicosdk as psdk
@@ -45,9 +45,12 @@ waveform = channels_buffer[CHANNEL]
 amplitude_value = amplitude(waveform)
 pk2pk_value = pk2pk(waveform)
 rms_value = rms(waveform)
+average_value = average(waveform)
 
-print(f"Measured amplitude: {amplitude_value:.2f} mV"
-      f"pk2pk: {pk2pk_value:.2f} mV, RMS: {rms_value:.2f} mV")
+print(f"Measured amplitude: {amplitude_value:.2f} mV")
+print(f"pk2pk: {pk2pk_value:.2f} mV")
+print(f"RMS: {rms_value:.2f} mV")
+print(f"Average: {average_value:.2f} mV")
 
 # Display waveform
 plt.plot(time_axis, waveform)

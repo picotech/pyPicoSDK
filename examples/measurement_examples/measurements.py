@@ -79,6 +79,10 @@ def rms(data):
     """Return the RMS (root mean squared)"""
     return float(np.sqrt(np.mean(np.square(data - data.mean()))))
 
+def average(data):
+    """Return the average"""
+    return np.mean(data)
+
 
 def positive_overshoot_filtered(data):
     """Positive overshoot as % of step height."""
