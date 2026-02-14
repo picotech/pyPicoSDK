@@ -8,13 +8,14 @@ To log an issue email support at:
 
 - Contact us via our website: [picotech.com/tech-support/technical-enquiries](https://www.picotech.com/tech-support/technical-enquiries)
 
-Make sure to leave the following information:
+Include the following information:
 
-- **Issue Summary**: _"Describe the issue in detail."_
-- **Environment Details**
-    - **Operating system:** _"i.e. Windows/macOS/Linux(Ubuntu/Mint)"_
-    - **PicoScope model:** _"i.e. PicoScope 3814E/PicoScope 6824E"_
-    - **Python version:** _"Can be found using `python -V`"_
-    - **pyPicoSDK version:** _"Can be found using `pip list` or `pip freeze`"_
-    - **PicoSDK version:** _"Can be found in SDK docs location per PicoScope"_
-- **Steps to reproduce issue:** _"Detail the steps to arrive at the same."_
+| Field                  | Description/Example                                             |
+|------------------------|----------------------------------------------------------------|
+| **Issue Summary**      | _Describe the issue in detail._                                |
+| **Operating system**   | _i.e. Windows / macOS / Linux (Ubuntu/Mint)_                   |
+| **PicoScope model**    | _i.e. PicoScope 3814E / PicoScope 6824E_                       |
+| **Python version**     | _Can be found using `python -V`_                               |
+| **pyPicoSDK version**  | _Can be found using `pip list` or `pip freeze`_                |
+| **PicoSDK version**    | _Can be found in SDK docs location per PicoScope_              |
+| **Steps to reproduce** | _Detail the steps to arrive at the same._                      |

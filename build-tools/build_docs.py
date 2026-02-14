@@ -15,11 +15,12 @@ if not os.path.exists('docs'):
     raise FileNotFoundError('docs/ does not exist in this directory')
 
 ref_dir = 'docs/docs/ref/'
-copy_dir = 'psospa' # Main copy dir (truth source)
+copy_dir = 'psospa'  # Main copy dir (truth source)
 
 # Paste directory list with an exclude for certain files
 paste_dir_list = [
-    {'name': 'ps6000a', 'exclude': ['led.md',]}
+    {'name': 'ps6000a', 'exclude': ['led.md',]},
+    {'name': 'ps5000a', 'exclude': ['led.md', 'firmware.md', 'digital.md', ]}
 ]
 
 # List of files to copy from copy_dir to paste_dir
@@ -54,5 +55,7 @@ for paste_dir_dict in paste_dir_list:
         copy_fp = os.path.join(ref_dir, copy_dir, f)
         paste_fp = os.path.join(ref_dir, paste_dir, f)
         print(f'Copying {f} to {paste_fp}')
-        with open(copy_fp) as f: text = f.read()
-        with open(paste_fp, 'w') as f: f.write(text.replace(copy_dir, paste_dir))
+        with open(copy_fp, encoding='utf-8') as f:
+            text = f.read()
+        with open(paste_fp, 'w', encoding='utf-8') as f:
+            f.write(text.replace(copy_dir, paste_dir))

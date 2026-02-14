@@ -8,6 +8,7 @@
         - "buffer"
         - "memory"
         - "!_to_"
+        - "!ets"
         - "!^_"
         show_root_toc_entry: false
         summary: true

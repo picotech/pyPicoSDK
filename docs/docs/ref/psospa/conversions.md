@@ -25,5 +25,6 @@ the PicoScope needs to be initialized using `scope.open_unit()` followed by the 
         - ".*_to_.*"
         - "convert"
         - "!^_"
+        - "!siggen"
         show_root_toc_entry: false
         summary: true

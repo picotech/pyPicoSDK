@@ -10,5 +10,6 @@
         - "!trigger"
         - "!_to_"
         - "!^_"
+        - "!siggen"
         show_root_toc_entry: false
         summary: true
