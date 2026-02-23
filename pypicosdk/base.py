@@ -944,13 +944,17 @@ class PicoScopeBase:
         # Update last used
         self.last_used_volt_unit = unit
 
+        # If buffer is a channel_buffer dictionary
         if isinstance(buffer, dict):
-            for channel, adc in buffer.items():
-                buffer[channel] = self._adc_conversion(adc, channel, output_unit=unit)
+            # Convert each buffer per channel and update to dictionary
+            buffer = {channel: self._adc_conversion(adc, channel, output_unit=unit) \
+                      for channel, adc in buffer.items()}
         else:
+            # If channel is a string, treat as a single value (int or ndarray)
             if isinstance(channel, str):
                 channel = _get_literal(channel, channel_map)
             buffer = self._adc_conversion(buffer, channel, output_unit=unit)
+        # Return the converted buffer
         return buffer
 
     def adc_to_mv(
