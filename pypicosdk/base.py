@@ -9,7 +9,6 @@ import os
 import platform
 import warnings
 
-from matplotlib.lines import segment_hits
 import numpy as np
 import numpy.ctypeslib as npc
 
