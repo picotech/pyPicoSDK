@@ -28,6 +28,7 @@ from .. import common as cmn
 from ..common import (
     _struct_to_dict,
     _get_literal,
+    _siggen_get_buffer_args,
 )
 from .._exceptions import (
     PicoSDKException
@@ -77,39 +78,6 @@ class shared_ps6000a_psospa(_ProtocolBase):
         self.min_adc_value = int(min_value.value / datatype_scale)
         self.max_adc_value = int(max_value.value / datatype_scale)
         return self.min_adc_value, self.max_adc_value
-
-    def get_trigger_info(
-        self,
-        first_segment_index: int = 0,
-        segment_count: int = 1,
-    ) -> list[dict]:
-        """Retrieve trigger timing information for one or more segments.
-
-        Args:
-            first_segment_index: Index of the first memory segment to query.
-            segment_count: Number of consecutive segments starting at
-                ``first_segment_index``.
-
-        Returns:
-            List of dictionaries for each trigger event
-
-        Raises:
-            PicoSDKException: If the function call fails or preconditions are
-                not met.
-        """
-
-        info_array = (PICO_TRIGGER_INFO * segment_count)()
-
-        self._call_attr_function(
-            "GetTriggerInfo",
-            self.handle,
-            ctypes.byref(info_array[0]),
-            ctypes.c_uint64(first_segment_index),
-            ctypes.c_uint64(segment_count),
-        )
-
-        # Convert struct to dictionary
-        return [_struct_to_dict(info, format=True) for info in info_array]
 
     def get_values_bulk_async(
         self,
@@ -178,7 +146,7 @@ class shared_ps6000a_psospa(_ProtocolBase):
     def set_trigger_digital_port_properties(
         self,
         port: int,
-        directions: list[PICO_DIGITAL_CHANNEL_DIRECTIONS] | None,
+        directions: list[DIGITAL_CHANNEL_DIRECTIONS] | None,
     ) -> None:
         """Configure digital port trigger directions.
         Args:
@@ -188,7 +156,7 @@ class shared_ps6000a_psospa(_ProtocolBase):
         """
 
         if directions:
-            array_type = PICO_DIGITAL_CHANNEL_DIRECTIONS * len(directions)
+            array_type = DIGITAL_CHANNEL_DIRECTIONS * len(directions)
             dir_array = array_type(*directions)
             ptr = dir_array
             count = len(directions)
@@ -202,78 +170,6 @@ class shared_ps6000a_psospa(_ProtocolBase):
             port,
             ptr,
             ctypes.c_int16(count),
-        )
-
-    def set_pulse_width_qualifier_directions(
-        self,
-        channel: int,
-        direction: int,
-        threshold_mode: int,
-    ) -> None:
-        """Set pulse width qualifier direction for ``channel``.
-        If multiple directions are needed, channel, direction and threshold_mode
-        can be given a list of values.
-
-        Args:
-            channel (CHANNEL | list): Single or list of channels to configure.
-            direction (THRESHOLD_DIRECTION | list): Single or list of directions to configure.
-            threshold_mode (THRESHOLD_MODE | list): Single or list of threshold modes to configure.
-        """
-        if type(channel) == list:
-            dir_len = len(channel)
-            dir_struct = (PICO_DIRECTION * dir_len)()
-            for i in range(dir_len):
-                dir_struct[i] = PICO_DIRECTION(channel[i], direction[i], threshold_mode[i])
-        else:
-            dir_len = 1
-            dir_struct = PICO_DIRECTION(channel, direction, threshold_mode)
-
-        self._call_attr_function(
-            "SetPulseWidthQualifierDirections",
-            self.handle,
-            ctypes.byref(dir_struct),
-            ctypes.c_int16(dir_len),
-        )
-
-    def set_pulse_width_digital_port_properties(
-        self,
-        port: int,
-        directions: list[PICO_DIGITAL_CHANNEL_DIRECTIONS] | None,
-    ) -> None:
-        """Configure digital port properties for pulse-width triggering.
-        Args:
-            port: Digital port identifier.
-            directions: Optional list of channel directions to set. ``None`` to
-                clear existing configuration.
-        """
-
-        if directions:
-            array_type = PICO_DIGITAL_CHANNEL_DIRECTIONS * len(directions)
-            dir_array = array_type(*directions)
-            ptr = dir_array
-            count = len(directions)
-        else:
-            ptr = None
-            count = 0
-
-        self._call_attr_function(
-            "SetPulseWidthDigitalPortProperties",
-            self.handle,
-            port,
-            ptr,
-            ctypes.c_int16(count),
-        )
-
-    def trigger_within_pre_trigger_samples(self, state: int) -> None:
-        """Control trigger positioning relative to pre-trigger samples.
-        Args:
-            state: 0 to enable, 1 to disable
-        """
-
-        self._call_attr_function(
-            "TriggerWithinPreTriggerSamples",
-            self.handle,
-            state,
         )
 
     def set_siggen(
@@ -301,7 +197,7 @@ class shared_ps6000a_psospa(_ProtocolBase):
             pk2pk (float): Peak-to-peak voltage in volts (V).
             wave_type (WAVEFORM): Waveform type (e.g., WAVEFORM.SINE, WAVEFORM.SQUARE).
             offset (float, optional): Voltage offset in volts (V).
-            duty (int or float, optional): Duty cycle as a percentage (0–100).
+            duty (int or float, optional): Duty cycle as a percentage (0-100).
             sweep: If True, sweep is enabled, fill in the following:
             stop_freq: Frequency to stop sweep at in Hertz (Hz). Defaults to None.
             inc_freq: Frequency to increment (or step) in hertz (Hz). Defaults to 1 Hz.
@@ -405,21 +301,6 @@ class shared_ps6000a_psospa(_ProtocolBase):
             ctypes.c_double(offset)
         )
 
-    def _siggen_get_buffer_args(self, buffer:np.ndarray) -> tuple[ctypes.POINTER, int]:
-        """
-        Takes a np buffer and returns a ctypes compatible pointer and buffer length.
-
-        Args:
-            buffer (np.ndarray): numpy buffer of data (between -32767 and +32767)
-
-        Returns:
-            tuple[ctypes.POINTER, int]: Buffer pointer and buffer length
-        """
-        buffer_len = buffer.size
-        buffer = np.asanyarray(buffer, dtype=np.int16)
-        buffer_ptr = buffer.ctypes.data_as(ctypes.POINTER(ctypes.c_int16))
-        return buffer_ptr, buffer_len
-
     def siggen_set_waveform(
             self,
             wave_type: WAVEFORM,
@@ -437,7 +318,7 @@ class shared_ps6000a_psospa(_ProtocolBase):
         buffer_len = None
         buffer_ptr = None
         if wave_type is WAVEFORM.ARBITRARY:
-            buffer_ptr, buffer_len = self._siggen_get_buffer_args(buffer)
+            buffer_ptr, buffer_len = _siggen_get_buffer_args(buffer)
 
 
         self._call_attr_function(
@@ -701,23 +582,6 @@ class shared_ps6000a_psospa(_ProtocolBase):
             self.siggen_frequency_sweep(stop_freq, inc_freq, dwell_time, sweep_type)
             return self.siggen_apply(sweep_enabled=True)
         return self.siggen_apply()
-
-    def get_analogue_offset_limits(
-        self, range: PICO_CONNECT_PROBE_RANGE, coupling: COUPLING
-    ) -> tuple[float, float]:
-        """Get the allowed analogue offset range for ``range`` and ``coupling``."""
-
-        max_v = ctypes.c_double()
-        min_v = ctypes.c_double()
-        self._call_attr_function(
-            "GetAnalogueOffsetLimits",
-            self.handle,
-            range,
-            coupling,
-            ctypes.byref(max_v),
-            ctypes.byref(min_v),
-        )
-        return max_v.value, min_v.value
 
     def set_channel(
         self,

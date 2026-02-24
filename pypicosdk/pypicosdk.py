@@ -5,9 +5,10 @@ import numpy as np
 
 from . import constants as _constants
 from .constants import *
-from .version import VERSION
+from .version import __version__
 from .ps6000a import ps6000a
 from .psospa import psospa
+from ._drivers._ps5000a import ps5000a
 from .base import PicoScopeBase
 from .common import (
     PicoSDKException,
@@ -28,15 +29,15 @@ def get_all_enumerated_units() -> tuple[int, list[str]]:
         >>> print(n_units, unit_list)
     """
     n_units = 0
-    unit_serial: list[str] = []
-    for scope in [ps6000a(), psospa()]:
+    units = {}
+    for scope in [ps6000a(), psospa(), ps5000a()]:
         try:
-            units = scope.get_enumerated_units()
+            unit_serial = scope.get_enumerated_units()
         except PicoSDKException:
             continue
-        n_units += units[0]
-        unit_serial += units[1].split(',')
-    return n_units, unit_serial
+        n_units += unit_serial[0]
+        units[scope._unit_prefix_n] = unit_serial[1].split(',')  # pylint: disable=protected-access
+    return n_units, units
 
 def _export_to_csv_rapid(filename, channels_buffer, time_axis=None, time_unit='ns'):
     headers = []
@@ -141,5 +142,6 @@ __all__ = list(_constants.__all__) + [
     'resolution_enhancement',
     'ps6000a',
     'psospa',
-    'VERSION',
+    'ps5000a',
+    '__version__',
 ]

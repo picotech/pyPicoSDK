@@ -2,6 +2,7 @@
 
 from enum import IntEnum
 import ctypes
+from socket import SO_RCVLOWAT
 from typing import Literal
 import numpy as np
 
@@ -63,6 +64,13 @@ class RESOLUTION:
     _15BIT = 3
     _16BIT = 4
 
+    BIT_8 = 0
+    BIT_10 = 10
+    BIT_12 = 1
+    BIT_14 = 2
+    BIT_15 = 3
+    BIT_16 = 4
+
 resolution_literal = Literal['8bit', '10bit', '12bit', '14bit', '15bit', '16bit']
 resolution_map = {'8bit':0, '10bit':10, '12bit':1, '14bit':2, '15bit':3, '16bit':4}
 
@@ -90,7 +98,7 @@ trigger_dir_m = {'above': 0,
                  'falling': 3,
                  'rising or falling': 4}
 
-class WAVEFORM:
+class WAVEFORM(IntEnum):
     """
     Waveform type constants for PicoScope signal generator configuration.
 
@@ -122,6 +130,21 @@ class WAVEFORM:
     WHITENOISE = 0x00002001
     PRBS = 0x00002002
     ARBITRARY = 0x10000000
+
+
+ps5000a_waveform_map = {
+    WAVEFORM.SINE: 0,
+    WAVEFORM.SQUARE: 1,
+    WAVEFORM.TRIANGLE: 2,
+    WAVEFORM.RAMP_UP: 3,
+    WAVEFORM.RAMP_DOWN: 4,
+    WAVEFORM.SINC: 5,
+    WAVEFORM.GAUSSIAN: 6,
+    WAVEFORM.HALF_SINE: 7,
+    WAVEFORM.DC_VOLTAGE: 8,
+    WAVEFORM.WHITENOISE: 9
+}
+
 
 waveform_literal = Literal[
     'sine',
@@ -256,22 +279,6 @@ class PICO_CHANNEL_OVERVOLTAGE_TRIPPED(ctypes.Structure):
         ("tripped_", ctypes.c_uint8),
     ]
 
-class PICO_CHANNEL_FLAGS(IntEnum):
-    """Bit flags describing individual channels and digital ports."""
-
-    CHANNEL_A = 1
-    CHANNEL_B = 2
-    CHANNEL_C = 4
-    CHANNEL_D = 8
-    CHANNEL_E = 16
-    CHANNEL_F = 32
-    CHANNEL_G = 64
-    CHANNEL_H = 128
-
-    PORT0 = 65536
-    PORT1 = 131072
-    PORT2 = 262144
-    PORT3 = 524288
 
 class COUPLING(IntEnum):
     """
@@ -285,6 +292,7 @@ class COUPLING(IntEnum):
     AC = 0
     DC = 1
     DC_50OHM = 50
+
 
 class RANGE(IntEnum):
     """
@@ -347,6 +355,20 @@ range_map = {
     '20V': 10,
 }
 
+RangeMapRev = {
+    0: '10mV',
+    1: '20mV',
+    2: '50mV',
+    3: '100mV',
+    4: '200mV',
+    5: '500mV',
+    6: '1V',
+    7: '2V',
+    8: '5V',
+    9: '10V',
+    10: '20V',
+}
+
 ProbeScale_L = Literal['x1', 'x2', 'x5', 'x10', 'x20', 'x50', 'x100', 'x200', 'x500', 'x1000']
 ProbeScale_M = {
     'x1': 1,
@@ -373,6 +395,20 @@ class BANDWIDTH_CH:
     FULL = 0
     BW_20MHZ = 1
     BW_200MHZ = 2
+
+class ETS_MODE(IntEnum):
+    """
+    Class for different ETS modes.
+    Attributes:
+        OFF: ETS is disabled.
+        FAST: ETS is enabled in fast mode.
+        SLOW: ETS is enabled in slow mode.
+        MODES_MAX: Maximum number of ETS modes.
+    """
+    OFF = 0
+    FAST = 1
+    SLOW = 2
+    MODES_MAX = 3
 
 class DATA_TYPE:
     """
@@ -444,6 +480,7 @@ class RATIO_MODE:
         TRIGGER: Trigger mode for event-based data. If manually setting buffers, TRIGGER will need its own buffer set.
         RAW: Raw data mode, without any processing.
     """
+    NONE = 0
     AGGREGATE = 1
     DECIMATE = 2
     AVERAGE = 4
@@ -470,7 +507,21 @@ class POWER_SOURCE:
     """
     SUPPLY_CONNECTED = 0x00000119
     SUPPLY_NOT_CONNECTED = 0x0000011A
-    USB3_0_DEVICE_NON_USB3_0_PORT= 0x0000011E
+    USB3_0_DEVICE_NON_USB3_0_PORT = 0x0000011E
+
+
+PwrSrc_L = Literal['AC PSU', 'USB', '2-channel']
+PwrSrc_M = {
+    'AC PSU': POWER_SOURCE.SUPPLY_CONNECTED,
+    'USB': POWER_SOURCE.SUPPLY_NOT_CONNECTED,
+    '2-channel': POWER_SOURCE.USB3_0_DEVICE_NON_USB3_0_PORT,
+}
+PwrSrcMapRev = {
+    POWER_SOURCE.SUPPLY_CONNECTED: 'AC PSU',
+    POWER_SOURCE.SUPPLY_NOT_CONNECTED: 'USB',
+    POWER_SOURCE.USB3_0_DEVICE_NON_USB3_0_PORT: '2-channel',
+}
+
 
 class SAMPLE_RATE(IntEnum):
     SPS = 1
@@ -544,6 +595,14 @@ _StandardPicoConv = {
 }
 
 
+class DIGITAL_PORT(ctypes.Structure):
+    _pack_ = 1
+    _fields_ = [
+        ("channel_", ctypes.c_int32),
+        ("direction_", ctypes.c_int32),
+    ]
+
+
 class PICO_VERSION(ctypes.Structure):
     """Firmware or driver version information.
     Attributes:
@@ -609,6 +668,39 @@ class PICO_CHANNEL_FLAGS(IntEnum):
     PORT1_FLAGS = 131072
     PORT2_FLAGS = 262144
     PORT3_FLAGS = 524288
+
+
+PicoChannelFlagsMap = {
+    PICO_CHANNEL_FLAGS.CHANNEL_A_FLAGS: 'A',
+    PICO_CHANNEL_FLAGS.CHANNEL_B_FLAGS: 'B',
+    PICO_CHANNEL_FLAGS.CHANNEL_C_FLAGS: 'C',
+    PICO_CHANNEL_FLAGS.CHANNEL_D_FLAGS: 'D',
+    PICO_CHANNEL_FLAGS.CHANNEL_E_FLAGS: 'E',
+    PICO_CHANNEL_FLAGS.CHANNEL_F_FLAGS: 'F',
+    PICO_CHANNEL_FLAGS.CHANNEL_G_FLAGS: 'G',
+    PICO_CHANNEL_FLAGS.CHANNEL_H_FLAGS: 'H',
+    PICO_CHANNEL_FLAGS.PORT0_FLAGS: 'PORT0',
+    PICO_CHANNEL_FLAGS.PORT1_FLAGS: 'PORT1',
+    PICO_CHANNEL_FLAGS.PORT2_FLAGS: 'PORT2',
+    PICO_CHANNEL_FLAGS.PORT3_FLAGS: 'PORT3',
+}
+
+PicoChannelFlagsEnumMap = {
+    PICO_CHANNEL_FLAGS.CHANNEL_A_FLAGS: 0,
+    PICO_CHANNEL_FLAGS.CHANNEL_B_FLAGS: 1,
+    PICO_CHANNEL_FLAGS.CHANNEL_C_FLAGS: 2,
+    PICO_CHANNEL_FLAGS.CHANNEL_D_FLAGS: 3,
+    PICO_CHANNEL_FLAGS.CHANNEL_E_FLAGS: 4,
+    PICO_CHANNEL_FLAGS.CHANNEL_F_FLAGS: 5,
+    PICO_CHANNEL_FLAGS.CHANNEL_G_FLAGS: 6,
+    PICO_CHANNEL_FLAGS.CHANNEL_H_FLAGS: 7,
+    PICO_CHANNEL_FLAGS.PORT0_FLAGS: 65536,
+    PICO_CHANNEL_FLAGS.PORT1_FLAGS: 131072,
+    PICO_CHANNEL_FLAGS.PORT2_FLAGS: 262144,
+    PICO_CHANNEL_FLAGS.PORT3_FLAGS: 524288,
+}
+
+ReturnTypeMap = Literal['string', 'enum']
 
 
 class PICO_CONNECT_PROBE_RANGE(IntEnum):
@@ -842,6 +934,19 @@ class PICO_TRIGGER_INFO(ctypes.Structure):
         ("timeStampCounter_", ctypes.c_uint64),
     ]
 
+class PICO_TRIGGER_INFO_PS5000A(ctypes.Structure):
+    """Structure describing trigger information for PS5000A."""
+    _pack_ = 1
+    _fields_ = [
+        ("status", ctypes.c_uint32),
+        ("segmentIndex", ctypes.c_uint32),
+        ("triggerIndex", ctypes.c_uint32),
+        ("triggerTime", ctypes.c_int64),
+        ("timeUnits", ctypes.c_int16),
+        ("reserved0", ctypes.c_int16),
+        ("timeStampCounter", ctypes.c_uint64),
+    ]
+
 TIMESTAMP_COUNTER_MASK: int = (1 << 56) - 1
 """Mask for the 56-bit ``timeStampCounter`` field."""
 
@@ -956,7 +1061,43 @@ class PICO_PORT_DIGITAL_CHANNEL(IntEnum):
     CHANNEL7 = 7
 
 
-class PICO_DIGITAL_DIRECTION(IntEnum):
+class DIGITAL_CHANNEL(IntEnum):
+    """Digital channel identifiers."""
+    CHANNEL0 = 0
+    CHANNEL1 = 1
+    CHANNEL2 = 2
+    CHANNEL3 = 3
+    CHANNEL4 = 4
+    CHANNEL5 = 5
+    CHANNEL6 = 6
+    CHANNEL7 = 7
+    CHANNEL8 = 8
+    CHANNEL9 = 9
+    CHANNEL10 = 10
+    CHANNEL11 = 11
+    CHANNEL12 = 12
+    CHANNEL13 = 13
+    CHANNEL14 = 14
+    CHANNEL15 = 15
+    CHANNEL16 = 16
+    CHANNEL17 = 17
+    CHANNEL18 = 18
+    CHANNEL19 = 19
+    CHANNEL20 = 20
+    CHANNEL21 = 21
+    CHANNEL22 = 22
+    CHANNEL23 = 23
+    CHANNEL24 = 24
+    CHANNEL25 = 25
+    CHANNEL26 = 26
+    CHANNEL27 = 27
+    CHANNEL28 = 28
+    CHANNEL29 = 29
+    CHANNEL30 = 30
+    CHANNEL31 = 31
+
+
+class DIGITAL_DIRECTION(IntEnum):
     """Digital trigger direction settings."""
 
     DONT_CARE = 0
@@ -967,14 +1108,14 @@ class PICO_DIGITAL_DIRECTION(IntEnum):
     DIRECTION_RISING_OR_FALLING = 5
 
 
-class PICO_DIGITAL_CHANNEL_DIRECTIONS(ctypes.Structure):
+class DIGITAL_CHANNEL_DIRECTIONS(ctypes.Structure):
     """Structure describing a digital channel direction."""
 
     _pack_ = 1
 
     _fields_ = [
-        ("channel_", ctypes.c_int32),
-        ("direction_", ctypes.c_int32),
+        ("channel", ctypes.c_int32),
+        ("direction", ctypes.c_int32),
     ]
 
 
@@ -1037,6 +1178,23 @@ class SIGGEN_PARAMETER(IntEnum):
     OUTPUT_VOLTS = 0
     SAMPLE = 1
     BUFFER_LENGTH = 2
+
+
+class AWG_INDEX_MODE(IntEnum):
+    """
+    Index mode for the AWG.
+
+    Attributes:
+        SINGLE: Single index mode.
+        DOUBLE: Double index mode.
+        QUAD: Quad index mode.
+        MAX_INDEX_MODES: Maximum index mode.
+    """
+    
+    SINGLE = 0
+    DOUBLE = 1
+    QUAD = 2
+    MAX_INDEX_MODES = 3
 
 
 class TRIGGER_WITHIN_PRE_TRIGGER(IntEnum):
@@ -1128,8 +1286,8 @@ __all__ = [
     'THRESHOLD_MODE',
     'PICO_DIRECTION',
     'PICO_PORT_DIGITAL_CHANNEL',
-    'PICO_DIGITAL_DIRECTION',
-    'PICO_DIGITAL_CHANNEL_DIRECTIONS',
+    'DIGITAL_DIRECTION',
+    'DIGITAL_CHANNEL_DIRECTIONS',
     'PULSE_WIDTH_TYPE',
     'SWEEP_TYPE',
     'PICO_SIGGEN_TRIG_TYPE',
@@ -1139,6 +1297,7 @@ __all__ = [
     'TRIGGER_WITHIN_PRE_TRIGGER',
     'PICO_LED_COLOUR_PROPERTIES',
     'PICO_LED_STATE_PROPERTIES',
+    'DIGITAL_CHANNEL',
 
     'channel_literal',
     'channel_map',

@@ -10,7 +10,7 @@ the PicoScope needs to be initialized using `scope.open_unit()` followed by the 
 ## Example
 ```
 >>> import pypicosdk as psdk
->>> scope = psdk.ps6000a()
+>>> scope = psdk.ps5000a()
 >>> scope.open_unit(resolution=psdk.RESOLUTION._8BIT)
 >>> scope.mv_to_adc(100, channel=psdk.CHANNEL.A)
 3251
@@ -18,7 +18,7 @@ the PicoScope needs to be initialized using `scope.open_unit()` followed by the 
 ```
 
 ## Reference
-::: pypicosdk.pypicosdk.ps6000a
+::: pypicosdk.pypicosdk.ps5000a
     options:
         filters:
         - "!.*"
