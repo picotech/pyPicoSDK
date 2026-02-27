@@ -35,7 +35,9 @@
       <strong>ps5000a API (PicoScope 5000D Series)</strong><br/>
       &ndash; Simple/Advanced Block Mode<br/>
       &ndash; Simple/Advanced Rapid Block Mode<br/>
-      &ndash; Basic Signal Generator
+      &ndash; Signal Generator (inc. AWG)<br/>
+      &ndash; Advanced Trigger Functions<br/>
+      &ndash; All other direct driver functions
     </td>
   </tr>
 </table>
