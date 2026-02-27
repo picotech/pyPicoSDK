@@ -410,6 +410,25 @@ class ETS_MODE(IntEnum):
     SLOW = 2
     MODES_MAX = 3
 
+class SCOPE_STATE(IntEnum):
+    """
+    Class for different scope states.
+    Attributes:
+        IDLE: The scope is idle.
+        PRE_TRIGGER: The scope is in pre-trigger mode.
+        WAITING_FOR_TRIGGER: The scope is waiting for a trigger.
+        CAPTURING: The scope is capturing data.
+    """
+    IDLE = 0
+    PRE_TRIGGER = 1
+    WAITING_FOR_TRIGGER = 2
+    CAPTURING = 3
+    READING = 4
+
+ScopeStateList = ['idle', 'pre_trigger', 'waiting_for_trigger', 'capturing', 'reading']
+
+ScopeStateReturnType_L = Literal['string', 'int', 'enum']
+
 class DATA_TYPE:
     """
     Class for different data types.

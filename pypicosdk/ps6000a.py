@@ -182,5 +182,34 @@ class ps6000a(PicoScopeBase, shared_ps6000a_psospa, shared_4000a_6000a, Sharedps
         )
         return status
 
+    def get_scope_state(
+        self, 
+        output_type: cst.ScopeStateReturnType_L = 'string'
+    ) -> int | cst.SCOPE_STATE | str:
+        """
+        This function retrieves the state of the specified oscilloscope.
+
+        Args:
+            output_type (str): Type of return value ['int', 'enum', 'string']. Defaults to 'string'.
+                'int' being fastest to return.
+                'string' being most verbose. 
+                'enum' can be viewed as both integer and string (using .name attribute)
+
+        Returns:
+            int | SCOPE_STATE | str: The state of the oscilloscope.
+        """
+        int_state = ctypes.c_int16()
+        self._call_attr_function(
+            "GetScopeState",
+            self.handle,
+            ctypes.byref(int_state)
+        )
+        if output_type == 'int':
+            return int_state.value
+        elif output_type == 'enum':
+            return cst.SCOPE_STATE(int_state.value)
+        elif output_type == 'string':
+            return cst.ScopeStateList[int_state.value]
+
 
 __all__ = ['ps6000a']

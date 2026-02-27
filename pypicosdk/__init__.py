@@ -6,7 +6,7 @@ Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
 Public package interface for :mod:`pypicosdk`.
 """
 
-__version__ = "1.7.0"
+__version__ = "1.7.1"
 
 # Import the implementation module under an internal name so we can
 # reference its ``__all__`` attribute for static type checkers like Pylance.
