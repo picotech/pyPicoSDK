@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../../img/favicon.ico" />
+    <title>Trigger Configuration - pyPicoSDK</title>
+    <link rel="stylesheet" href="../../../css/theme.css" />
+    <link rel="stylesheet" href="../../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../../assets/_mkdocstrings.css" rel="stylesheet" />
+        <link href="../../../css/mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Trigger Configuration";
+        var mkdocs_page_input_path = "ref/psospa/trigger.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../../.." class="icon icon-home"> pyPicoSDK
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../../introduction/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >PicoScope 6000E (ps6000a) Functions</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/init/">Initializing ps6000a</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/setup/">Setup / Initialization</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/firmware/">Firmware / Updates</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/channel/">Channel Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/digital/">Digital Port Control</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/trigger/">Trigger Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/siggen/">Signal Generator</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/buffers/">Memory / Buffer Management</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/conversions/">Built-in Conversions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/retrieval/">Data Retrieval</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" >PicoScope 3000E (psospa) Functions</a>
+    <ul class="current">
+                <li class="toctree-l2"><a class="reference internal" href="../init/">Initializing psospa</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../setup/">Setup / Initialization</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../firmware/">Firmware / Updates</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../channel/">Channel Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../digital/">Digital Port Control</a>
+                </li>
+                <li class="toctree-l2 current"><a class="reference internal current" href="#">Trigger Configuration</a>
+    <ul class="current">
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.get_trigger_info">get_trigger_info</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.get_trigger_time_offset">get_trigger_time_offset</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.get_values_trigger_time_offset_bulk">get_values_trigger_time_offset_bulk</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.set_advanced_trigger">set_advanced_trigger</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.set_aux_io_mode">set_aux_io_mode</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.set_pulse_width_trigger">set_pulse_width_trigger</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.set_simple_trigger">set_simple_trigger</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.set_trigger_channel_conditions">set_trigger_channel_conditions</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.set_trigger_channel_directions">set_trigger_channel_directions</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.set_trigger_channel_properties">set_trigger_channel_properties</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.set_trigger_delay">set_trigger_delay</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.set_trigger_digital_port_properties">set_trigger_digital_port_properties</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.set_trigger_holdoff_counter_by_samples">set_trigger_holdoff_counter_by_samples</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.trigger_within_pre_trigger_samples">trigger_within_pre_trigger_samples</a>
+    </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../siggen/">Signal Generator</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../buffers/">Memory / Buffer Management</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../conversions/">Built-in Conversions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../retrieval/">Data Retrieval</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../led/">LED Control</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >PicoScope 5000D (ps5000a) Functions</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/init/">Initializing ps5000a</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/setup/">Setup / Initialization</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/channel/">Channel Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/trigger/">Trigger Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/siggen/">Signal Generator</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/buffers/">Memory / Buffer Management</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/conversions/">Built-in Conversions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/retrieval/">Data Retrieval</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/ets/">ETS Setup</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../general/">General Functions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../constants/">Constants/Enums</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../configuration/">Config/Overrides</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Development</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/issues/">Issues</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/changelog/">Changelog</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/current/">Current Support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/roadmap/">Upcoming Roadmap</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../..">pyPicoSDK</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Reference</li>
+          <li class="breadcrumb-item">PicoScope 3000E (psospa) Functions</li>
+      <li class="breadcrumb-item active">Trigger Configuration</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="trigger-configuration">Trigger Configuration</h1>
+<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pypicosdk.base.PicoScopeBase">PicoScopeBase</span></code>, <code><span title="pypicosdk.shared.ps6000a_psospa.shared_ps6000a_psospa">shared_ps6000a_psospa</span></code></p>
+
+
+
+        <p>PicoScope OSP (A) API specific functions</p>
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Methods:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="get_trigger_info(first_segment_index, to_segment_index) (pypicosdk.pypicosdk.psospa.get_trigger_info)" href="#pypicosdk.pypicosdk.psospa.get_trigger_info">get_trigger_info</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Retrieve trigger timing information for one or more segments.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="get_trigger_time_offset(time_unit, segment_index=0) (pypicosdk.pypicosdk.psospa.get_trigger_time_offset)" href="#pypicosdk.pypicosdk.psospa.get_trigger_time_offset">get_trigger_time_offset</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Get the trigger time offset for jitter correction in waveforms.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="get_values_trigger_time_offset_bulk(from_segment_index, to_segment_index) (pypicosdk.pypicosdk.psospa.get_values_trigger_time_offset_bulk)" href="#pypicosdk.pypicosdk.psospa.get_values_trigger_time_offset_bulk">get_values_trigger_time_offset_bulk</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Retrieve trigger time offsets for a range of segments.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="set_advanced_trigger(channel, state, direction, threshold_mode, threshold_upper_mv, threshold_lower_mv, hysteresis_upper_mv=0.0, hysteresis_lower_mv=0.0, aux_output_enable=0, auto_trigger_ms=0, action=ACTION.CLEAR_ALL | ACTION.ADD) (pypicosdk.pypicosdk.psospa.set_advanced_trigger)" href="#pypicosdk.pypicosdk.psospa.set_advanced_trigger">set_advanced_trigger</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Configure an advanced trigger in a single call.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="set_aux_io_mode(mode) (pypicosdk.pypicosdk.psospa.set_aux_io_mode)" href="#pypicosdk.pypicosdk.psospa.set_aux_io_mode">set_aux_io_mode</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Configure the AUX IO connector using <code>ps6000aSetAuxIoMode</code>.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="set_pulse_width_trigger(channel, timebase, samples, direction, pulse_width_type, time_upper=0, time_upper_units=TIME_UNIT.US, time_lower=0, time_lower_units=TIME_UNIT.US, threshold_upper_mv=0.0, threshold_lower_mv=0.0, hysteresis_upper_mv=0.0, hysteresis_lower_mv=0.0, trig_dir=None, threshold_mode=THRESHOLD_MODE.LEVEL, auto_trigger_us=0) (pypicosdk.pypicosdk.psospa.set_pulse_width_trigger)" href="#pypicosdk.pypicosdk.psospa.set_pulse_width_trigger">set_pulse_width_trigger</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Configures a pulse width trigger using a specified channel and timing parameters.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="set_simple_trigger(channel, threshold=0, threshold_unit='mv', enable=True, direction=TRIGGER_DIR.RISING, delay=0, auto_trigger=0) (pypicosdk.pypicosdk.psospa.set_simple_trigger)" href="#pypicosdk.pypicosdk.psospa.set_simple_trigger">set_simple_trigger</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Sets up a simple trigger from a specified channel and threshold in mV.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="set_trigger_channel_conditions(conditions, action=ACTION.CLEAR_ALL | ACTION.ADD) (pypicosdk.pypicosdk.psospa.set_trigger_channel_conditions)" href="#pypicosdk.pypicosdk.psospa.set_trigger_channel_conditions">set_trigger_channel_conditions</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Configure a trigger condition.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="set_trigger_channel_directions(channel, direction, threshold_mode) (pypicosdk.pypicosdk.psospa.set_trigger_channel_directions)" href="#pypicosdk.pypicosdk.psospa.set_trigger_channel_directions">set_trigger_channel_directions</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Specify the trigger direction for <code>channel</code>.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="set_trigger_channel_properties(threshold_upper, hysteresis_upper, threshold_lower, hysteresis_lower, channel, aux_output_enable=0, auto_trigger_us=0) (pypicosdk.pypicosdk.psospa.set_trigger_channel_properties)" href="#pypicosdk.pypicosdk.psospa.set_trigger_channel_properties">set_trigger_channel_properties</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Configure trigger thresholds for <code>channel</code>. All threshold and hysteresis values are </p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="set_trigger_delay(delay) (pypicosdk.pypicosdk.psospa.set_trigger_delay)" href="#pypicosdk.pypicosdk.psospa.set_trigger_delay">set_trigger_delay</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Delay the trigger by <code>delay</code> samples.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="set_trigger_digital_port_properties(port, directions) (pypicosdk.pypicosdk.psospa.set_trigger_digital_port_properties)" href="#pypicosdk.pypicosdk.psospa.set_trigger_digital_port_properties">set_trigger_digital_port_properties</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Configure digital port trigger directions.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="set_trigger_holdoff_counter_by_samples(samples) (pypicosdk.pypicosdk.psospa.set_trigger_holdoff_counter_by_samples)" href="#pypicosdk.pypicosdk.psospa.set_trigger_holdoff_counter_by_samples">set_trigger_holdoff_counter_by_samples</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Set the trigger holdoff period in sample intervals.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="trigger_within_pre_trigger_samples(state) (pypicosdk.pypicosdk.psospa.trigger_within_pre_trigger_samples)" href="#pypicosdk.pypicosdk.psospa.trigger_within_pre_trigger_samples">trigger_within_pre_trigger_samples</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Control trigger positioning relative to pre-trigger samples.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.get_trigger_info" class="doc doc-heading">
+            <code class="highlight language-python">get_trigger_info(first_segment_index, to_segment_index)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Retrieve trigger timing information for one or more segments.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>first_segment_index</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Index of the first memory segment to query.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>to_segment_index</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Number of consecutive segments starting at
+<code>first_segment_index</code>.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="list">list</span>[<span title="dict">dict</span>]</code>
+              –
+              <div class="doc-md-description">
+                <p>List of dictionaries for each trigger event</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Raises:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="pypicosdk.common.PicoSDKException">PicoSDKException</span></code>
+              –
+              <div class="doc-md-description">
+                <p>If the function call fails or preconditions are
+not met.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.get_trigger_time_offset" class="doc doc-heading">
+            <code class="highlight language-python">get_trigger_time_offset(time_unit, segment_index=0)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get the trigger time offset for jitter correction in waveforms.</p>
+<p>The driver interpolates between adjacent samples to estimate when the
+trigger actually occurred.  This means the value returned can have a
+very fine granularity—down to femtoseconds—even though the effective
+resolution is usually limited to roughly one-tenth of the sampling
+interval in real-world use.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>time_unit</code></b>
+                  (<code><span title="pypicosdk.constants.TIME_UNIT">TIME_UNIT</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Desired unit for the returned offset.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>segment_index</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>The memory segment to query. Default
+is 0.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>int</code></b>(                  <code><span title="int">int</span></code>
+)              –
+              <div class="doc-md-description">
+                <p>Trigger time offset converted to <code>time_unit</code>.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Raises:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="pypicosdk.common.PicoSDKException">PicoSDKException</span></code>
+              –
+              <div class="doc-md-description">
+                <p>If the function call fails or preconditions are
+not met.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.get_values_trigger_time_offset_bulk" class="doc doc-heading">
+            <code class="highlight language-python">get_values_trigger_time_offset_bulk(from_segment_index, to_segment_index)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Retrieve trigger time offsets for a range of segments.</p>
+<p>This method returns the trigger time offset and associated
+time unit for each requested segment.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>from_segment_index</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Index of the first memory segment to query.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>to_segment_index</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Index of the last memory segment. If this value
+is less than <code>from_segment_index</code> the driver wraps around.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="list">list</span>[<span title="tuple">tuple</span>[<span title="int">int</span>, <span title="pypicosdk.constants._PICO_TIME_UNIT">_PICO_TIME_UNIT</span>]]</code>
+              –
+              <div class="doc-md-description">
+                <p>list[tuple[int, PICO_TIME_UNIT]]: <code>[(offset, unit), ...]</code> for each</p>
+              </div>
+            </li>
+            <li>
+                  <code><span title="list">list</span>[<span title="tuple">tuple</span>[<span title="int">int</span>, <span title="pypicosdk.constants._PICO_TIME_UNIT">_PICO_TIME_UNIT</span>]]</code>
+              –
+              <div class="doc-md-description">
+                <p>segment beginning with <code>from_segment_index</code>.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.set_advanced_trigger" class="doc doc-heading">
+            <code class="highlight language-python">set_advanced_trigger(channel, state, direction, threshold_mode, threshold_upper_mv, threshold_lower_mv, hysteresis_upper_mv=0.0, hysteresis_lower_mv=0.0, aux_output_enable=0, auto_trigger_ms=0, action=ACTION.CLEAR_ALL | ACTION.ADD)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Configure an advanced trigger in a single call.</p>
+<p>This helper sets up the trigger condition, direction and properties
+required for non-simple triggers.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>channel</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Channel to monitor for the trigger condition.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>state</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Trigger state used with <code>set_trigger_channel_conditions</code>.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>direction</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Trigger direction from
+:class:<code>PICO_THRESHOLD_DIRECTION</code>.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>threshold_mode</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Threshold mode from :class:<code>PICO_THRESHOLD_MODE</code>.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>threshold_upper_mv</code></b>
+                  (<code><span title="float">float</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Upper trigger threshold in millivolts.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>threshold_lower_mv</code></b>
+                  (<code><span title="float">float</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Lower trigger threshold in millivolts.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>hysteresis_upper_mv</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>0.0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Optional hysteresis for <code>threshold_upper_mv</code>
+in millivolts.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>hysteresis_lower_mv</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>0.0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Optional hysteresis for <code>threshold_lower_mv</code>
+in millivolts.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>aux_output_enable</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Optional auxiliary output flag.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>auto_trigger_ms</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Auto-trigger timeout in milliseconds. <code>0</code> waits
+indefinitely.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>action</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code><span title="pypicosdk.constants.ACTION.CLEAR_ALL">CLEAR_ALL</span> | <span title="pypicosdk.constants.ACTION.ADD">ADD</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Action flag for <code>set_trigger_channel_conditions</code>.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.set_aux_io_mode" class="doc doc-heading">
+            <code class="highlight language-python">set_aux_io_mode(mode)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Configure the AUX IO connector using <code>ps6000aSetAuxIoMode</code>.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>mode</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="AUXIO_MODE (pypicosdk.constants.AUXIO_MODE)" href="../../constants/#pypicosdk.constants.AUXIO_MODE">AUXIO_MODE</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>Requested AUXIO mode from :class:<code>~pypicosdk.constants.AUXIO_MODE</code>.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.set_pulse_width_trigger" class="doc doc-heading">
+            <code class="highlight language-python">set_pulse_width_trigger(channel, timebase, samples, direction, pulse_width_type, time_upper=0, time_upper_units=TIME_UNIT.US, time_lower=0, time_lower_units=TIME_UNIT.US, threshold_upper_mv=0.0, threshold_lower_mv=0.0, hysteresis_upper_mv=0.0, hysteresis_lower_mv=0.0, trig_dir=None, threshold_mode=THRESHOLD_MODE.LEVEL, auto_trigger_us=0)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Configures a pulse width trigger using a specified channel and timing parameters.</p>
+<p>This method sets up a trigger condition where a pulse on the specified channel
+must be within or outside a defined pulse width window. The trigger logic uses
+both level thresholds and pulse width qualifiers to define the trigger behavior.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>channel</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="CHANNEL (pypicosdk.constants.CHANNEL)" href="../../constants/#pypicosdk.constants.CHANNEL">CHANNEL</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>The input channel on which to apply the pulse width trigger.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>timebase</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The timebase index to determine sampling interval.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>samples</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The number of samples to be captured (used to resolve timing).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>direction</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="THRESHOLD_DIRECTION (pypicosdk.constants.THRESHOLD_DIRECTION)" href="../../constants/#pypicosdk.constants.THRESHOLD_DIRECTION">THRESHOLD_DIRECTION</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>Pulse polarity to trigger on (e.g. RISING or FALLING).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>pulse_width_type</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="PULSE_WIDTH_TYPE (pypicosdk.constants.PULSE_WIDTH_TYPE)" href="../../constants/#pypicosdk.constants.PULSE_WIDTH_TYPE">PULSE_WIDTH_TYPE</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>Type of pulse width qualifier (e.g. GREATER_THAN).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>time_upper</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Upper time bound for pulse width. Default is 0 (disabled).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>time_upper_units</code></b>
+                  (<code><span title="pypicosdk.constants.TIME_UNIT">TIME_UNIT</span></code>, default:
+                      <code><span title="pypicosdk.constants.TIME_UNIT.US">US</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Units for <code>time_upper</code>. Default is microseconds.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>time_lower</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Lower time bound for pulse width. Default is 0 (disabled).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>time_lower_units</code></b>
+                  (<code><span title="pypicosdk.constants.TIME_UNIT">TIME_UNIT</span></code>, default:
+                      <code><span title="pypicosdk.constants.TIME_UNIT.US">US</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Units for <code>time_lower</code>. Default is microseconds.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>threshold_upper_mv</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>0.0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Upper voltage threshold in millivolts. Default is 0.0 mV.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>threshold_lower_mv</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>0.0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Lower voltage threshold in millivolts. Default is 0.0 mV.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>hysteresis_upper_mv</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>0.0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Hysteresis for upper threshold in mV. Default is 0.0 mV.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>hysteresis_lower_mv</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>0.0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Hysteresis for lower threshold in mV. Default is 0.0 mV.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>trig_dir</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="THRESHOLD_DIRECTION (pypicosdk.constants.THRESHOLD_DIRECTION)" href="../../constants/#pypicosdk.constants.THRESHOLD_DIRECTION">THRESHOLD_DIRECTION</a></code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Trigger direction for the initial pulse.
+If None, inferred as opposite of <code>direction</code>. Default is None.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>threshold_mode</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="THRESHOLD_MODE (pypicosdk.constants.THRESHOLD_MODE)" href="../../constants/#pypicosdk.constants.THRESHOLD_MODE">THRESHOLD_MODE</a></code>, default:
+                      <code><span title="pypicosdk.constants.THRESHOLD_MODE.LEVEL">LEVEL</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Specifies whether thresholds are in level or window mode.
+Default is LEVEL.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>auto_trigger_us</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Time in microseconds after which an automatic trigger occurs.
+Default is 0 (disabled).</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.set_simple_trigger" class="doc doc-heading">
+            <code class="highlight language-python">set_simple_trigger(channel, threshold=0, threshold_unit='mv', enable=True, direction=TRIGGER_DIR.RISING, delay=0, auto_trigger=0)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Sets up a simple trigger from a specified channel and threshold in mV.
+Be aware if using raw ADC values, threshold is always scaled to a 16-bit ADC value,
+(Even when using 8-bit resolution).</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>channel</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="CHANNEL (pypicosdk.constants.CHANNEL)" href="../../constants/#pypicosdk.constants.CHANNEL">CHANNEL</a> | <span title="str">str</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The input channel to apply the trigger to.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>threshold</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Trigger threshold level.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>threshold_unit</code></b>
+                  (<code><span title="str">str</span></code>, default:
+                      <code>&#39;mv&#39;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Trigger threshold unit. Default is 'mv'.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>enable</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>True</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Enables or disables the trigger.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>direction</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="TRIGGER_DIR (pypicosdk.constants.TRIGGER_DIR)" href="../../constants/#pypicosdk.constants.TRIGGER_DIR">TRIGGER_DIR</a> | <span title="str">str</span></code>, default:
+                      <code><span title="pypicosdk.constants.TRIGGER_DIR.RISING">RISING</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Trigger direction (e.g., <code>TRIGGER_DIR.RISING</code>).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>delay</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Delay in samples after the trigger condition is met before starting capture.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>auto_trigger</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Timeout in <strong>microseconds</strong> after which data capture proceeds even if no
+trigger occurs. If 0, the PicoScope will wait indefintely.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>When using TRIGGER_AUX, threshold is fixed to 1.25 V</p>
+    <pre class="highlight"><code class="language-pycon">&gt;&gt;&gt; scope.set_simple_trigger(channel=psdk.CHANNEL.TRIGGER_AUX)</code></pre>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.set_trigger_channel_conditions" class="doc doc-heading">
+            <code class="highlight language-python">set_trigger_channel_conditions(conditions, action=ACTION.CLEAR_ALL | ACTION.ADD)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Configure a trigger condition.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>conditions</code></b>
+                  (<code><span title="list">list</span>[<span title="tuple">tuple</span>[<a class="autorefs autorefs-internal" title="CHANNEL (pypicosdk.constants.CHANNEL)" href="../../constants/#pypicosdk.constants.CHANNEL">CHANNEL</a>, <a class="autorefs autorefs-internal" title="TRIGGER_STATE (pypicosdk.constants.TRIGGER_STATE)" href="../../constants/#pypicosdk.constants.TRIGGER_STATE">TRIGGER_STATE</a>]]</code>)
+              –
+              <div class="doc-md-description">
+                <p>A list of tuples describing the CHANNEL and TRIGGER_STATE for that channel</p>
+              </div>
+            </li>
+            <li>
+              <b><code>action</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code><span title="pypicosdk.constants.ACTION.CLEAR_ALL">CLEAR_ALL</span> | <span title="pypicosdk.constants.ACTION.ADD">ADD</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Action to apply this condition relateive to any previous
+condition. Defaults to ACTION.CLEAR_ALL | ACTION.ADD.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.set_trigger_channel_directions" class="doc doc-heading">
+            <code class="highlight language-python">set_trigger_channel_directions(channel, direction, threshold_mode)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Specify the trigger direction for <code>channel</code>.
+If multiple directions are needed, channel, direction and threshold_mode
+can be given a list of values.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>channel</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="CHANNEL (pypicosdk.constants.CHANNEL)" href="../../constants/#pypicosdk.constants.CHANNEL">CHANNEL</a> | <span title="list">list</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Single or list of channels to configure.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>direction</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="THRESHOLD_DIRECTION (pypicosdk.constants.THRESHOLD_DIRECTION)" href="../../constants/#pypicosdk.constants.THRESHOLD_DIRECTION">THRESHOLD_DIRECTION</a> | <span title="list">list</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Single or list of directions to configure.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>threshold_mode</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="THRESHOLD_MODE (pypicosdk.constants.THRESHOLD_MODE)" href="../../constants/#pypicosdk.constants.THRESHOLD_MODE">THRESHOLD_MODE</a> | <span title="list">list</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Single or list of threshold modes to configure.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.set_trigger_channel_properties" class="doc doc-heading">
+            <code class="highlight language-python">set_trigger_channel_properties(threshold_upper, hysteresis_upper, threshold_lower, hysteresis_lower, channel, aux_output_enable=0, auto_trigger_us=0)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Configure trigger thresholds for <code>channel</code>. All threshold and hysteresis values are 
+specified in ADC counts.
+Be aware if using raw ADC values, threshold is always scaled to a 16-bit ADC value,
+(Even when using 8-bit resolution).</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>threshold_upper</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Upper trigger level.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>hysteresis_upper</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Hysteresis for <code>threshold_upper</code>.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>threshold_lower</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Lower trigger level.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>hysteresis_lower</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Hysteresis for <code>threshold_lower</code>.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>channel</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Target channel as a :class:<code>CHANNEL</code> value.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>aux_output_enable</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Auxiliary output flag.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>auto_trigger_us</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Auto-trigger timeout in
+microseconds. <code>0</code> waits indefinitely.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.set_trigger_delay" class="doc doc-heading">
+            <code class="highlight language-python">set_trigger_delay(delay)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Delay the trigger by <code>delay</code> samples.
+Args:
+    delay: Number of samples to delay the trigger by.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.set_trigger_digital_port_properties" class="doc doc-heading">
+            <code class="highlight language-python">set_trigger_digital_port_properties(port, directions)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Configure digital port trigger directions.
+Args:
+    port: Digital port identifier.
+    directions: Optional list of channel directions to set. <code>None</code> to
+        clear existing configuration.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.set_trigger_holdoff_counter_by_samples" class="doc doc-heading">
+            <code class="highlight language-python">set_trigger_holdoff_counter_by_samples(samples)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Set the trigger holdoff period in sample intervals.
+Args:
+    samples: Number of samples for the holdoff period.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.trigger_within_pre_trigger_samples" class="doc doc-heading">
+            <code class="highlight language-python">trigger_within_pre_trigger_samples(state)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Control trigger positioning relative to pre-trigger samples.
+Args:
+    state: 0 to enable, 1 to disable</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../digital/" class="btn btn-neutral float-left" title="Digital Port Control"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../siggen/" class="btn btn-neutral float-right" title="Signal Generator">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../digital/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../siggen/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../../..";</script>
+    <script src="../../../js/theme_extra.js"></script>
+    <script src="../../../js/theme.js"></script>
+      <script src="../../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

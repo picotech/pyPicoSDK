@@ -1,0 +1,4650 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Constants/Enums - pyPicoSDK</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+        <link href="../../css/mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Constants/Enums";
+        var mkdocs_page_input_path = "ref/constants.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> pyPicoSDK
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../introduction/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >PicoScope 6000E (ps6000a) Functions</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../ps6000a/init/">Initializing ps6000a</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ps6000a/setup/">Setup / Initialization</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ps6000a/firmware/">Firmware / Updates</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ps6000a/channel/">Channel Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ps6000a/digital/">Digital Port Control</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ps6000a/trigger/">Trigger Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ps6000a/siggen/">Signal Generator</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ps6000a/buffers/">Memory / Buffer Management</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ps6000a/conversions/">Built-in Conversions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ps6000a/captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ps6000a/run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ps6000a/retrieval/">Data Retrieval</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >PicoScope 3000E (psospa) Functions</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../psospa/init/">Initializing psospa</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../psospa/setup/">Setup / Initialization</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../psospa/firmware/">Firmware / Updates</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../psospa/channel/">Channel Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../psospa/digital/">Digital Port Control</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../psospa/trigger/">Trigger Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../psospa/siggen/">Signal Generator</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../psospa/buffers/">Memory / Buffer Management</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../psospa/conversions/">Built-in Conversions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../psospa/captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../psospa/run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../psospa/retrieval/">Data Retrieval</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../psospa/led/">LED Control</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >PicoScope 5000D (ps5000a) Functions</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../ps5000a/init/">Initializing ps5000a</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ps5000a/setup/">Setup / Initialization</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ps5000a/channel/">Channel Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ps5000a/trigger/">Trigger Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ps5000a/siggen/">Signal Generator</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ps5000a/buffers/">Memory / Buffer Management</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ps5000a/conversions/">Built-in Conversions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ps5000a/captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ps5000a/run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ps5000a/retrieval/">Data Retrieval</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ps5000a/ets/">ETS Setup</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../general/">General Functions</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Constants/Enums</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#pypicosdk.constants"><code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;constants</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.TIMESTAMP_COUNTER_MASK"><code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;TIMESTAMP_COUNTER_MASK</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.ACTION"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ACTION</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.AUXIO_MODE"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AUXIO_MODE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.AWG_INDEX_MODE"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;AWG_INDEX_MODE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.BANDWIDTH_CH"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BANDWIDTH_CH</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.CHANNEL"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;CHANNEL</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.COUPLING"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;COUPLING</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.DATA_TYPE"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;DATA_TYPE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.DIGITAL_CHANNEL"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;DIGITAL_CHANNEL</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.DIGITAL_CHANNEL_DIRECTIONS"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;DIGITAL_CHANNEL_DIRECTIONS</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.DIGITAL_DIRECTION"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;DIGITAL_DIRECTION</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.DIGITAL_PORT"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;DIGITAL_PORT</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.DIGITAL_PORT_HYSTERESIS"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;DIGITAL_PORT_HYSTERESIS</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.ETS_MODE"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;ETS_MODE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.PICO_CHANNEL_FLAGS"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PICO_CHANNEL_FLAGS</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.PICO_CHANNEL_OVERVOLTAGE_TRIPPED"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PICO_CHANNEL_OVERVOLTAGE_TRIPPED</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.PICO_CONDITION"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PICO_CONDITION</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.PICO_CONNECT_PROBE_RANGE"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PICO_CONNECT_PROBE_RANGE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.PICO_DIRECTION"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PICO_DIRECTION</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.PICO_FIRMWARE_INFO"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PICO_FIRMWARE_INFO</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.PICO_LED_COLOUR_PROPERTIES"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PICO_LED_COLOUR_PROPERTIES</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.PICO_LED_STATE_PROPERTIES"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PICO_LED_STATE_PROPERTIES</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.PICO_PORT_DIGITAL_CHANNEL"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PICO_PORT_DIGITAL_CHANNEL</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.PICO_PROBE_RANGE_INFO"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PICO_PROBE_RANGE_INFO</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.PICO_SCALING_FACTORS_FOR_RANGE_TYPES_VALUES"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PICO_SCALING_FACTORS_FOR_RANGE_TYPES_VALUES</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.PICO_SCALING_FACTORS_VALUES"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PICO_SCALING_FACTORS_VALUES</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.PICO_SIGGEN_TRIG_SOURCE"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PICO_SIGGEN_TRIG_SOURCE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.PICO_SIGGEN_TRIG_TYPE"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PICO_SIGGEN_TRIG_TYPE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.PICO_STREAMING_DATA_INFO"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PICO_STREAMING_DATA_INFO</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.PICO_STREAMING_DATA_TRIGGER_INFO"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PICO_STREAMING_DATA_TRIGGER_INFO</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.PICO_TRIGGER_CHANNEL_PROPERTIES"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PICO_TRIGGER_CHANNEL_PROPERTIES</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.PICO_TRIGGER_INFO"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PICO_TRIGGER_INFO</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.PICO_TRIGGER_INFO_PS5000A"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PICO_TRIGGER_INFO_PS5000A</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.PICO_USB_POWER_DELIVERY"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PICO_USB_POWER_DELIVERY</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.PICO_USB_POWER_DETAILS"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PICO_USB_POWER_DETAILS</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.PICO_VERSION"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PICO_VERSION</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.POWER_SOURCE"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;POWER_SOURCE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.PULSE_WIDTH_TYPE"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;PULSE_WIDTH_TYPE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.RANGE"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RANGE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.RATIO_MODE"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RATIO_MODE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.RESOLUTION"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;RESOLUTION</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.SCOPE_STATE"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;SCOPE_STATE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.SIGGEN_FILTER_STATE"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;SIGGEN_FILTER_STATE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.SIGGEN_PARAMETER"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;SIGGEN_PARAMETER</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.SWEEP_TYPE"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;SWEEP_TYPE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.THRESHOLD_DIRECTION"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;THRESHOLD_DIRECTION</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.THRESHOLD_MODE"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;THRESHOLD_MODE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.TRIGGER_DIR"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;TRIGGER_DIR</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.TRIGGER_STATE"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;TRIGGER_STATE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.TRIGGER_WITHIN_PRE_TRIGGER"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;TRIGGER_WITHIN_PRE_TRIGGER</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.UNIT_INFO"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;UNIT_INFO</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.constants.WAVEFORM"><code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;WAVEFORM</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../configuration/">Config/Overrides</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Development</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../dev/issues/">Issues</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../dev/changelog/">Changelog</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../dev/current/">Current Support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../dev/roadmap/">Upcoming Roadmap</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">pyPicoSDK</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Reference</li>
+      <li class="breadcrumb-item active">Constants/Enums</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="constantsenums">Constants/Enums</h1>
+<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="pypicosdk.constants" class="doc doc-heading">
+            <code>pypicosdk.constants</code>
+
+
+</h2>
+
+    <div class="doc doc-contents first">
+
+        <p>Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.</p>
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Classes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="ACTION (pypicosdk.constants.ACTION)" href="#pypicosdk.constants.ACTION">ACTION</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Action codes used to manage and clear data buffers.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="AUXIO_MODE (pypicosdk.constants.AUXIO_MODE)" href="#pypicosdk.constants.AUXIO_MODE">AUXIO_MODE</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Operating modes for the AUX IO connector.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="BANDWIDTH_CH (pypicosdk.constants.BANDWIDTH_CH)" href="#pypicosdk.constants.BANDWIDTH_CH">BANDWIDTH_CH</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Class for different bandwidth configurations.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="CHANNEL (pypicosdk.constants.CHANNEL)" href="#pypicosdk.constants.CHANNEL">CHANNEL</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Constants representing PicoScope trigger and input channels.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="COUPLING (pypicosdk.constants.COUPLING)" href="#pypicosdk.constants.COUPLING">COUPLING</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Enum class representing different types of coupling used in signal processing.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="DATA_TYPE (pypicosdk.constants.DATA_TYPE)" href="#pypicosdk.constants.DATA_TYPE">DATA_TYPE</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Class for different data types.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="DIGITAL_CHANNEL (pypicosdk.constants.DIGITAL_CHANNEL)" href="#pypicosdk.constants.DIGITAL_CHANNEL">DIGITAL_CHANNEL</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Digital channel identifiers.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="DIGITAL_CHANNEL_DIRECTIONS (pypicosdk.constants.DIGITAL_CHANNEL_DIRECTIONS)" href="#pypicosdk.constants.DIGITAL_CHANNEL_DIRECTIONS">DIGITAL_CHANNEL_DIRECTIONS</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Structure describing a digital channel direction.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="DIGITAL_DIRECTION (pypicosdk.constants.DIGITAL_DIRECTION)" href="#pypicosdk.constants.DIGITAL_DIRECTION">DIGITAL_DIRECTION</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Digital trigger direction settings.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="DIGITAL_PORT (pypicosdk.constants.DIGITAL_PORT)" href="#pypicosdk.constants.DIGITAL_PORT">DIGITAL_PORT</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Digital port identifiers for the 6000A series.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="DIGITAL_PORT_HYSTERESIS (pypicosdk.constants.DIGITAL_PORT_HYSTERESIS)" href="#pypicosdk.constants.DIGITAL_PORT_HYSTERESIS">DIGITAL_PORT_HYSTERESIS</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Hysteresis options for digital ports.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="PICO_CHANNEL_FLAGS (pypicosdk.constants.PICO_CHANNEL_FLAGS)" href="#pypicosdk.constants.PICO_CHANNEL_FLAGS">PICO_CHANNEL_FLAGS</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Bit flags for enabled channels used by <code>ps6000aChannelCombinationsStateless</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="PICO_CHANNEL_OVERVOLTAGE_TRIPPED (pypicosdk.constants.PICO_CHANNEL_OVERVOLTAGE_TRIPPED)" href="#pypicosdk.constants.PICO_CHANNEL_OVERVOLTAGE_TRIPPED">PICO_CHANNEL_OVERVOLTAGE_TRIPPED</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Status flag indicating whether a channel's input protection tripped.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="PICO_CONDITION (pypicosdk.constants.PICO_CONDITION)" href="#pypicosdk.constants.PICO_CONDITION">PICO_CONDITION</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Trigger condition used by <code>SetTriggerChannelConditions</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="PICO_CONNECT_PROBE_RANGE (pypicosdk.constants.PICO_CONNECT_PROBE_RANGE)" href="#pypicosdk.constants.PICO_CONNECT_PROBE_RANGE">PICO_CONNECT_PROBE_RANGE</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Input range identifiers for <code>get_analogue_offset_limits</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="PICO_DIRECTION (pypicosdk.constants.PICO_DIRECTION)" href="#pypicosdk.constants.PICO_DIRECTION">PICO_DIRECTION</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Direction descriptor for <code>SetTriggerChannelDirections</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="PICO_FIRMWARE_INFO (pypicosdk.constants.PICO_FIRMWARE_INFO)" href="#pypicosdk.constants.PICO_FIRMWARE_INFO">PICO_FIRMWARE_INFO</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Information describing firmware versions and updates.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="PICO_LED_COLOUR_PROPERTIES (pypicosdk.constants.PICO_LED_COLOUR_PROPERTIES)" href="#pypicosdk.constants.PICO_LED_COLOUR_PROPERTIES">PICO_LED_COLOUR_PROPERTIES</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>This structure is used with psospaSetLedColours() to define</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="PICO_LED_STATE_PROPERTIES (pypicosdk.constants.PICO_LED_STATE_PROPERTIES)" href="#pypicosdk.constants.PICO_LED_STATE_PROPERTIES">PICO_LED_STATE_PROPERTIES</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>This structure is used with set_led_states() to define the</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="PICO_PORT_DIGITAL_CHANNEL (pypicosdk.constants.PICO_PORT_DIGITAL_CHANNEL)" href="#pypicosdk.constants.PICO_PORT_DIGITAL_CHANNEL">PICO_PORT_DIGITAL_CHANNEL</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Digital channel identifiers within a port.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="PICO_PROBE_RANGE_INFO (pypicosdk.constants.PICO_PROBE_RANGE_INFO)" href="#pypicosdk.constants.PICO_PROBE_RANGE_INFO">PICO_PROBE_RANGE_INFO</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Probe attenuation identifiers for <code>get_scaling_values</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="PICO_SCALING_FACTORS_FOR_RANGE_TYPES_VALUES (pypicosdk.constants.PICO_SCALING_FACTORS_FOR_RANGE_TYPES_VALUES)" href="#pypicosdk.constants.PICO_SCALING_FACTORS_FOR_RANGE_TYPES_VALUES">PICO_SCALING_FACTORS_FOR_RANGE_TYPES_VALUES</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Scaling factors for a probe range type.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="PICO_SCALING_FACTORS_VALUES (pypicosdk.constants.PICO_SCALING_FACTORS_VALUES)" href="#pypicosdk.constants.PICO_SCALING_FACTORS_VALUES">PICO_SCALING_FACTORS_VALUES</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Scaling factors for a channel and range.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="PICO_SIGGEN_TRIG_SOURCE (pypicosdk.constants.PICO_SIGGEN_TRIG_SOURCE)" href="#pypicosdk.constants.PICO_SIGGEN_TRIG_SOURCE">PICO_SIGGEN_TRIG_SOURCE</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Signal generator trigger source options.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="PICO_SIGGEN_TRIG_TYPE (pypicosdk.constants.PICO_SIGGEN_TRIG_TYPE)" href="#pypicosdk.constants.PICO_SIGGEN_TRIG_TYPE">PICO_SIGGEN_TRIG_TYPE</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Trigger type for the signal generator.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="PICO_STREAMING_DATA_INFO (pypicosdk.constants.PICO_STREAMING_DATA_INFO)" href="#pypicosdk.constants.PICO_STREAMING_DATA_INFO">PICO_STREAMING_DATA_INFO</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Structure describing streaming data buffer information.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="PICO_STREAMING_DATA_TRIGGER_INFO (pypicosdk.constants.PICO_STREAMING_DATA_TRIGGER_INFO)" href="#pypicosdk.constants.PICO_STREAMING_DATA_TRIGGER_INFO">PICO_STREAMING_DATA_TRIGGER_INFO</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Structure describing trigger information for streaming.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="PICO_TRIGGER_CHANNEL_PROPERTIES (pypicosdk.constants.PICO_TRIGGER_CHANNEL_PROPERTIES)" href="#pypicosdk.constants.PICO_TRIGGER_CHANNEL_PROPERTIES">PICO_TRIGGER_CHANNEL_PROPERTIES</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Trigger threshold configuration for a single channel.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="PICO_TRIGGER_INFO (pypicosdk.constants.PICO_TRIGGER_INFO)" href="#pypicosdk.constants.PICO_TRIGGER_INFO">PICO_TRIGGER_INFO</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Structure describing trigger timing information.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="PICO_USB_POWER_DELIVERY (pypicosdk.constants.PICO_USB_POWER_DELIVERY)" href="#pypicosdk.constants.PICO_USB_POWER_DELIVERY">PICO_USB_POWER_DELIVERY</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Structure representing USB Power Delivery status information for a single USB port.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="PICO_USB_POWER_DETAILS (pypicosdk.constants.PICO_USB_POWER_DETAILS)" href="#pypicosdk.constants.PICO_USB_POWER_DETAILS">PICO_USB_POWER_DETAILS</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Structure describing USB power details for a PicoScope device.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="PICO_VERSION (pypicosdk.constants.PICO_VERSION)" href="#pypicosdk.constants.PICO_VERSION">PICO_VERSION</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Firmware or driver version information.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="POWER_SOURCE (pypicosdk.constants.POWER_SOURCE)" href="#pypicosdk.constants.POWER_SOURCE">POWER_SOURCE</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Defines different power source connection statuses.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="PULSE_WIDTH_TYPE (pypicosdk.constants.PULSE_WIDTH_TYPE)" href="#pypicosdk.constants.PULSE_WIDTH_TYPE">PULSE_WIDTH_TYPE</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Pulse width qualifier comparison types.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="RANGE (pypicosdk.constants.RANGE)" href="#pypicosdk.constants.RANGE">RANGE</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Enum class representing different voltage ranges used in signal processing.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="RATIO_MODE (pypicosdk.constants.RATIO_MODE)" href="#pypicosdk.constants.RATIO_MODE">RATIO_MODE</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Defines various ratio modes for signal processing.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="RESOLUTION (pypicosdk.constants.RESOLUTION)" href="#pypicosdk.constants.RESOLUTION">RESOLUTION</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Resolution constants for PicoScope devices.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="SIGGEN_FILTER_STATE (pypicosdk.constants.SIGGEN_FILTER_STATE)" href="#pypicosdk.constants.SIGGEN_FILTER_STATE">SIGGEN_FILTER_STATE</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Output filter state for the signal generator.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="SIGGEN_PARAMETER (pypicosdk.constants.SIGGEN_PARAMETER)" href="#pypicosdk.constants.SIGGEN_PARAMETER">SIGGEN_PARAMETER</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Parameters that can be queried with :func:<code>siggen_limits</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="SWEEP_TYPE (pypicosdk.constants.SWEEP_TYPE)" href="#pypicosdk.constants.SWEEP_TYPE">SWEEP_TYPE</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Sweep direction for signal generator.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="THRESHOLD_DIRECTION (pypicosdk.constants.THRESHOLD_DIRECTION)" href="#pypicosdk.constants.THRESHOLD_DIRECTION">THRESHOLD_DIRECTION</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Enumerates trigger threshold directions used with :class:<code>PICO_DIRECTION</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="THRESHOLD_MODE (pypicosdk.constants.THRESHOLD_MODE)" href="#pypicosdk.constants.THRESHOLD_MODE">THRESHOLD_MODE</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Threshold operation mode values used in :class:<code>PICO_DIRECTION</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="TRIGGER_DIR (pypicosdk.constants.TRIGGER_DIR)" href="#pypicosdk.constants.TRIGGER_DIR">TRIGGER_DIR</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Trigger direction constants for configuring PicoScope triggers.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="TRIGGER_STATE (pypicosdk.constants.TRIGGER_STATE)" href="#pypicosdk.constants.TRIGGER_STATE">TRIGGER_STATE</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Trigger state values used in :class:<code>PICO_CONDITION</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="TRIGGER_WITHIN_PRE_TRIGGER (pypicosdk.constants.TRIGGER_WITHIN_PRE_TRIGGER)" href="#pypicosdk.constants.TRIGGER_WITHIN_PRE_TRIGGER">TRIGGER_WITHIN_PRE_TRIGGER</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Control for :func:<code>trigger_within_pre_trigger_samples</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="UNIT_INFO (pypicosdk.constants.UNIT_INFO)" href="#pypicosdk.constants.UNIT_INFO">UNIT_INFO</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Unit information identifiers for querying PicoScope device details.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><a class="autorefs autorefs-internal" title="WAVEFORM (pypicosdk.constants.WAVEFORM)" href="#pypicosdk.constants.WAVEFORM">WAVEFORM</a></code></td>
+            <td>
+              <div class="doc-md-description">
+                <p>Waveform type constants for PicoScope signal generator configuration.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>TIMESTAMP_COUNTER_MASK</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Mask for the 56-bit <code>timeStampCounter</code> field.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="pypicosdk.constants.TIMESTAMP_COUNTER_MASK" class="doc doc-heading">
+            <code class="highlight language-python">TIMESTAMP_COUNTER_MASK = (1 &lt;&lt; 56) - 1</code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Mask for the 56-bit <code>timeStampCounter</code> field.</p>
+
+    </div>
+
+</div>
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.ACTION" class="doc doc-heading">
+            <code>ACTION</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Action codes used to manage and clear data buffers.</p>
+<p>These action codes are used with functions like <code>setDataBuffer</code> to specify
+the type of operation to perform on data buffers.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>CLEAR_ALL</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Clears all data buffers.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>ADD</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Adds data to the buffer.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>CLEAR_THIS_DATA_BUFFER</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Clears the current data buffer.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>CLEAR_WAVEFORM_DATA_BUFFERS</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Clears all waveform data buffers.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>CLEAR_WAVEFORM_READ_DATA_BUFFERS</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Clears the waveform read data buffers.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.AUXIO_MODE" class="doc doc-heading">
+            <code>AUXIO_MODE</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Operating modes for the AUX IO connector.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.AWG_INDEX_MODE" class="doc doc-heading">
+            <code>AWG_INDEX_MODE</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Index mode for the AWG.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>SINGLE</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Single index mode.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>DOUBLE</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Double index mode.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>QUAD</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Quad index mode.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>MAX_INDEX_MODES</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Maximum index mode.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.BANDWIDTH_CH" class="doc doc-heading">
+            <code>BANDWIDTH_CH</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Class for different bandwidth configurations.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>FULL</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Full bandwidth configuration.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>BW_20MHZ</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Bandwidth of 20 MHz.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>BW_200MHZ</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Bandwidth of 200 MHz.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.CHANNEL" class="doc doc-heading">
+            <code>CHANNEL</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Constants representing PicoScope trigger and input channels.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>A</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Channel A</p>
+              </div>
+            </li>
+            <li>
+              <b><code>B</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Channel B</p>
+              </div>
+            </li>
+            <li>
+              <b><code>C</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Channel C</p>
+              </div>
+            </li>
+            <li>
+              <b><code>D</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Channel D</p>
+              </div>
+            </li>
+            <li>
+              <b><code>E</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Channel E</p>
+              </div>
+            </li>
+            <li>
+              <b><code>F</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Channel F</p>
+              </div>
+            </li>
+            <li>
+              <b><code>G</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Channel G</p>
+              </div>
+            </li>
+            <li>
+              <b><code>H</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Channel H</p>
+              </div>
+            </li>
+            <li>
+              <b><code>TRIGGER_AUX</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Dedicated auxiliary trigger input</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.COUPLING" class="doc doc-heading">
+            <code>COUPLING</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Enum class representing different types of coupling used in signal processing.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>AC</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Represents AC coupling.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>DC</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Represents DC coupling.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>DC_50OHM</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Represents 50 Ohm DC coupling.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.DATA_TYPE" class="doc doc-heading">
+            <code>DATA_TYPE</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Class for different data types.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>INT8_T</code></b>
+              –
+              <div class="doc-md-description">
+                <p>8-bit signed integer.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>INT16_T</code></b>
+              –
+              <div class="doc-md-description">
+                <p>16-bit signed integer.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>INT32_T</code></b>
+              –
+              <div class="doc-md-description">
+                <p>32-bit signed integer.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>UINT32_T</code></b>
+              –
+              <div class="doc-md-description">
+                <p>32-bit unsigned integer.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>INT64_T</code></b>
+              –
+              <div class="doc-md-description">
+                <p>64-bit signed integer.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.DIGITAL_CHANNEL" class="doc doc-heading">
+            <code>DIGITAL_CHANNEL</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Digital channel identifiers.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.DIGITAL_CHANNEL_DIRECTIONS" class="doc doc-heading">
+            <code>DIGITAL_CHANNEL_DIRECTIONS</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Structure describing a digital channel direction.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.DIGITAL_DIRECTION" class="doc doc-heading">
+            <code>DIGITAL_DIRECTION</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Digital trigger direction settings.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.DIGITAL_PORT" class="doc doc-heading">
+            <code>DIGITAL_PORT</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Digital port identifiers for the 6000A series.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.DIGITAL_PORT_HYSTERESIS" class="doc doc-heading">
+            <code>DIGITAL_PORT_HYSTERESIS</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Hysteresis options for digital ports.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.ETS_MODE" class="doc doc-heading">
+            <code>ETS_MODE</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Class for different ETS modes.
+Attributes:
+    OFF: ETS is disabled.
+    FAST: ETS is enabled in fast mode.
+    SLOW: ETS is enabled in slow mode.
+    MODES_MAX: Maximum number of ETS modes.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.PICO_CHANNEL_FLAGS" class="doc doc-heading">
+            <code>PICO_CHANNEL_FLAGS</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Bit flags for enabled channels used by <code>ps6000aChannelCombinationsStateless</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.PICO_CHANNEL_OVERVOLTAGE_TRIPPED" class="doc doc-heading">
+            <code>PICO_CHANNEL_OVERVOLTAGE_TRIPPED</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Status flag indicating whether a channel's input protection tripped.
+Attributes:
+    channel_: Channel identifier as a :class:<code>CHANNEL</code> value.
+    tripped_: <code>1</code> if the channel has tripped due to overvoltage.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.PICO_CONDITION" class="doc doc-heading">
+            <code>PICO_CONDITION</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Trigger condition used by <code>SetTriggerChannelConditions</code>.</p>
+<p>Each instance defines the state that a particular input source must meet
+for the overall trigger to occur.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>source_</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Channel being monitored as a :class:<code>CHANNEL</code> value.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>condition_</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Desired state from :class:<code>PICO_TRIGGER_STATE</code>.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.PICO_CONNECT_PROBE_RANGE" class="doc doc-heading">
+            <code>PICO_CONNECT_PROBE_RANGE</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Input range identifiers for <code>get_analogue_offset_limits</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.PICO_DIRECTION" class="doc doc-heading">
+            <code>PICO_DIRECTION</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Direction descriptor for <code>SetTriggerChannelDirections</code>.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>channel_</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Channel index as a :class:<code>CHANNEL</code> value.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>direction_</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Direction from :class:<code>PICO_THRESHOLD_DIRECTION</code>.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>thresholdMode_</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Threshold mode from :class:<code>PICO_THRESHOLD_MODE</code>.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.PICO_FIRMWARE_INFO" class="doc doc-heading">
+            <code>PICO_FIRMWARE_INFO</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Information describing firmware versions and updates.
+Attributes:
+    firmwareType_: Firmware identifier as a :class:<code>UNIT_INFO</code> value.
+    currentVersion_: Currently installed :class:<code>PICO_VERSION</code>.
+    updateVersion_: Available update :class:<code>PICO_VERSION</code>.
+    updateRequired_: <code>1</code> if an update is required, otherwise <code>0</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.PICO_LED_COLOUR_PROPERTIES" class="doc doc-heading">
+            <code>PICO_LED_COLOUR_PROPERTIES</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>This structure is used with psospaSetLedColours() to define
+the color for one LED using hue and saturation (HSV) values
+for the color.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.PICO_LED_STATE_PROPERTIES" class="doc doc-heading">
+            <code>PICO_LED_STATE_PROPERTIES</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>This structure is used with set_led_states() to define the
+state for one LED.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.PICO_PORT_DIGITAL_CHANNEL" class="doc doc-heading">
+            <code>PICO_PORT_DIGITAL_CHANNEL</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Digital channel identifiers within a port.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.PICO_PROBE_RANGE_INFO" class="doc doc-heading">
+            <code>PICO_PROBE_RANGE_INFO</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Probe attenuation identifiers for <code>get_scaling_values</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.PICO_SCALING_FACTORS_FOR_RANGE_TYPES_VALUES" class="doc doc-heading">
+            <code>PICO_SCALING_FACTORS_FOR_RANGE_TYPES_VALUES</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Scaling factors for a probe range type.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.PICO_SCALING_FACTORS_VALUES" class="doc doc-heading">
+            <code>PICO_SCALING_FACTORS_VALUES</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Scaling factors for a channel and range.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.PICO_SIGGEN_TRIG_SOURCE" class="doc doc-heading">
+            <code>PICO_SIGGEN_TRIG_SOURCE</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Signal generator trigger source options.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.PICO_SIGGEN_TRIG_TYPE" class="doc doc-heading">
+            <code>PICO_SIGGEN_TRIG_TYPE</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Trigger type for the signal generator.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.PICO_STREAMING_DATA_INFO" class="doc doc-heading">
+            <code>PICO_STREAMING_DATA_INFO</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Structure describing streaming data buffer information.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.PICO_STREAMING_DATA_TRIGGER_INFO" class="doc doc-heading">
+            <code>PICO_STREAMING_DATA_TRIGGER_INFO</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Structure describing trigger information for streaming.</p>
+<p>All field names in this structure are defined with a trailing
+underscore so they match the C structure exactly.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.PICO_TRIGGER_CHANNEL_PROPERTIES" class="doc doc-heading">
+            <code>PICO_TRIGGER_CHANNEL_PROPERTIES</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Trigger threshold configuration for a single channel.</p>
+<p>The fields of this structure mirror the <code>PICO_TRIGGER_CHANNEL_PROPERTIES</code>
+definition in the PicoSDK headers.  Each attribute name ends with an
+underscore so that the names match the underlying C struct when accessed
+from Python.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>thresholdUpper_</code></b>
+              –
+              <div class="doc-md-description">
+                <p>ADC counts for the upper trigger threshold.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>thresholdUpperHysteresis_</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Hysteresis applied to <code>thresholdUpper_</code> in
+ADC counts.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>thresholdLower_</code></b>
+              –
+              <div class="doc-md-description">
+                <p>ADC counts for the lower trigger threshold.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>thresholdLowerHysteresis_</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Hysteresis applied to <code>thresholdLower_</code> in
+ADC counts.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>channel_</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Input channel that these properties apply to as a
+:class:<code>CHANNEL</code> value.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.PICO_TRIGGER_INFO" class="doc doc-heading">
+            <code>PICO_TRIGGER_INFO</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Structure describing trigger timing information.</p>
+<p>All fields of this <code>ctypes</code> structure include a trailing underscore in
+their names. When you receive a :class:<code>PICO_TRIGGER_INFO</code> instance from
+:meth:<code>~pypicosdk.pypicosdk.PicoScopeBase.get_trigger_info</code> or other
+functions, access the attributes using these exact names, for example
+<code>info.triggerTime_</code>.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>status_</code></b>
+              –
+              <div class="doc-md-description">
+                <p>:class:<code>PICO_STATUS</code> value describing the trigger state. This
+may be a bitwise OR of multiple status flags such as
+<code>PICO_DEVICE_TIME_STAMP_RESET</code> or
+<code>PICO_TRIGGER_TIME_NOT_REQUESTED</code>.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>segmentIndex_</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Memory segment index from which the information was
+captured.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>triggerIndex_</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Sample index at which the trigger occurred.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>triggerTime_</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Time of the trigger event calculated with sub-sample
+resolution.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>timeUnits_</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Units for <code>triggerTime_</code> as a
+:class:<code>PICO_TIME_UNIT</code> value.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>missedTriggers_</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Number of trigger events that occurred between this
+capture and the previous one.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>timeStampCounter_</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Timestamp in samples from the first capture.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.PICO_TRIGGER_INFO_PS5000A" class="doc doc-heading">
+            <code>PICO_TRIGGER_INFO_PS5000A</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Structure describing trigger information for PS5000A.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.PICO_USB_POWER_DELIVERY" class="doc doc-heading">
+            <code>PICO_USB_POWER_DELIVERY</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Structure representing USB Power Delivery status information for a single USB port.</p>
+<p>This structure provides detailed information about the USB Power Delivery
+contract and status for a USB port, including voltage, current limits,
+connection state, and attached device type.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>valid_</code></b>
+                  (<code><span title="ctypes.c_uint8">c_uint8</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Indicates whether the power delivery data is valid (non-zero if valid).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>busVoltagemV_</code></b>
+                  (<code><span title="ctypes.c_uint32">c_uint32</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The bus voltage in millivolts.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>rpCurrentLimitmA_</code></b>
+                  (<code><span title="ctypes.c_uint32">c_uint32</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The current limit for the Rp resistor in milliamps.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>partnerConnected_</code></b>
+                  (<code><span title="ctypes.c_uint8">c_uint8</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Indicates if a partner device is connected (non-zero if connected).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>ccPolarity_</code></b>
+                  (<code><span title="ctypes.c_uint8">c_uint8</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The polarity of the CC (Configuration Channel) line.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>attachedDevice_</code></b>
+                  (<code><span title="ctypes.c_uint8">c_uint8</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The type of device attached (corresponds to PICO_USB_POWER_DELIVERY_DEVICE_TYPE).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>contractExists_</code></b>
+                  (<code><span title="ctypes.c_uint8">c_uint8</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Indicates whether a power contract exists (non-zero if yes).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>currentPdo_</code></b>
+                  (<code><span title="ctypes.c_uint32">c_uint32</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The current Power Data Object (PDO) index.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>currentRdo_</code></b>
+                  (<code><span title="ctypes.c_uint32">c_uint32</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The current Request Data Object (RDO) index.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.PICO_USB_POWER_DETAILS" class="doc doc-heading">
+            <code>PICO_USB_POWER_DETAILS</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Structure describing USB power details for a PicoScope device.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>dataPort_</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="PICO_USB_POWER_DELIVERY (pypicosdk.constants.PICO_USB_POWER_DELIVERY)" href="#pypicosdk.constants.PICO_USB_POWER_DELIVERY">PICO_USB_POWER_DELIVERY</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>USB power delivery details related to the device's data port.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>powerPort_</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="PICO_USB_POWER_DELIVERY (pypicosdk.constants.PICO_USB_POWER_DELIVERY)" href="#pypicosdk.constants.PICO_USB_POWER_DELIVERY">PICO_USB_POWER_DELIVERY</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>USB power delivery details related to the device's power port.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.PICO_VERSION" class="doc doc-heading">
+            <code>PICO_VERSION</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Firmware or driver version information.
+Attributes:
+    major_: Major version number.
+    minor_: Minor version number.
+    revision_: Revision number.
+    build_: Build number.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.POWER_SOURCE" class="doc doc-heading">
+            <code>POWER_SOURCE</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Defines different power source connection statuses.</p>
+<p>These values represent the connection status of a power supply or USB device.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>SUPPLY_CONNECTED</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Power supply is connected.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>SUPPLY_NOT_CONNECTED</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Power supply is not connected.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>USB3_0_DEVICE_NON_USB3_0_PORT</code></b>
+              –
+              <div class="doc-md-description">
+                <p>USB 3.0 device is connected to a non-USB 3.0 port.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.PULSE_WIDTH_TYPE" class="doc doc-heading">
+            <code>PULSE_WIDTH_TYPE</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Pulse width qualifier comparison types.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.RANGE" class="doc doc-heading">
+            <code>RANGE</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Enum class representing different voltage ranges used in signal processing.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>mV10</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Voltage range of ±10 mV.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>mV20</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Voltage range of ±20 mV.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>mV50</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Voltage range of ±50 mV.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>mV100</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Voltage range of ±100 mV.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>mV200</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Voltage range of ±200 mV.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>mV500</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Voltage range of ±500 mV.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>V1</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Voltage range of ±1 V.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>V2</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Voltage range of ±2 V.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>V5</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Voltage range of ±5 V.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>V10</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Voltage range of ±10 V.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>V20</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Voltage range of ±20 V.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>V50</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Voltage range of ±50 V.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.RATIO_MODE" class="doc doc-heading">
+            <code>RATIO_MODE</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Defines various ratio modes for signal processing.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>AGGREGATE</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Aggregate mode for data processing.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>DECIMATE</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Decimation mode for reducing data resolution.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>AVERAGE</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Averaging mode for smoothing data.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>DISTRIBUTION</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Mode for calculating distribution statistics.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>SUM</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Mode for summing data.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>TRIGGER_DATA_FOR_TIME_CALCULATION</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Mode for calculating trigger data for time-based calculations.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>SEGMENT_HEADER</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Mode for segment header data processing.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>TRIGGER</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Trigger mode for event-based data. If manually setting buffers, TRIGGER will need its own buffer set.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>RAW</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Raw data mode, without any processing.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.RESOLUTION" class="doc doc-heading">
+            <code>RESOLUTION</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Resolution constants for PicoScope devices.</p>
+<p><strong>WARNING: Not all devices support all resolutions.</strong></p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>_8BIT</code></b>
+              –
+              <div class="doc-md-description">
+                <p>8-bit resolution.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>_10BIT</code></b>
+              –
+              <div class="doc-md-description">
+                <p>10-bit resolution.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>_12BIT</code></b>
+              –
+              <div class="doc-md-description">
+                <p>12-bit resolution.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>_14BIT</code></b>
+              –
+              <div class="doc-md-description">
+                <p>14-bit resolution.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>_15BIT</code></b>
+              –
+              <div class="doc-md-description">
+                <p>15-bit resolution.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>_16BIT</code></b>
+              –
+              <div class="doc-md-description">
+                <p>16-bit resolution.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <pre class="highlight"><code class="language-pycon">&gt;&gt;&gt; scope.open_unit(resolution=RESOLUTION._16BIT)</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.SCOPE_STATE" class="doc doc-heading">
+            <code>SCOPE_STATE</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Class for different scope states.
+Attributes:
+    IDLE: The scope is idle.
+    PRE_TRIGGER: The scope is in pre-trigger mode.
+    WAITING_FOR_TRIGGER: The scope is waiting for a trigger.
+    CAPTURING: The scope is capturing data.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.SIGGEN_FILTER_STATE" class="doc doc-heading">
+            <code>SIGGEN_FILTER_STATE</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Output filter state for the signal generator.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.SIGGEN_PARAMETER" class="doc doc-heading">
+            <code>SIGGEN_PARAMETER</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Parameters that can be queried with :func:<code>siggen_limits</code>.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>OUTPUT_VOLTS</code></b>
+              –
+              <div class="doc-md-description">
+                <p>0</p>
+              </div>
+            </li>
+            <li>
+              <b><code>SAMPLE</code></b>
+              –
+              <div class="doc-md-description">
+                <p>1</p>
+              </div>
+            </li>
+            <li>
+              <b><code>BUFFER_LENGTH</code></b>
+              –
+              <div class="doc-md-description">
+                <p>2</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.SWEEP_TYPE" class="doc doc-heading">
+            <code>SWEEP_TYPE</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Sweep direction for signal generator.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.THRESHOLD_DIRECTION" class="doc doc-heading">
+            <code>THRESHOLD_DIRECTION</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Enumerates trigger threshold directions used with :class:<code>PICO_DIRECTION</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.THRESHOLD_MODE" class="doc doc-heading">
+            <code>THRESHOLD_MODE</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Threshold operation mode values used in :class:<code>PICO_DIRECTION</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.TRIGGER_DIR" class="doc doc-heading">
+            <code>TRIGGER_DIR</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Trigger direction constants for configuring PicoScope triggers.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>ABOVE</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Trigger when the signal goes above the threshold.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>BELOW</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Trigger when the signal goes below the threshold.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>RISING</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Trigger on rising edge.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>FALLING</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Trigger on falling edge.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>RISING_OR_FALLING</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Trigger on either rising or falling edge.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.TRIGGER_STATE" class="doc doc-heading">
+            <code>TRIGGER_STATE</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Trigger state values used in :class:<code>PICO_CONDITION</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.TRIGGER_WITHIN_PRE_TRIGGER" class="doc doc-heading">
+            <code>TRIGGER_WITHIN_PRE_TRIGGER</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Control for :func:<code>trigger_within_pre_trigger_samples</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.UNIT_INFO" class="doc doc-heading">
+            <code>UNIT_INFO</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Unit information identifiers for querying PicoScope device details.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>PICO_DRIVER_VERSION</code></b>
+              –
+              <div class="doc-md-description">
+                <p>PicoSDK driver version.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>PICO_USB_VERSION</code></b>
+              –
+              <div class="doc-md-description">
+                <p>USB version (e.g., USB 2.0 or USB 3.0).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>PICO_HARDWARE_VERSION</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Hardware version of the PicoScope.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>PICO_VARIANT_INFO</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Device model or variant identifier.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>PICO_BATCH_AND_SERIAL</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Batch and serial number of the device.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>PICO_CAL_DATE</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Device calibration date.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>PICO_KERNEL_VERSION</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Kernel driver version.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>PICO_DIGITAL_HARDWARE_VERSION</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Digital board hardware version.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>PICO_ANALOGUE_HARDWARE_VERSION</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Analogue board hardware version.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>PICO_FIRMWARE_VERSION_1</code></b>
+              –
+              <div class="doc-md-description">
+                <p>First part of the firmware version.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>PICO_FIRMWARE_VERSION_2</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Second part of the firmware version.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <pre class="highlight"><code class="language-pycon">&gt;&gt;&gt; scope.get_unit_info(picosdk.UNIT_INFO.PICO_BATCH_AND_SERIAL)
+"JM115/0007"</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="pypicosdk.constants.WAVEFORM" class="doc doc-heading">
+            <code>WAVEFORM</code>
+
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Waveform type constants for PicoScope signal generator configuration.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>SINE</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Sine wave.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>SQUARE</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Square wave.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>TRIANGLE</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Triangle wave.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>RAMP_UP</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Rising ramp waveform.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>RAMP_DOWN</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Falling ramp waveform.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>SINC</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Sinc function waveform.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>GAUSSIAN</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Gaussian waveform.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>HALF_SINE</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Half sine waveform.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>DC_VOLTAGE</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Constant DC voltage output.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>PWM</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Pulse-width modulation waveform.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>WHITENOISE</code></b>
+              –
+              <div class="doc-md-description">
+                <p>White noise output.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>PRBS</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Pseudo-random binary sequence.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>ARBITRARY</code></b>
+              –
+              <div class="doc-md-description">
+                <p>Arbitrary user-defined waveform.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../general/" class="btn btn-neutral float-left" title="General Functions"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../configuration/" class="btn btn-neutral float-right" title="Config/Overrides">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../general/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../configuration/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
