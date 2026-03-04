@@ -1,5 +1,9 @@
-# Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
-# Master version file for all scripts. 
-# Update these variables first then run `python build-tools\version_updater.py`
+"""
+Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
+
+Master version file for all scripts. 
+Update these variables first then run `python build-tools\version_updater.py`
+Go to https://github.com/picotech/pyPicoSDK/blob/main/build-tools/README.md for more information.
+"""
 docs_version = "0.4.2"
 package_version = "1.7.1"
