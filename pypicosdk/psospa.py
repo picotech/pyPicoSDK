@@ -3,7 +3,11 @@
 # flake8: noqa
 # pylint: skip-file
 import ctypes
-from typing import override, Literal
+from typing import Literal
+try:
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override  # type: ignore
 import json
 from warnings import warn
 

@@ -1,7 +1,10 @@
 """Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms."""
 
 import ctypes
-from typing import override
+try:
+    from typing import override  # type: ignore
+except ImportError:
+    from typing_extensions import override  # type: ignore
 
 from .constants import *
 from . import constants as cst
