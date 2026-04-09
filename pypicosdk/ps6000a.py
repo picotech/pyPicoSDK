@@ -114,6 +114,36 @@ class ps6000a(PicoScopeBase, shared_ps6000a_psospa, shared_4000a_6000a, Sharedps
 
         return string.value.decode()
 
+    def set_probe_interaction_callback(self, callback) -> None:
+        """Register a callback for PicoConnect intelligent probe events.
+
+        The driver invokes ``callback`` whenever an intelligent probe is
+        connected, disconnected, or its status changes.  Call this after
+        :meth:`open_unit` and before any call to :meth:`set_channel_on`.
+
+        Args:
+            callback: Callable with signature
+                ``(handle, status, probes, n_probes)`` where *probes* is
+                a ctypes pointer to an array of
+                :class:`PICO_USER_PROBE_INTERACTIONS` structures and
+                *n_probes* is the number of elements in that array.
+        """
+
+        PROBE_CALLBACK = ctypes.CFUNCTYPE(
+            None,
+            ctypes.c_int16,
+            ctypes.c_uint32,
+            ctypes.POINTER(cst.PICO_USER_PROBE_INTERACTIONS),
+            ctypes.c_uint32,
+        )
+        self._probe_interaction_cb = PROBE_CALLBACK(callback)
+
+        self._call_attr_function(
+            "SetProbeInteractionCallback",
+            self.handle,
+            self._probe_interaction_cb,
+        )
+
     def siggen_clock_manual(self, dac_clock_frequency: float, prescale_ratio: int) -> None:
         """Manually control the signal generator clock.
         Args:

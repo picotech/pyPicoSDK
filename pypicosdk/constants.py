@@ -777,6 +777,39 @@ class PICO_SCALING_FACTORS_FOR_RANGE_TYPES_VALUES(ctypes.Structure):
         ("scalingFactor_", ctypes.c_double),
     ]
 
+
+class PICO_USER_PROBE_INTERACTIONS(ctypes.Structure):
+    """Probe state passed to the :class:`PicoProbeInteractions` callback.
+
+    Each element describes one channel's probe status including the
+    connected probe type, available ranges, coupling options and
+    bandwidth filter settings.  The structure is byte-aligned to match
+    the C definition in ``PicoDeviceStructs.h``.
+    """
+
+    _pack_ = 1
+
+    _fields_ = [
+        ("connected_", ctypes.c_uint16),
+        ("channel_", ctypes.c_int32),
+        ("enabled_", ctypes.c_uint16),
+        ("probeName_", ctypes.c_int32),
+        ("requiresPower_", ctypes.c_uint8),
+        ("isPowered_", ctypes.c_uint8),
+        ("status_", ctypes.c_uint32),
+        ("probeOff_", ctypes.c_int32),
+        ("rangeFirst_", ctypes.c_int32),
+        ("rangeLast_", ctypes.c_int32),
+        ("rangeCurrent_", ctypes.c_int32),
+        ("couplingFirst_", ctypes.c_int32),
+        ("couplingLast_", ctypes.c_int32),
+        ("couplingCurrent_", ctypes.c_int32),
+        ("filterFlags_", ctypes.c_uint32),
+        ("filterCurrent_", ctypes.c_uint32),
+        ("defaultFilter_", ctypes.c_uint32),
+    ]
+
+
 class AUXIO_MODE(IntEnum):
     """Operating modes for the AUX IO connector."""
 
@@ -1290,6 +1323,7 @@ __all__ = [
     'PICO_PROBE_RANGE_INFO',
     'PICO_SCALING_FACTORS_VALUES',
     'PICO_SCALING_FACTORS_FOR_RANGE_TYPES_VALUES',
+    'PICO_USER_PROBE_INTERACTIONS',
     'AUXIO_MODE',
     'PICO_CHANNEL_OVERVOLTAGE_TRIPPED',
     'TRIGGER_STATE',
