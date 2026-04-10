@@ -13,6 +13,12 @@ Description:
   than in the downsampled example (1 MS/s here vs 1.25 GS/s there). This
   trade-off gives full-fidelity data at the cost of lower bandwidth.
 
+  This stream-to-plot example teaches recommended best practice for streaming
+  and is set to 1 MS/s by default. In a Python environment with ~100K samples
+  rolling on the graph, rates up to 10 MS/s are achievable — but for a live
+  visual plot this is usually unnecessary, since the screen can only display
+  a fraction of those points at any one time.
+
 Key Concepts:
   - Raw mode: ratio=0 with RATIO_MODE.RAW — no hardware downsampling
   - INT8 data: Raw samples are 8-bit signed integers (-128 to +127)
@@ -86,28 +92,24 @@ scope.open_unit()
 # Print the serial number of the connected instrument
 print(f"Connected to PicoScope: {scope.get_unit_serial()}")
 
-# Query the device's maximum sample memory. Two constraints determine
-# the hardware buffer size:
-#   1) Driver limit: (nSamples × sizeof(dataType)) must fit in int32
-#   2) Host RAM: each buffer is a numpy array on the host — two buffers
-#      are allocated for double-buffering, so total ≈ 2 × size × itemsize.
-# The buffer only needs to be large enough to avoid overflow between polls;
-# at ~10 MHz with 0.1 ms polls, ~1000 samples arrive per poll, so 1M samples
-# gives >1000× headroom while keeping host RAM usage under ~2 MB.
-max_memory = scope.get_maximum_available_memory()
-max_driver_samples = (2**31 - 1) // np.dtype(NUMPY_DTYPE).itemsize  #todo not very happy with this line readability 
-SAMPLES_PER_BUFFER = min(int(max_memory * 0.95), max_driver_samples, RING_BUFFER_SIZE)
-print(f"Device memory: {max_memory:,} samples → "
-      f"buffer: {SAMPLES_PER_BUFFER:,} raw samples")
+# Query the device's maximum sample memory and use 95% of it as the
+# hardware buffer size, leaving a small margin.
+# The driver passes the sample count as a signed 32-bit integer, so we
+# also cap at int32 max to prevent overflow.
+max_memory = int(scope.get_maximum_available_memory() * 0.95)
+SAMPLES_PER_BUFFER = min(max_memory, np.iinfo(np.int32).max)
+print(f"Hardware buffer: {SAMPLES_PER_BUFFER:,} raw samples")
 
 # Enable Channel A with ±500mV range and DC coupling
 scope.set_channel(
     channel=psdk.CHANNEL.A,
     range=psdk.RANGE.mV500,
-    coupling=psdk.COUPLING.DC
+    coupling=psdk.COUPLING.DC_50
 )
 
-scope.set_siggen(frequency=1e6, pk2pk=0.8, wave_type=psdk.WAVEFORM.SINE)
+# Configure the built-in signal generator to output a 1 MHz sine wave
+# at 1.8 V peak-to-peak — useful for testing without an external source
+scope.set_siggen(frequency=1e6, pk2pk=1.8, wave_type=psdk.WAVEFORM.SINE)
 
 
 # ============================================================================
