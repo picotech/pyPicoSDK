@@ -1,14 +1,20 @@
 """
 Copyright (C) 2025-2026 Pico Technology Ltd. See LICENSE file for terms.
 
-Basic streaming example for a PicoScope 6000E device with PyQtGraph
+Basic downsampled streaming example for a PicoScope 6000E device with PyQtGraph
 
 Description:
-  Demonstrates how to perform continuous streaming data capture with real-time
-  plotting using pyPicoSDK and PyQtGraph. Uses hardware downsampling (decimate
-  mode) with double-buffered data acquisition in a background thread.
+  Demonstrates continuous streaming data capture WITH hardware downsampling
+  (decimate mode). The hardware discards N-1 out of every N raw ADC samples,
+  delivering 1 output sample per DOWNSAMPLE_RATIO raw samples to the host.
+  Compare with basic_streaming_raw_pyqtgraph.py which captures every raw sample.
+
+  Hardware downsampling allows very high raw ADC sample rates while keeping the
+  host data rate manageable. The trade-off is that only one in every
+  DOWNSAMPLE_RATIO raw samples is retained.
 
 Key Concepts:
+  - Decimate mode: hardware keeps every Nth raw sample, discarding the rest
   - Double buffering: Two hardware buffers alternate so data is never lost
   - Ring buffer: Circular buffer stores a rolling window of samples for display
   - Threaded acquisition: Background thread polls hardware,
@@ -48,6 +54,10 @@ ADC_DATA_TYPE = psdk.DATA_TYPE.INT8_T
 # Numpy data type matching the ADC data type above
 NUMPY_DTYPE = np.int8
 
+# ADC range derived from the data type (e.g. INT8 → -128..+127)
+ADC_MIN = int(np.iinfo(NUMPY_DTYPE).min)
+ADC_MAX = int(np.iinfo(NUMPY_DTYPE).max)
+
 # Number of downsampled samples kept in the rolling display buffer. Large windows require more RAM
 RING_BUFFER_SIZE = 2_000
 
@@ -59,6 +69,9 @@ REFRESH_MS = 33
 
 # Requested ADC sample interval in nanoseconds (hardware may adjust this)
 SAMPLE_INTERVAL_NS = 1_000
+
+# How often (seconds) the console rate line is printed
+RATE_PRINT_INTERVAL = 1.0
 
 
 # ============================================================================
@@ -165,6 +178,21 @@ data_updated = False
 # Flag to signal the acquisition thread to stop
 stop_streaming = False
 
+# ── Live rate tracking ──
+# These variables measure the OBSERVED throughput of downsampled output samples
+# actually delivered by the driver to our application — NOT a theoretical rate.
+
+# Cumulative count of downsampled samples received from the driver.
+# Incremented in the acquisition thread under data_lock.
+total_samples_received = 0
+
+# High-resolution timestamps used to compute rates:
+#   rate_start_time          – session start (for the overall average)
+#   rate_interval_start_*    – reset each print window (for the instant rate)
+rate_start_time = time.perf_counter()
+rate_interval_start_time = rate_start_time
+rate_interval_start_count = 0
+
 
 # ============================================================================
 # PYQTGRAPH WINDOW SETUP
@@ -194,8 +222,12 @@ plot.setLabel('bottom', 'Sample Index')
 # Enable grid lines for easier reading
 plot.showGrid(x=True, y=True)
 
-# Set Y-axis range to the full INT8 ADC range (-128 to +127) with small margin
-plot.setYRange(-130, 130)
+# Lock Y-axis to the full ADC range and prevent mouse zoom/pan on Y.
+# The limits are derived from NUMPY_DTYPE so they update automatically
+# if the data type changes.
+plot.setYRange(ADC_MIN, ADC_MAX, padding=0.02)
+plot.setLimits(yMin=ADC_MIN, yMax=ADC_MAX)
+plot.getViewBox().setMouseEnabled(y=False)
 
 # Lock the x-range to the display window (in raw ADC sample indices)
 plot.setXRange(0, RING_BUFFER_SIZE * DOWNSAMPLE_RATIO, padding=0)
@@ -227,7 +259,7 @@ def acquisition_thread():
     We read from whichever buffer the driver indicates, copy the new samples
     into the ring buffer, and set data_updated=True so the plot refreshes.
     """
-    global ring_head, ring_filled, data_updated, stop_streaming
+    global ring_head, ring_filled, data_updated, stop_streaming, total_samples_received
 
     print("Acquisition thread started")
     last_status = None
@@ -266,6 +298,13 @@ def acquisition_thread():
                 with data_lock:
                     n = len(new_data)
 
+                    # If the batch is larger than the entire ring buffer,
+                    # only the most recent RING_BUFFER_SIZE samples matter —
+                    # older ones would be overwritten immediately anyway.
+                    if n > RING_BUFFER_SIZE:
+                        new_data = new_data[-RING_BUFFER_SIZE:]
+                        n = RING_BUFFER_SIZE
+
                     # How many slots remain between the write cursor and the
                     # physical end of the array — determines if we need to wrap.
                     space_to_end = RING_BUFFER_SIZE - ring_head
@@ -295,6 +334,12 @@ def acquisition_thread():
                     # Track how full the buffer is (clamp at max — once full,
                     # stays full because old data is simply overwritten)
                     ring_filled = min(ring_filled + n, RING_BUFFER_SIZE)
+
+                    # Bump the cumulative counter so the plot timer can
+                    # compute a live observed-throughput rate. Uses n_samples
+                    # (the full driver count) not n (which may be truncated
+                    # to RING_BUFFER_SIZE) so the rate reflects true throughput.
+                    total_samples_received += n_samples
 
                     # Signal to the plot timer that fresh data is available
                     data_updated = True
@@ -326,10 +371,11 @@ def acquisition_thread():
 def update_plot():
     """
     Called by QTimer on the main thread to refresh the plot.
-    Reads ring buffer in logical order (oldest to newest).
+    Reads ring buffer in logical order (oldest to newest) and
+    periodically prints a live sample-rate summary to the console.
     """
-    # Declare the flag as global so we can clear it after reading
-    global data_updated
+    # Declare globals so we can clear/update them after reading
+    global data_updated, rate_interval_start_time, rate_interval_start_count
 
     with data_lock:
         if not data_updated:
@@ -363,6 +409,10 @@ def update_plot():
         # Clear the flag so we don't re-draw the same data next tick
         data_updated = False
 
+        # Snapshot the cumulative counter while we still hold the lock —
+        # avoids a race with the acquisition thread
+        snap_total = total_samples_received
+
     # Skip if there is nothing to plot
     if len(y_data) == 0:
         return
@@ -372,6 +422,23 @@ def update_plot():
 
     # Update the plot curve with the new X and Y data
     curve.setData(x_data, y_data)
+
+    # ── Live rate printout (every RATE_PRINT_INTERVAL seconds) ──
+    # instant_rate : downsampled output samples/sec over the most recent window
+    # avg_rate     : downsampled output samples/sec averaged since streaming started
+    now = time.perf_counter()
+    interval_elapsed = now - rate_interval_start_time
+    if interval_elapsed >= RATE_PRINT_INTERVAL:
+        interval_samples = snap_total - rate_interval_start_count
+        instant_rate = interval_samples / interval_elapsed
+        overall_elapsed = now - rate_start_time
+        avg_rate = snap_total / overall_elapsed if overall_elapsed > 0 else 0
+        print(f"[RATE] {instant_rate:,.1f} S/s (avg {avg_rate:,.1f} S/s) | "
+              f"plotted: {len(y_data):,} | total received: {snap_total:,}")
+
+        # Reset the window counters for the next interval
+        rate_interval_start_time = now
+        rate_interval_start_count = snap_total
 
 
 # ============================================================================
