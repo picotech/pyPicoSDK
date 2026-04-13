@@ -104,8 +104,8 @@ print(f"Hardware buffer: {SAMPLES_PER_BUFFER:,} samples per buffer")
 # Enable Channel A with ±500mV range and DC coupling
 scope.set_channel(
     channel=psdk.CHANNEL.A,
-    range=psdk.RANGE.mV500,
-    coupling=psdk.COUPLING.DC_50
+    range=psdk.RANGE.V2,
+    coupling=psdk.COUPLING.DC
 )
 
 # Configure the built-in signal generator to output a 1 MHz sine wave
