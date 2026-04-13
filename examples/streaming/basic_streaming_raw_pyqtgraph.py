@@ -68,6 +68,13 @@ ADC_MAX = int(np.iinfo(NUMPY_DTYPE).max)
 # the entire buffer is copied and passed to PyQtGraph on every plot refresh.
 RING_BUFFER_SIZE = 1_000_000
 
+# Size of each hardware double-buffer registered with the driver.
+# Must be large enough that it does not overflow between polls — i.e. the
+# buffer must hold more samples than arrive between consecutive calls to
+# get_streaming_latest_values(). At 10 MHz with 1 ms polls, ~10,000 samples
+# arrive per poll, so 10M gives ~1000× headroom.
+SAMPLES_PER_BUFFER = 10_000_000
+
 # How often the acquisition thread polls the hardware for new data (seconds)
 POLL_INTERVAL = 0.001
 
@@ -92,13 +99,7 @@ scope.open_unit()
 # Print the serial number of the connected instrument
 print(f"Connected to PicoScope: {scope.get_unit_serial()}")
 
-# Query the device's maximum sample memory and use 95% of it as the
-# hardware buffer size, leaving a small margin.
-# The driver passes the sample count as a signed 32-bit integer, so we
-# also cap at int32 max to prevent overflow.
-max_memory = int(scope.get_maximum_available_memory() * 0.95)
-SAMPLES_PER_BUFFER = min(max_memory, np.iinfo(np.int32).max)
-print(f"Hardware buffer: {SAMPLES_PER_BUFFER:,} raw samples")
+print(f"Hardware buffer: {SAMPLES_PER_BUFFER:,} samples per buffer")
 
 # Enable Channel A with ±500mV range and DC coupling
 scope.set_channel(
