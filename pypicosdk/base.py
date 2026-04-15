@@ -2027,6 +2027,15 @@ class PicoScopeBase:
         else:
             c_sample_interval = ctypes.c_double(sample_interval)
 
+        # Convert max_pre_trigger_samples and max_post_trigger_samples to ctypes 
+        # depending on the device type (32 or 64 bit device)
+        if self._unit_prefix_n in ['ps5000a', 'ps4000a']:
+            max_pre_trigger_samples = ctypes.c_uint32(max_pre_trigger_samples)
+            max_post_trigger_samples = ctypes.c_uint32(max_post_trigger_samples)
+        else:
+            max_pre_trigger_samples = ctypes.c_uint64(max_pre_trigger_samples)
+            max_post_trigger_samples = ctypes.c_uint64(max_post_trigger_samples)
+
         if overview_buffer_size is None:
             overview_buffer_size = self.base_dataclass.last_buffer_size
 
