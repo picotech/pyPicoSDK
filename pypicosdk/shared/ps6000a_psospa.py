@@ -590,7 +590,7 @@ class shared_ps6000a_psospa(_ProtocolBase):
         enabled: bool = True,
         coupling: COUPLING = COUPLING.DC,
         offset: float = 0.0,
-        bandwidth: BANDWIDTH_CH = BANDWIDTH_CH.FULL,
+        bandwidth: BANDWIDTH_CH = BANDWIDTH_CH.BW_FULL,
         probe_scale: float = 1.0,
     ) -> None:
         """
