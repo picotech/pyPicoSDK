@@ -172,6 +172,13 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
     @override
     def set_simple_trigger(self, channel, threshold=0, threshold_unit='mv', enable=True,
                            direction=cst.TRIGGER_DIR.RISING, delay=0, auto_trigger=0):
+        channel = _get_literal(channel, cst.channel_map)
+        if channel == cst.CHANNEL.TRIGGER_AUX:
+            if threshold_unit in ('mv', 'v'):
+                threshold_mv = threshold * 1000 if threshold_unit == 'v' else threshold
+                threshold = int((threshold_mv / cst.PS5000A_TRIGGER_AUX_RANGE_MV) * self.max_adc_value)
+                threshold_unit = 'adc'
+            channel = cst.PS5000A_TRIGGER_AUX_HW_CHANNEL  # type: ignore[assignment]
         status = super().set_simple_trigger(channel, threshold, threshold_unit, enable, direction,
                                             delay, auto_trigger=0)
         self.set_auto_trigger_microseconds(auto_trigger)
