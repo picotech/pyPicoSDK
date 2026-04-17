@@ -213,6 +213,11 @@ class CHANNEL(IntEnum):
 
 CHANNEL_NAMES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 
+# ps5000a EXT trigger port (CHANNEL.TRIGGER_AUX) hardware constants.
+# The port has a fixed ±5 V input range; the C API channel value is PS5000A_EXTERNAL = 4.
+PS5000A_TRIGGER_AUX_RANGE_MV = 5000
+PS5000A_TRIGGER_AUX_HW_CHANNEL = 4
+
 channel_literal = Literal[
     'channel_a',
     'channel_b',
@@ -1337,4 +1342,6 @@ __all__ = [
     'waveform_literal',
     'waveform_map',
     'output_unit_l',
+    'PS5000A_TRIGGER_AUX_RANGE_MV',
+    'PS5000A_TRIGGER_AUX_HW_CHANNEL',
 ]

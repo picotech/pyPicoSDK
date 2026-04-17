@@ -719,7 +719,7 @@ class PicoScopeBase:
         # If wait_for_ready is True, wait for the device to be ready before getting values
         if wait_for_ready:
             self.is_ready()
-            
+
         no_samples = ctypes.c_uint64(samples)
         overflow = np.zeros(to_segment_index + 1, dtype=np.int16)
         self._call_attr_function(
@@ -1192,7 +1192,7 @@ class PicoScopeBase:
         aux_output_enable: int = 0,
         auto_trigger_us: int = 0,
     ) -> None:
-        """Configure trigger thresholds for ``channel``. All threshold and hysteresis values are 
+        """Configure trigger thresholds for ``channel``. All threshold and hysteresis values are
         specified in ADC counts.
         Be aware if using raw ADC values, threshold is always scaled to a 16-bit ADC value,
         (Even when using 8-bit resolution).
@@ -1336,7 +1336,7 @@ class PicoScopeBase:
             self.handle,
             ctypes.c_uint64(delay),
         )
-    
+
     def trigger_within_pre_trigger_samples(self, state: int) -> None:
         """Control trigger positioning relative to pre-trigger samples.
         Args:
@@ -1729,7 +1729,7 @@ class PicoScopeBase:
             np_dtype = cst.DataTypeNPMap.get(datatype, None)
             if np_dtype is None:
                 raise PicoSDKException("Invalid datatype selected for buffer")
-             
+
             # Create buffer based on ratio mode
             if ratio_mode == cst.RATIO_MODE.AGGREGATE:
                 buffer = np.zeros((captures, samples, 2), dtype=np_dtype)
@@ -1929,7 +1929,7 @@ class PicoScopeBase:
 
         # Return values
         actual_samples, _ = self.get_values_bulk(
-            samples, from_segment_index=segment, to_segment_index=captures - 1, ratio=ratio, 
+            samples, from_segment_index=segment, to_segment_index=captures - 1, ratio=ratio,
             ratio_mode=ratio_mode, start_index=start_index)
 
         # Reduce samples based on actual samples
@@ -2015,7 +2015,7 @@ class PicoScopeBase:
             auto_stop: Whether the driver should stop when the buffer is full. Defaults to 0.
             ratio: Down sampling ratio. Defaults to 0.
             ratio_mode: Down sampling mode. Defaults to RATIO_MODE.RAW.
-            overview_buffer_size: Size of the overview buffer. Only applicable for ps5000a. 
+            overview_buffer_size: Size of the overview buffer. Only applicable for ps5000a.
                 Defaults to None.
         Returns:
             float: The actual sample interval configured by the driver.
@@ -2027,7 +2027,7 @@ class PicoScopeBase:
         else:
             c_sample_interval = ctypes.c_double(sample_interval)
 
-        # Convert max_pre_trigger_samples and max_post_trigger_samples to ctypes 
+        # Convert max_pre_trigger_samples and max_post_trigger_samples to ctypes
         # depending on the device type (32 or 64 bit device)
         if self._unit_prefix_n in ['ps5000a', 'ps4000a']:
             max_pre_trigger_samples = ctypes.c_uint32(max_pre_trigger_samples)
