@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../../img/favicon.ico" />
+    <title>Channel Configuration - pyPicoSDK</title>
+    <link rel="stylesheet" href="../../../css/theme.css" />
+    <link rel="stylesheet" href="../../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../../assets/_mkdocstrings.css" rel="stylesheet" />
+        <link href="../../../css/mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Channel Configuration";
+        var mkdocs_page_input_path = "ref/ps6000a/channel.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../../.." class="icon icon-home"> pyPicoSDK
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../../introduction/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" >PicoScope 6000E (ps6000a) Functions</a>
+    <ul class="current">
+                <li class="toctree-l2"><a class="reference internal" href="../init/">Initializing ps6000a</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../setup/">Setup / Initialization</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../firmware/">Firmware / Updates</a>
+                </li>
+                <li class="toctree-l2 current"><a class="reference internal current" href="#">Channel Configuration</a>
+    <ul class="current">
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps6000a.get_accessory_info">get_accessory_info</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps6000a.get_adc_limits">get_adc_limits</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps6000a.get_analogue_offset_limits">get_analogue_offset_limits</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps6000a.get_channel_combinations">get_channel_combinations</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps6000a.report_all_channels_overvoltage_trip_status">report_all_channels_overvoltage_trip_status</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps6000a.reset_channels_and_report_all_channels_overvoltage_trip_status">reset_channels_and_report_all_channels_overvoltage_trip_status</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps6000a.set_all_channels_off">set_all_channels_off</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps6000a.set_channel">set_channel</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps6000a.set_channel_off">set_channel_off</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps6000a.set_channel_on">set_channel_on</a>
+    </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../digital/">Digital Port Control</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../trigger/">Trigger Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../siggen/">Signal Generator</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../buffers/">Memory / Buffer Management</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../conversions/">Built-in Conversions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../retrieval/">Data Retrieval</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >PicoScope 3000E (psospa) Functions</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/init/">Initializing psospa</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/setup/">Setup / Initialization</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/firmware/">Firmware / Updates</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/channel/">Channel Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/digital/">Digital Port Control</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/trigger/">Trigger Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/siggen/">Signal Generator</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/buffers/">Memory / Buffer Management</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/conversions/">Built-in Conversions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/retrieval/">Data Retrieval</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/led/">LED Control</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >PicoScope 5000D (ps5000a) Functions</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/init/">Initializing ps5000a</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/setup/">Setup / Initialization</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/channel/">Channel Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/trigger/">Trigger Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/siggen/">Signal Generator</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/buffers/">Memory / Buffer Management</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/conversions/">Built-in Conversions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/retrieval/">Data Retrieval</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/ets/">ETS Setup</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../general/">General Functions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../constants/">Constants/Enums</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../configuration/">Config/Overrides</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Development</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/issues/">Issues</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/changelog/">Changelog</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/current/">Current Support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/roadmap/">Upcoming Roadmap</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../..">pyPicoSDK</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Reference</li>
+          <li class="breadcrumb-item">PicoScope 6000E (ps6000a) Functions</li>
+      <li class="breadcrumb-item active">Channel Configuration</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="channel-configuration">Channel Configuration</h1>
+<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pypicosdk.base.PicoScopeBase">PicoScopeBase</span></code>, <code><span title="pypicosdk.shared.ps6000a_psospa.shared_ps6000a_psospa">shared_ps6000a_psospa</span></code>, <code><span title="pypicosdk.shared.ps6000a_ps4000a.shared_4000a_6000a">shared_4000a_6000a</span></code>, <code><span title="pypicosdk.shared._ps5000a_ps6000a.Sharedps5000aPs6000a">Sharedps5000aPs6000a</span></code></p>
+
+
+
+        <p>PicoScope 6000 (A) API specific functions</p>
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Methods:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="get_accessory_info(channel, info) (pypicosdk.pypicosdk.ps6000a.get_accessory_info)" href="#pypicosdk.pypicosdk.ps6000a.get_accessory_info">get_accessory_info</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Return accessory details for the given channel.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="get_adc_limits(datatype=None) (pypicosdk.pypicosdk.ps6000a.get_adc_limits)" href="#pypicosdk.pypicosdk.ps6000a.get_adc_limits">get_adc_limits</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Gets the ADC limits for specified devices.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="get_analogue_offset_limits(range, coupling) (pypicosdk.pypicosdk.ps6000a.get_analogue_offset_limits)" href="#pypicosdk.pypicosdk.ps6000a.get_analogue_offset_limits">get_analogue_offset_limits</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Get the allowed analogue offset range for a specified <code>range</code> and <code>coupling</code>.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="get_channel_combinations(timebase, return_type='string') (pypicosdk.pypicosdk.ps6000a.get_channel_combinations)" href="#pypicosdk.pypicosdk.ps6000a.get_channel_combinations">get_channel_combinations</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Get the available channel combinations at a given timebase for the ps6000a.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="report_all_channels_overvoltage_trip_status() (pypicosdk.pypicosdk.ps6000a.report_all_channels_overvoltage_trip_status)" href="#pypicosdk.pypicosdk.ps6000a.report_all_channels_overvoltage_trip_status">report_all_channels_overvoltage_trip_status</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Return the overvoltage trip status for each channel.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="reset_channels_and_report_all_channels_overvoltage_trip_status() (pypicosdk.pypicosdk.ps6000a.reset_channels_and_report_all_channels_overvoltage_trip_status)" href="#pypicosdk.pypicosdk.ps6000a.reset_channels_and_report_all_channels_overvoltage_trip_status">reset_channels_and_report_all_channels_overvoltage_trip_status</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Reset channels and return overvoltage trip status for each.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="set_all_channels_off() (pypicosdk.pypicosdk.ps6000a.set_all_channels_off)" href="#pypicosdk.pypicosdk.ps6000a.set_all_channels_off">set_all_channels_off</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Turns all channels off, based on unit number of channels</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="set_channel(channel, range=RANGE.V1, enabled=True, coupling=COUPLING.DC, offset=0.0, bandwidth=BANDWIDTH_CH.FULL, probe_scale=1.0) (pypicosdk.pypicosdk.ps6000a.set_channel)" href="#pypicosdk.pypicosdk.ps6000a.set_channel">set_channel</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Enable/disable a channel and specify certain variables i.e. range, coupling, offset, etc.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="set_channel_off(channel) (pypicosdk.pypicosdk.ps6000a.set_channel_off)" href="#pypicosdk.pypicosdk.ps6000a.set_channel_off">set_channel_off</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Turn off (disable) a specified channel.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="set_channel_on(channel, range, coupling=cst.COUPLING.DC, offset=0.0, bandwidth=cst.BANDWIDTH_CH.FULL, probe_scale=1.0) (pypicosdk.pypicosdk.ps6000a.set_channel_on)" href="#pypicosdk.pypicosdk.ps6000a.set_channel_on">set_channel_on</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Enable and configure a specific channel on the device with given parameters.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps6000a.get_accessory_info" class="doc doc-heading">
+            <code class="highlight language-python">get_accessory_info(channel, info)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return accessory details for the given channel.
+This wraps the driver <code>GetAccessoryInfo</code> call which retrieves
+information about any accessory attached to <code>channel</code>.
+Args:
+    channel: Channel the accessory is connected to.
+    info: Information field requested from :class:<code>UNIT_INFO</code>.
+Returns:
+    str: Information string provided by the driver.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps6000a.get_adc_limits" class="doc doc-heading">
+            <code class="highlight language-python">get_adc_limits(datatype=None)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Gets the ADC limits for specified devices.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>datatype</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="DATA_TYPE (pypicosdk.constants.DATA_TYPE)" href="../../constants/#pypicosdk.constants.DATA_TYPE">DATA_TYPE</a></code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>The datatype to update the ADC limits for.
+If None, the last datatype will be used.
+Defaults to Int16.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>tuple</code></b>(                  <code><span title="tuple">tuple</span></code>
+)              –
+              <div class="doc-md-description">
+                <p>(minimum value, maximum value)</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Raises:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="pypicosdk._exceptions.PicoSDKException">PicoSDKException</span></code>
+              –
+              <div class="doc-md-description">
+                <p>If device hasn't been initialized.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps6000a.get_analogue_offset_limits" class="doc doc-heading">
+            <code class="highlight language-python">get_analogue_offset_limits(range, coupling)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get the allowed analogue offset range for a specified <code>range</code> and <code>coupling</code>.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>range</code></b>
+                  (<code><span title="RANGE">RANGE</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Voltage range of channel.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>coupling</code></b>
+                  (<code><span title="COUPLING">COUPLING</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>AC/DC/DC 50 Ohm coupling of selected channel.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="tuple">tuple</span>[<span title="float">float</span>, <span title="float">float</span>]</code>
+              –
+              <div class="doc-md-description">
+                <p>tuple[float, float]: Maximum and minimum allowed analogue offset values.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps6000a.get_channel_combinations" class="doc doc-heading">
+            <code class="highlight language-python">get_channel_combinations(timebase, return_type='string')</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get the available channel combinations at a given timebase for the ps6000a.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>timebase</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Timebase to use for the channel combinations. Can be calculated using
+either <code>sample_rate_to_timebase()</code> or <code>interval_to_timebase()</code>.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>return_type</code></b>
+                  (<code><span title="pypicosdk.constants.ReturnTypeMap">ReturnTypeMap</span></code>, default:
+                      <code>&#39;string&#39;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Type of return value. Defaults to 'string'.
+Can be 'string' or 'enum'.
+If 'string', returns the channel combinations as a list of strings.
+If 'enum', returns the channel combinations as a list of enums.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="list">list</span>[<span title="list">list</span>[<span title="str">str</span>] | <span title="list">list</span>[<span title="int">int</span>]]</code>
+              –
+              <div class="doc-md-description">
+                <p>list[list[str] | list[int]]: List of channel combinations.
+Each list contains the channel combinations for a given timebase.
+If return_type is 'string', the list contains the channel combinations as a list of
+strings. If return_type is 'enum', the list contains the channel combinations as a
+list of channel enum values.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps6000a.report_all_channels_overvoltage_trip_status" class="doc doc-heading">
+            <code class="highlight language-python">report_all_channels_overvoltage_trip_status()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the overvoltage trip status for each channel.
+This wraps <code>ps6000aReportAllChannelsOvervoltageTripStatus</code> to
+query whether any channel's 50 Ω input protection has tripped.
+Returns:
+    list[PICO_CHANNEL_OVERVOLTAGE_TRIPPED]: Trip status for all
+    channels.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps6000a.reset_channels_and_report_all_channels_overvoltage_trip_status" class="doc doc-heading">
+            <code class="highlight language-python">reset_channels_and_report_all_channels_overvoltage_trip_status()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Reset channels and return overvoltage trip status for each.
+Wraps <code>ps6000aResetChannelsAndReportAllChannelsOvervoltageTripStatus</code>.
+Returns:
+    list[PICO_CHANNEL_OVERVOLTAGE_TRIPPED]: Trip status for all channels.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps6000a.set_all_channels_off" class="doc doc-heading">
+            <code class="highlight language-python">set_all_channels_off()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Turns all channels off, based on unit number of channels</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps6000a.set_channel" class="doc doc-heading">
+            <code class="highlight language-python">set_channel(channel, range=RANGE.V1, enabled=True, coupling=COUPLING.DC, offset=0.0, bandwidth=BANDWIDTH_CH.FULL, probe_scale=1.0)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Enable/disable a channel and specify certain variables i.e. range, coupling, offset, etc.</p>
+<p>For the ps6000a drivers, this combines set_channel_on/off to a single function.
+Set channel on/off by adding enabled=True/False</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>channel</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="CHANNEL (pypicosdk.constants.CHANNEL)" href="../../constants/#pypicosdk.constants.CHANNEL">CHANNEL</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>Channel to setup.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>range</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="RANGE (pypicosdk.constants.RANGE)" href="../../constants/#pypicosdk.constants.RANGE">RANGE</a></code>, default:
+                      <code><span title="pypicosdk.constants.RANGE.V1">V1</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Voltage range of channel.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>enabled</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>True</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Enable or disable channel.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>coupling</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="COUPLING (pypicosdk.constants.COUPLING)" href="../../constants/#pypicosdk.constants.COUPLING">COUPLING</a></code>, default:
+                      <code><span title="pypicosdk.constants.COUPLING.DC">DC</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>AC/DC/DC 50 Ohm coupling of selected channel.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>offset</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0.0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Analog offset in volts (V) of selected channel.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>bandwidth</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="BANDWIDTH_CH (pypicosdk.constants.BANDWIDTH_CH)" href="../../constants/#pypicosdk.constants.BANDWIDTH_CH">BANDWIDTH_CH</a></code>, default:
+                      <code><span title="pypicosdk.constants.BANDWIDTH_CH.FULL">FULL</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Bandwidth of channel (selected models).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>probe_scale</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>1.0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Probe attenuation factor e.g. 10 for x10 probe.
+Default value of 1.0 (x1).</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps6000a.set_channel_off" class="doc doc-heading">
+            <code class="highlight language-python">set_channel_off(channel)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Turn off (disable) a specified channel.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>channel</code></b>
+                  (<code><span title="str">str</span> | <a class="autorefs autorefs-internal" title="CHANNEL (pypicosdk.constants.CHANNEL)" href="../../constants/#pypicosdk.constants.CHANNEL">CHANNEL</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>Specified channel to turn off.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>int</code></b>(                  <code><span title="int">int</span></code>
+)              –
+              <div class="doc-md-description">
+                <p>Status from PicoScope.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps6000a.set_channel_on" class="doc doc-heading">
+            <code class="highlight language-python">set_channel_on(channel, range, coupling=cst.COUPLING.DC, offset=0.0, bandwidth=cst.BANDWIDTH_CH.FULL, probe_scale=1.0)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Enable and configure a specific channel on the device with given parameters.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>channel</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="CHANNEL (pypicosdk.constants.CHANNEL)" href="../../constants/#pypicosdk.constants.CHANNEL">CHANNEL</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>The channel to enable (e.g., CHANNEL.A, CHANNEL.B).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>range</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="RANGE (pypicosdk.constants.RANGE)" href="../../constants/#pypicosdk.constants.RANGE">RANGE</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>The input voltage range to set for the channel.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>coupling</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="COUPLING (pypicosdk.constants.COUPLING)" href="../../constants/#pypicosdk.constants.COUPLING">COUPLING</a></code>, default:
+                      <code><span title="pypicosdk.constants.COUPLING.DC">DC</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>The coupling mode to use (e.g., DC, AC). Defaults to DC.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>offset</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>0.0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>DC offset to apply to the channel input, in volts. Defaults to 0.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>bandwidth</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="BANDWIDTH_CH (pypicosdk.constants.BANDWIDTH_CH)" href="../../constants/#pypicosdk.constants.BANDWIDTH_CH">BANDWIDTH_CH</a></code>, default:
+                      <code><span title="pypicosdk.constants.BANDWIDTH_CH.FULL">FULL</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Bandwidth limit setting for the channel. Defaults to full bandwidth.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>probe_scale</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>1.0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Probe attenuation factor e.g. 10 for x10 probe.
+    Default value of 1.0 (x1).</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../firmware/" class="btn btn-neutral float-left" title="Firmware / Updates"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../digital/" class="btn btn-neutral float-right" title="Digital Port Control">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../firmware/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../digital/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../../..";</script>
+    <script src="../../../js/theme_extra.js"></script>
+    <script src="../../../js/theme.js"></script>
+      <script src="../../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../../img/favicon.ico" />
+    <title>Signal Generator - pyPicoSDK</title>
+    <link rel="stylesheet" href="../../../css/theme.css" />
+    <link rel="stylesheet" href="../../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../../assets/_mkdocstrings.css" rel="stylesheet" />
+        <link href="../../../css/mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Signal Generator";
+        var mkdocs_page_input_path = "ref/psospa/siggen.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../../.." class="icon icon-home"> pyPicoSDK
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../../introduction/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >PicoScope 6000E (ps6000a) Functions</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/init/">Initializing ps6000a</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/setup/">Setup / Initialization</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/firmware/">Firmware / Updates</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/channel/">Channel Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/digital/">Digital Port Control</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/trigger/">Trigger Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/siggen/">Signal Generator</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/buffers/">Memory / Buffer Management</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/conversions/">Built-in Conversions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/retrieval/">Data Retrieval</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" >PicoScope 3000E (psospa) Functions</a>
+    <ul class="current">
+                <li class="toctree-l2"><a class="reference internal" href="../init/">Initializing psospa</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../setup/">Setup / Initialization</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../firmware/">Firmware / Updates</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../channel/">Channel Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../digital/">Digital Port Control</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../trigger/">Trigger Configuration</a>
+                </li>
+                <li class="toctree-l2 current"><a class="reference internal current" href="#">Signal Generator</a>
+    <ul class="current">
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.set_siggen">set_siggen</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.set_siggen_awg">set_siggen_awg</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.siggen_apply">siggen_apply</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.siggen_frequency_limits">siggen_frequency_limits</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.siggen_frequency_sweep">siggen_frequency_sweep</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.siggen_limits">siggen_limits</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.siggen_pause">siggen_pause</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.siggen_phase">siggen_phase</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.siggen_phase_sweep">siggen_phase_sweep</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.siggen_restart">siggen_restart</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.siggen_set_duty_cycle">siggen_set_duty_cycle</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.siggen_set_frequency">siggen_set_frequency</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.siggen_set_range">siggen_set_range</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.siggen_set_waveform">siggen_set_waveform</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.siggen_software_trigger_control">siggen_software_trigger_control</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.siggen_trigger">siggen_trigger</a>
+    </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../buffers/">Memory / Buffer Management</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../conversions/">Built-in Conversions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../retrieval/">Data Retrieval</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../led/">LED Control</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >PicoScope 5000D (ps5000a) Functions</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/init/">Initializing ps5000a</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/setup/">Setup / Initialization</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/channel/">Channel Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/trigger/">Trigger Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/siggen/">Signal Generator</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/buffers/">Memory / Buffer Management</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/conversions/">Built-in Conversions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/retrieval/">Data Retrieval</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/ets/">ETS Setup</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../general/">General Functions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../constants/">Constants/Enums</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../configuration/">Config/Overrides</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Development</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/issues/">Issues</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/changelog/">Changelog</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/current/">Current Support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/roadmap/">Upcoming Roadmap</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../..">pyPicoSDK</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Reference</li>
+          <li class="breadcrumb-item">PicoScope 3000E (psospa) Functions</li>
+      <li class="breadcrumb-item active">Signal Generator</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="signal-generator">Signal Generator</h1>
+<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pypicosdk.base.PicoScopeBase">PicoScopeBase</span></code>, <code><span title="pypicosdk.shared.ps6000a_psospa.shared_ps6000a_psospa">shared_ps6000a_psospa</span></code></p>
+
+
+
+        <p>PicoScope OSP (A) API specific functions</p>
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Methods:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="set_siggen(frequency, pk2pk, wave_type, offset=0.0, duty=50, sweep=False, stop_freq=None, inc_freq=1, dwell_time=0.001, sweep_type=SWEEP_TYPE.UP) (pypicosdk.pypicosdk.psospa.set_siggen)" href="#pypicosdk.pypicosdk.psospa.set_siggen">set_siggen</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Configures and applies the signal generator settings.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="set_siggen_awg(frequency, pk2pk, buffer, offset=0.0, duty=50, sweep=False, stop_freq=None, inc_freq=1, dwell_time=0.001, sweep_type=SWEEP_TYPE.UP) (pypicosdk.pypicosdk.psospa.set_siggen_awg)" href="#pypicosdk.pypicosdk.psospa.set_siggen_awg">set_siggen_awg</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Arbitrary Waveform Generation - Generates a signal from a given buffer.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="siggen_apply(enabled=1, sweep_enabled=0, trigger_enabled=0, auto_clock_optimise_enabled=0, override_auto_clock_prescale=0) (pypicosdk.pypicosdk.psospa.siggen_apply)" href="#pypicosdk.pypicosdk.psospa.siggen_apply">siggen_apply</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Sets the signal generator running using parameters previously configured.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="siggen_frequency_limits(wave_type, num_samples, start_frequency, sweep_enabled, manual_dac_clock_frequency=None, manual_prescale_ratio=None) (pypicosdk.pypicosdk.psospa.siggen_frequency_limits)" href="#pypicosdk.pypicosdk.psospa.siggen_frequency_limits">siggen_frequency_limits</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Query frequency sweep limits for the signal generator.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="siggen_frequency_sweep(stop_frequency_hz, frequency_increment, dwell_time_s, sweep_type) (pypicosdk.pypicosdk.psospa.siggen_frequency_sweep)" href="#pypicosdk.pypicosdk.psospa.siggen_frequency_sweep">siggen_frequency_sweep</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Configure frequency sweep parameters.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="siggen_limits(parameter) (pypicosdk.pypicosdk.psospa.siggen_limits)" href="#pypicosdk.pypicosdk.psospa.siggen_limits">siggen_limits</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Query signal generator parameter limits.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="siggen_pause() (pypicosdk.pypicosdk.psospa.siggen_pause)" href="#pypicosdk.pypicosdk.psospa.siggen_pause">siggen_pause</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Pause the signal generator.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="siggen_phase(delta_phase) (pypicosdk.pypicosdk.psospa.siggen_phase)" href="#pypicosdk.pypicosdk.psospa.siggen_phase">siggen_phase</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Set the signal generator phase using <code>delta_phase</code>.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="siggen_phase_sweep(stop_delta_phase, delta_phase_increment, dwell_count, sweep_type) (pypicosdk.pypicosdk.psospa.siggen_phase_sweep)" href="#pypicosdk.pypicosdk.psospa.siggen_phase_sweep">siggen_phase_sweep</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Configure a phase sweep for the signal generator.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="siggen_restart() (pypicosdk.pypicosdk.psospa.siggen_restart)" href="#pypicosdk.pypicosdk.psospa.siggen_restart">siggen_restart</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Restart the signal generator after a pause.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="siggen_set_duty_cycle(duty) (pypicosdk.pypicosdk.psospa.siggen_set_duty_cycle)" href="#pypicosdk.pypicosdk.psospa.siggen_set_duty_cycle">siggen_set_duty_cycle</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Set duty cycle of SigGen in percentage.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="siggen_set_frequency(frequency) (pypicosdk.pypicosdk.psospa.siggen_set_frequency)" href="#pypicosdk.pypicosdk.psospa.siggen_set_frequency">siggen_set_frequency</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Set frequency of SigGen in Hz.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="siggen_set_range(pk2pk, offset=0.0) (pypicosdk.pypicosdk.psospa.siggen_set_range)" href="#pypicosdk.pypicosdk.psospa.siggen_set_range">siggen_set_range</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Set mV range of SigGen (6000A).</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="siggen_set_waveform(wave_type, buffer=None) (pypicosdk.pypicosdk.psospa.siggen_set_waveform)" href="#pypicosdk.pypicosdk.psospa.siggen_set_waveform">siggen_set_waveform</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Set waveform type for SigGen (6000A). If arbitrary mode is selected,</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="siggen_software_trigger_control(trigger_state) (pypicosdk.pypicosdk.psospa.siggen_software_trigger_control)" href="#pypicosdk.pypicosdk.psospa.siggen_software_trigger_control">siggen_software_trigger_control</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Control software triggering for the signal generator.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="siggen_trigger(trigger_type, trigger_source, cycles, auto_trigger_ps=0) (pypicosdk.pypicosdk.psospa.siggen_trigger)" href="#pypicosdk.pypicosdk.psospa.siggen_trigger">siggen_trigger</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Configure signal generator triggering.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.set_siggen" class="doc doc-heading">
+            <code class="highlight language-python">set_siggen(frequency, pk2pk, wave_type, offset=0.0, duty=50, sweep=False, stop_freq=None, inc_freq=1, dwell_time=0.001, sweep_type=SWEEP_TYPE.UP)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Configures and applies the signal generator settings.</p>
+<p>Sets up the signal generator with the specified waveform type, frequency,
+amplitude (peak-to-peak), offset, and duty cycle.</p>
+<p>If sweep is enabled and the sweep-related args are given, the SigGen will sweep.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>frequency</code></b>
+                  (<code><span title="float">float</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Signal frequency in hertz (Hz).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>pk2pk</code></b>
+                  (<code><span title="float">float</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Peak-to-peak voltage in volts (V).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>wave_type</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="WAVEFORM (pypicosdk.constants.WAVEFORM)" href="../../constants/#pypicosdk.constants.WAVEFORM">WAVEFORM</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>Waveform type (e.g., WAVEFORM.SINE, WAVEFORM.SQUARE).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>offset</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>0.0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Voltage offset in volts (V).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>duty</code></b>
+                  (<code><span title="int">int</span> or <span title="float">float</span></code>, default:
+                      <code>50</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Duty cycle as a percentage (0-100).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>sweep</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>False</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>If True, sweep is enabled, fill in the following:</p>
+              </div>
+            </li>
+            <li>
+              <b><code>stop_freq</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Frequency to stop sweep at in Hertz (Hz). Defaults to None.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>inc_freq</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>1</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Frequency to increment (or step) in hertz (Hz). Defaults to 1 Hz.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>dwell_time</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>0.001</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Time to wait between frequency steps in seconds (s). Defaults to 1 ms.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>sweep_type</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="SWEEP_TYPE (pypicosdk.constants.SWEEP_TYPE)" href="../../constants/#pypicosdk.constants.SWEEP_TYPE">SWEEP_TYPE</a></code>, default:
+                      <code><span title="pypicosdk.constants.SWEEP_TYPE.UP">UP</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Direction of sweep <code>[UP, DOWN, UPDOWN, DOWNUP]</code>. Defaults to UP.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>dict</code></b>(                  <code><span title="dict">dict</span></code>
+)              –
+              <div class="doc-md-description">
+                <p>Returns dictionary of the actual achieved values.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.set_siggen_awg" class="doc doc-heading">
+            <code class="highlight language-python">set_siggen_awg(frequency, pk2pk, buffer, offset=0.0, duty=50, sweep=False, stop_freq=None, inc_freq=1, dwell_time=0.001, sweep_type=SWEEP_TYPE.UP)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Arbitrary Waveform Generation - Generates a signal from a given buffer.</p>
+<p>Sets up the signal generator with a specified frequency, amplitude (peak-to-peak),
+offset, and duty cycle.</p>
+<p>If sweep is enabled and the sweep-related args are given, the SigGen will sweep.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>frequency</code></b>
+                  (<code><span title="float">float</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Signal frequency in hertz (Hz).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>pk2pk</code></b>
+                  (<code><span title="float">float</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Peak-to-peak voltage in volts (V).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>buffer</code></b>
+                  (<code><span title="numpy.ndarray">ndarray</span> | <span title="list">list</span></code>)
+              –
+              <div class="doc-md-description">
+                <p><em>description</em></p>
+              </div>
+            </li>
+            <li>
+              <b><code>offset</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>0.0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Voltage offset in volts (V). Defaults to 0.0.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>duty</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>50</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Duty cycle as a percentage (0–100). Defaults to 50.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>sweep</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>False</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>If True, sweep is enabled, fill in the following:</p>
+              </div>
+            </li>
+            <li>
+              <b><code>stop_freq</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Frequency to stop sweep at in Hertz (Hz). Defaults to None.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>inc_freq</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>1</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Frequency to increment (or step) in hertz (Hz). Defaults to 1.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>dwell_time</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>0.001</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Time to wait between frequency steps in seconds (s). Defaults to 0.001.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>sweep_type</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="SWEEP_TYPE (pypicosdk.constants.SWEEP_TYPE)" href="../../constants/#pypicosdk.constants.SWEEP_TYPE">SWEEP_TYPE</a></code>, default:
+                      <code><span title="pypicosdk.constants.SWEEP_TYPE.UP">UP</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Direction of sweep <code>[UP, DOWN, UPDOWN, DOWNUP]</code>. Defaults to UP.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Raises:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="pypicosdk._exceptions.PicoSDKException">PicoSDKException</span></code>
+              –
+              <div class="doc-md-description">
+                <p><em>description</em></p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>dict</code></b>(                  <code><span title="dict">dict</span></code>
+)              –
+              <div class="doc-md-description">
+                <p><em>description</em></p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.siggen_apply" class="doc doc-heading">
+            <code class="highlight language-python">siggen_apply(enabled=1, sweep_enabled=0, trigger_enabled=0, auto_clock_optimise_enabled=0, override_auto_clock_prescale=0)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Sets the signal generator running using parameters previously configured.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>enabled</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>1</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>SigGen Enabled,</p>
+              </div>
+            </li>
+            <li>
+              <b><code>sweep_enabled</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Sweep Enabled,</p>
+              </div>
+            </li>
+            <li>
+              <b><code>trigger_enabled</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>SigGen trigger enabled,</p>
+              </div>
+            </li>
+            <li>
+              <b><code>auto_clock_optimise_enabled</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Auto Clock Optimisation,</p>
+              </div>
+            </li>
+            <li>
+              <b><code>override_auto_clock_prescale</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Override Clock Prescale,</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>dict</code></b>(                  <code><span title="dict">dict</span></code>
+)              –
+              <div class="doc-md-description">
+                <p>Returns dictionary of the actual achieved values.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.siggen_frequency_limits" class="doc doc-heading">
+            <code class="highlight language-python">siggen_frequency_limits(wave_type, num_samples, start_frequency, sweep_enabled, manual_dac_clock_frequency=None, manual_prescale_ratio=None)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Query frequency sweep limits for the signal generator.
+Args:
+    wave_type: Waveform type.
+    num_samples: Number of samples in the arbitrary waveform buffer.
+    start_frequency: Starting frequency in Hz.
+    sweep_enabled: Whether a sweep is enabled.
+    manual_dac_clock_frequency: Optional manual DAC clock frequency.
+    manual_prescale_ratio: Optional manual DAC prescale ratio.
+Returns:
+    dict: Frequency limit information with keys <code>max_stop_frequency</code>,
+    <code>min_frequency_step</code>, <code>max_frequency_step</code>, <code>min_dwell_time</code> and
+    <code>max_dwell_time</code>.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.siggen_frequency_sweep" class="doc doc-heading">
+            <code class="highlight language-python">siggen_frequency_sweep(stop_frequency_hz, frequency_increment, dwell_time_s, sweep_type)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Configure frequency sweep parameters.
+Args:
+    stop_frequency_hz: End frequency of the sweep in Hz.
+    frequency_increment: Increment value in Hz.
+    dwell_time_s: Time to dwell at each frequency in seconds.
+    sweep_type: Sweep direction.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.siggen_limits" class="doc doc-heading">
+            <code class="highlight language-python">siggen_limits(parameter)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Query signal generator parameter limits.
+Args:
+    parameter: Signal generator parameter to query.
+Returns:
+    dict: Dictionary with keys <code>min</code>, <code>max</code> and <code>step</code>.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.siggen_pause" class="doc doc-heading">
+            <code class="highlight language-python">siggen_pause()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Pause the signal generator.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.siggen_phase" class="doc doc-heading">
+            <code class="highlight language-python">siggen_phase(delta_phase)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Set the signal generator phase using <code>delta_phase</code>.</p>
+<p>The signal generator uses direct digital synthesis (DDS) with a 32-bit phase accumulator that indicates the
+present location in the waveform. The top bits of the phase accumulator are used as an index into a buffer
+containing the arbitrary waveform. The remaining bits act as the fractional part of the index, enabling highresolution control of output frequency and allowing the generation of lower frequencies.
+The signal generator steps through the waveform by adding a deltaPhase value between 1 and
+phaseAccumulatorSize-1 to the phase accumulator every dacPeriod (= 1/dacFrequency).</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>delta_phase</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Phase offset to apply.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.siggen_phase_sweep" class="doc doc-heading">
+            <code class="highlight language-python">siggen_phase_sweep(stop_delta_phase, delta_phase_increment, dwell_count, sweep_type)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Configure a phase sweep for the signal generator.
+Args:
+    stop_delta_phase: End phase in DAC counts.
+    delta_phase_increment: Increment value in DAC counts.
+    dwell_count: Number of DAC cycles to dwell at each phase step.
+    sweep_type: Sweep direction.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.siggen_restart" class="doc doc-heading">
+            <code class="highlight language-python">siggen_restart()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Restart the signal generator after a pause.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.siggen_set_duty_cycle" class="doc doc-heading">
+            <code class="highlight language-python">siggen_set_duty_cycle(duty)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Set duty cycle of SigGen in percentage.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>duty</code></b>
+                  (<code><span title="float">float</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Duty cycle in %.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.siggen_set_frequency" class="doc doc-heading">
+            <code class="highlight language-python">siggen_set_frequency(frequency)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Set frequency of SigGen in Hz.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>frequency</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Frequency in Hz.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.siggen_set_range" class="doc doc-heading">
+            <code class="highlight language-python">siggen_set_range(pk2pk, offset=0.0)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Set mV range of SigGen (6000A).</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>pk2pk</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Peak to peak of signal in volts (V).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>offset</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0.0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Offset of signal in volts (V).</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.siggen_set_waveform" class="doc doc-heading">
+            <code class="highlight language-python">siggen_set_waveform(wave_type, buffer=None)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Set waveform type for SigGen (6000A). If arbitrary mode is selected,
+a buffer of ADC samples is needed.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>wave_type</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="WAVEFORM (pypicosdk.constants.WAVEFORM)" href="../../constants/#pypicosdk.constants.WAVEFORM">WAVEFORM</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>Waveform type i.e. WAVEFORM.SINE.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>buffer</code></b>
+                  (<code><span title="numpy.ndarray">ndarray</span> | None</code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>np.array buffer to be used in WAVEFORM.ARBITRARY mode.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.siggen_software_trigger_control" class="doc doc-heading">
+            <code class="highlight language-python">siggen_software_trigger_control(trigger_state)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Control software triggering for the signal generator.
+Args:
+    trigger_state: <code>1</code> to enable the software trigger, <code>0</code> to disable.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.siggen_trigger" class="doc doc-heading">
+            <code class="highlight language-python">siggen_trigger(trigger_type, trigger_source, cycles, auto_trigger_ps=0)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Configure signal generator triggering.
+Args:
+    trigger_type: Trigger type to use.
+    trigger_source: Source for the trigger.
+    cycles: Number of cycles before the trigger occurs.
+    auto_trigger_ps: Time in picoseconds before auto-triggering.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../trigger/" class="btn btn-neutral float-left" title="Trigger Configuration"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../buffers/" class="btn btn-neutral float-right" title="Memory / Buffer Management">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../trigger/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../buffers/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../../..";</script>
+    <script src="../../../js/theme_extra.js"></script>
+    <script src="../../../js/theme.js"></script>
+      <script src="../../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

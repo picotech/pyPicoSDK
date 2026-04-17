@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../../img/favicon.ico" />
+    <title>Setup / Initialization - pyPicoSDK</title>
+    <link rel="stylesheet" href="../../../css/theme.css" />
+    <link rel="stylesheet" href="../../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../../assets/_mkdocstrings.css" rel="stylesheet" />
+        <link href="../../../css/mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Setup / Initialization";
+        var mkdocs_page_input_path = "ref/psospa/setup.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../../.." class="icon icon-home"> pyPicoSDK
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../../introduction/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >PicoScope 6000E (ps6000a) Functions</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/init/">Initializing ps6000a</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/setup/">Setup / Initialization</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/firmware/">Firmware / Updates</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/channel/">Channel Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/digital/">Digital Port Control</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/trigger/">Trigger Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/siggen/">Signal Generator</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/buffers/">Memory / Buffer Management</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/conversions/">Built-in Conversions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/retrieval/">Data Retrieval</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" >PicoScope 3000E (psospa) Functions</a>
+    <ul class="current">
+                <li class="toctree-l2"><a class="reference internal" href="../init/">Initializing psospa</a>
+                </li>
+                <li class="toctree-l2 current"><a class="reference internal current" href="#">Setup / Initialization</a>
+    <ul class="current">
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.close_unit">close_unit</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.get_device_resolution">get_device_resolution</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.get_enumerated_units">get_enumerated_units</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.get_unit_info">get_unit_info</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.get_unit_serial">get_unit_serial</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.open_unit">open_unit</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.ping_unit">ping_unit</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.set_device_resolution">set_device_resolution</a>
+    </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../firmware/">Firmware / Updates</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../channel/">Channel Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../digital/">Digital Port Control</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../trigger/">Trigger Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../siggen/">Signal Generator</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../buffers/">Memory / Buffer Management</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../conversions/">Built-in Conversions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../retrieval/">Data Retrieval</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../led/">LED Control</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >PicoScope 5000D (ps5000a) Functions</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/init/">Initializing ps5000a</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/setup/">Setup / Initialization</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/channel/">Channel Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/trigger/">Trigger Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/siggen/">Signal Generator</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/buffers/">Memory / Buffer Management</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/conversions/">Built-in Conversions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/retrieval/">Data Retrieval</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/ets/">ETS Setup</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../general/">General Functions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../constants/">Constants/Enums</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../configuration/">Config/Overrides</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Development</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/issues/">Issues</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/changelog/">Changelog</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/current/">Current Support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/roadmap/">Upcoming Roadmap</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../..">pyPicoSDK</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Reference</li>
+          <li class="breadcrumb-item">PicoScope 3000E (psospa) Functions</li>
+      <li class="breadcrumb-item active">Setup / Initialization</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="setup-initialization">Setup / Initialization</h1>
+<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pypicosdk.base.PicoScopeBase">PicoScopeBase</span></code>, <code><span title="pypicosdk.shared.ps6000a_psospa.shared_ps6000a_psospa">shared_ps6000a_psospa</span></code></p>
+
+
+
+        <p>PicoScope OSP (A) API specific functions</p>
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Methods:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="close_unit() (pypicosdk.pypicosdk.psospa.close_unit)" href="#pypicosdk.pypicosdk.psospa.close_unit">close_unit</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Closes the PicoScope device and releases the hardware handle.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="get_device_resolution() (pypicosdk.pypicosdk.psospa.get_device_resolution)" href="#pypicosdk.pypicosdk.psospa.get_device_resolution">get_device_resolution</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Return the currently configured resolution.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="get_enumerated_units() (pypicosdk.pypicosdk.psospa.get_enumerated_units)" href="#pypicosdk.pypicosdk.psospa.get_enumerated_units">get_enumerated_units</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Returns count, serials and serial string length of a specific PicoScope unit.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="get_unit_info(unit_info) (pypicosdk.pypicosdk.psospa.get_unit_info)" href="#pypicosdk.pypicosdk.psospa.get_unit_info">get_unit_info</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Get specified information from unit. Use UNIT_INFO.XXXX or integer.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="get_unit_serial() (pypicosdk.pypicosdk.psospa.get_unit_serial)" href="#pypicosdk.pypicosdk.psospa.get_unit_serial">get_unit_serial</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Get and return batch and serial of unit.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="open_unit(serial_number=None, resolution=0) (pypicosdk.pypicosdk.psospa.open_unit)" href="#pypicosdk.pypicosdk.psospa.open_unit">open_unit</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Opens a connection to a PicoScope unit and retrieves USB power details.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="ping_unit() (pypicosdk.pypicosdk.psospa.ping_unit)" href="#pypicosdk.pypicosdk.psospa.ping_unit">ping_unit</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Check that the device is still connected.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="set_device_resolution(resolution) (pypicosdk.pypicosdk.psospa.set_device_resolution)" href="#pypicosdk.pypicosdk.psospa.set_device_resolution">set_device_resolution</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Configure the ADC resolution using <code>ps6000aSetDeviceResolution</code>.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.close_unit" class="doc doc-heading">
+            <code class="highlight language-python">close_unit()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Closes the PicoScope device and releases the hardware handle.</p>
+<p>This calls the PicoSDK <code>CloseUnit</code> function to properly disconnect from the device.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code>None</code>
+              –
+              <div class="doc-md-description">
+                <p>None</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.get_device_resolution" class="doc doc-heading">
+            <code class="highlight language-python">get_device_resolution()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the currently configured resolution.
+Returns:
+    :class:<code>RESOLUTION</code>: Device resolution.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.get_enumerated_units" class="doc doc-heading">
+            <code class="highlight language-python">get_enumerated_units()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Returns count, serials and serial string length of a specific PicoScope unit.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="int">int</span></code>
+              –
+              <div class="doc-md-description">
+                <p>Number of devices of this type</p>
+              </div>
+            </li>
+            <li>
+                  <code><span title="str">str</span></code>
+              –
+              <div class="doc-md-description">
+                <p>Comma separated string of all serials</p>
+              </div>
+            </li>
+            <li>
+                  <code><span title="int">int</span></code>
+              –
+              <div class="doc-md-description">
+                <p>Length of string</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.get_unit_info" class="doc doc-heading">
+            <code class="highlight language-python">get_unit_info(unit_info)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get specified information from unit. Use UNIT_INFO.XXXX or integer.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>unit_info</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="UNIT_INFO (pypicosdk.constants.UNIT_INFO)" href="../../constants/#pypicosdk.constants.UNIT_INFO">UNIT_INFO</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>Specify information from PicoScope unit i.e. UNIT_INFO.PICO_BATCH_AND_SERIAL.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>str</code></b>(                  <code><span title="str">str</span></code>
+)              –
+              <div class="doc-md-description">
+                <p>Returns data from device.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.get_unit_serial" class="doc doc-heading">
+            <code class="highlight language-python">get_unit_serial()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Get and return batch and serial of unit.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>str</code></b>(                  <code><span title="str">str</span></code>
+)              –
+              <div class="doc-md-description">
+                <p>Returns serial, e.g., "JR628/0017".</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.open_unit" class="doc doc-heading">
+            <code class="highlight language-python">open_unit(serial_number=None, resolution=0)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Opens a connection to a PicoScope unit and retrieves USB power details.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>serial_number</code></b>
+                  (<code><span title="str">str</span></code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Serial number of the specific PicoScope unit to open (e.g., "JR628/0017").
+If None, the first available unit is opened.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>resolution</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="RESOLUTION (pypicosdk.constants.RESOLUTION)" href="../../constants/#pypicosdk.constants.RESOLUTION">RESOLUTION</a> | <span title="pypicosdk.constants.resolution_literal">resolution_literal</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>The desired device resolution. Can be a RESOLUTION enum or literal integer.
+Defaults to 0.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><a class="autorefs autorefs-internal" title="PICO_USB_POWER_DETAILS (pypicosdk.constants.PICO_USB_POWER_DETAILS)" href="../../constants/#pypicosdk.constants.PICO_USB_POWER_DETAILS">PICO_USB_POWER_DETAILS</a></code>
+              –
+              <div class="doc-md-description">
+                <p>A structure containing USB power information of the opened device.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.ping_unit" class="doc doc-heading">
+            <code class="highlight language-python">ping_unit()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Check that the device is still connected.
+This wraps <code>ps6000aPingUnit</code> which verifies communication with
+the PicoScope. If the call succeeds the method returns <code>True</code>.
+Returns:
+    bool: <code>True</code> if the unit responded.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.set_device_resolution" class="doc doc-heading">
+            <code class="highlight language-python">set_device_resolution(resolution)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Configure the ADC resolution using <code>ps6000aSetDeviceResolution</code>.
+Args:
+    resolution: Desired resolution as a :class:<code>RESOLUTION</code> value.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../init/" class="btn btn-neutral float-left" title="Initializing psospa"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../firmware/" class="btn btn-neutral float-right" title="Firmware / Updates">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../init/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../firmware/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../../..";</script>
+    <script src="../../../js/theme_extra.js"></script>
+    <script src="../../../js/theme.js"></script>
+      <script src="../../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

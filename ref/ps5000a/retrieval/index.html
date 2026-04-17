@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../../img/favicon.ico" />
+    <title>Data Retrieval - pyPicoSDK</title>
+    <link rel="stylesheet" href="../../../css/theme.css" />
+    <link rel="stylesheet" href="../../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../../assets/_mkdocstrings.css" rel="stylesheet" />
+        <link href="../../../css/mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Data Retrieval";
+        var mkdocs_page_input_path = "ref/ps5000a/retrieval.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../../.." class="icon icon-home"> pyPicoSDK
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../../introduction/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >PicoScope 6000E (ps6000a) Functions</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/init/">Initializing ps6000a</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/setup/">Setup / Initialization</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/firmware/">Firmware / Updates</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/channel/">Channel Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/digital/">Digital Port Control</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/trigger/">Trigger Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/siggen/">Signal Generator</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/buffers/">Memory / Buffer Management</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/conversions/">Built-in Conversions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/retrieval/">Data Retrieval</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >PicoScope 3000E (psospa) Functions</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/init/">Initializing psospa</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/setup/">Setup / Initialization</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/firmware/">Firmware / Updates</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/channel/">Channel Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/digital/">Digital Port Control</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/trigger/">Trigger Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/siggen/">Signal Generator</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/buffers/">Memory / Buffer Management</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/conversions/">Built-in Conversions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/retrieval/">Data Retrieval</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/led/">LED Control</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" >PicoScope 5000D (ps5000a) Functions</a>
+    <ul class="current">
+                <li class="toctree-l2"><a class="reference internal" href="../init/">Initializing ps5000a</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../setup/">Setup / Initialization</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../channel/">Channel Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../trigger/">Trigger Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../siggen/">Signal Generator</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../buffers/">Memory / Buffer Management</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../conversions/">Built-in Conversions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2 current"><a class="reference internal current" href="#">Data Retrieval</a>
+    <ul class="current">
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps5000a.get_time_axis">get_time_axis</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps5000a.get_values">get_values</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps5000a.get_values_bulk">get_values_bulk</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps5000a.get_values_overlapped">get_values_overlapped</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps5000a.is_led_flashing">is_led_flashing</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps5000a.is_over_range">is_over_range</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps5000a.is_ready">is_ready</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps5000a.no_of_streaming_values">no_of_streaming_values</a>
+    </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ets/">ETS Setup</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../general/">General Functions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../constants/">Constants/Enums</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../configuration/">Config/Overrides</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Development</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/issues/">Issues</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/changelog/">Changelog</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/current/">Current Support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/roadmap/">Upcoming Roadmap</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../..">pyPicoSDK</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Reference</li>
+          <li class="breadcrumb-item">PicoScope 5000D (ps5000a) Functions</li>
+      <li class="breadcrumb-item active">Data Retrieval</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="data-retrieval">Data Retrieval</h1>
+<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pypicosdk.base.PicoScopeBase">PicoScopeBase</span></code>, <code><span title="pypicosdk.shared._ps5000a_ps6000a.Sharedps5000aPs6000a">Sharedps5000aPs6000a</span></code></p>
+
+
+
+        <p>PicoScope 5000 (A) API specific functions</p>
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Methods:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="get_time_axis(timebase, samples, pre_trig_percent=None, unit='ns', ratio=0) (pypicosdk.pypicosdk.ps5000a.get_time_axis)" href="#pypicosdk.pypicosdk.ps5000a.get_time_axis">get_time_axis</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Return an array of time values based on the timebase and number</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="get_values(samples, start_index=0, segment=0, ratio=0, ratio_mode=cst.RATIO_MODE.RAW) (pypicosdk.pypicosdk.ps5000a.get_values)" href="#pypicosdk.pypicosdk.ps5000a.get_values">get_values</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Retrieves a block of captured samples from the device once it's ready.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="get_values_bulk(samples, from_segment_index, to_segment_index, ratio=0, ratio_mode=cst.RATIO_MODE.NONE, **_) (pypicosdk.pypicosdk.ps5000a.get_values_bulk)" href="#pypicosdk.pypicosdk.ps5000a.get_values_bulk">get_values_bulk</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Retrieve data from multiple memory segments.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="get_values_overlapped(start_index, no_of_samples, down_sample_ratio, down_sample_ratio_mode, from_segment_index, to_segment_index, overflow, wait_for_ready=True) (pypicosdk.pypicosdk.ps5000a.get_values_overlapped)" href="#pypicosdk.pypicosdk.ps5000a.get_values_overlapped">get_values_overlapped</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Retrieve overlapped data from multiple segments for block or rapid block mode.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="is_led_flashing() (pypicosdk.pypicosdk.ps5000a.is_led_flashing)" href="#pypicosdk.pypicosdk.ps5000a.is_led_flashing">is_led_flashing</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Check if the LED is flashing.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="is_over_range() (pypicosdk.pypicosdk.ps5000a.is_over_range)" href="#pypicosdk.pypicosdk.ps5000a.is_over_range">is_over_range</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Logs and prints a warning if any channel has been over range.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="is_ready() (pypicosdk.pypicosdk.ps5000a.is_ready)" href="#pypicosdk.pypicosdk.ps5000a.is_ready">is_ready</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Blocks execution until the PicoScope device is ready.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="no_of_streaming_values() (pypicosdk.pypicosdk.ps5000a.no_of_streaming_values)" href="#pypicosdk.pypicosdk.ps5000a.no_of_streaming_values">no_of_streaming_values</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Return the number of values currently available while streaming.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps5000a.get_time_axis" class="doc doc-heading">
+            <code class="highlight language-python">get_time_axis(timebase, samples, pre_trig_percent=None, unit='ns', ratio=0)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return an array of time values based on the timebase and number
+of samples</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>timebase</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>PicoScope timebase</p>
+              </div>
+            </li>
+            <li>
+              <b><code>samples</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Number of samples captured</p>
+              </div>
+            </li>
+            <li>
+              <b><code>pre_trig_percent</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Percent to offset the 0 point by. If None, defaults to last
+used pre_trig_percent or 50.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>unit</code></b>
+                  (<code><span title="str">str</span></code>, default:
+                      <code>&#39;ns&#39;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Unit of seconds the time axis is returned in.
+Default is 'ns' (nanoseconds).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>ratio</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>If using a downsampling ratio, this will scale the time interval
+to reflect the reduced samples.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+              –
+              <div class="doc-md-description">
+                <p>np.ndarray: Array of time values in nano-seconds</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps5000a.get_values" class="doc doc-heading">
+            <code class="highlight language-python">get_values(samples, start_index=0, segment=0, ratio=0, ratio_mode=cst.RATIO_MODE.RAW)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Retrieves a block of captured samples from the device once it's ready.
+If a channel goes over-range a warning will appear.</p>
+<p>This function should be called after confirming the device is ready using <code>is_ready()</code>.
+It invokes the underlying PicoSDK <code>GetValues</code> function to read the data into memory.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>samples</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Number of samples to retrieve.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>start_index</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Starting index in the buffer.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>segment</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Memory segment index to retrieve data from.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>ratio</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Downsampling ratio.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>ratio_mode</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="RATIO_MODE (pypicosdk.constants.RATIO_MODE)" href="../../constants/#pypicosdk.constants.RATIO_MODE">RATIO_MODE</a></code>, default:
+                      <code><span title="pypicosdk.constants.RATIO_MODE.RAW">RAW</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Ratio mode for downsampling.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>wait_for_ready</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>True</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Whether to wait for the device to be ready.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>int</code></b>(                  <code><span title="int">int</span></code>
+)              –
+              <div class="doc-md-description">
+                <p>Actual number of samples retrieved.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps5000a.get_values_bulk" class="doc doc-heading">
+            <code class="highlight language-python">get_values_bulk(samples, from_segment_index, to_segment_index, ratio=0, ratio_mode=cst.RATIO_MODE.NONE, **_)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Retrieve data from multiple memory segments.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>samples</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Total number of samples to read from each segment.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>from_segment_index</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Index of the first segment to read.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>to_segment_index</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Index of the last segment. If this value is
+less than <code>from_segment_index</code> the driver wraps around.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>ratio</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Downsampling ratio to apply before copying.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>ratio_mode</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="RATIO_MODE (pypicosdk.constants.RATIO_MODE)" href="../../constants/#pypicosdk.constants.RATIO_MODE">RATIO_MODE</a></code>, default:
+                      <code><span title="pypicosdk.constants.RATIO_MODE.NONE">NONE</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Downsampling mode from :class:<code>RATIO_MODE</code>.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="int">int</span></code>
+              –
+              <div class="doc-md-description">
+                <p>tuple[int, list[list[str]]]: <code>(samples, overflow)list)</code> where <code>samples</code> is the</p>
+              </div>
+            </li>
+            <li>
+                  <code><span title="list">list</span>[<span title="list">list</span>[<span title="str">str</span>]]</code>
+              –
+              <div class="doc-md-description">
+                <p>number of samples copied and <code>overflow</code> is list of captures with where</p>
+              </div>
+            </li>
+            <li>
+                  <code><span title="tuple">tuple</span>[<span title="int">int</span>, <span title="list">list</span>[<span title="list">list</span>[<span title="str">str</span>]]]</code>
+              –
+              <div class="doc-md-description">
+                <p>channnels have exceeded their voltage range.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps5000a.get_values_overlapped" class="doc doc-heading">
+            <code class="highlight language-python">get_values_overlapped(start_index, no_of_samples, down_sample_ratio, down_sample_ratio_mode, from_segment_index, to_segment_index, overflow, wait_for_ready=True)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Retrieve overlapped data from multiple segments for block or rapid block mode.</p>
+<p>Call this method <strong>before</strong> :meth:<code>run_block_capture</code> to defer the data
+retrieval request. The driver validates and performs the request when
+:meth:<code>run_block_capture</code> runs, which avoids the extra communication that
+occurs when calling :meth:<code>run_block_capture</code> followed by
+:meth:<code>get_values</code>. After the capture completes you can call
+:meth:<code>get_values</code> again to retrieve additional copies of the data.
+Stop further captures with :meth:<code>stop_using_get_values_overlapped</code> and
+check progress using :meth:<code>ps6000a.PicoScope.get_no_of_processed_captures</code>.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>start_index</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Index within the circular buffer to begin reading from.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>no_of_samples</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Number of samples to copy from each segment.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>down_sample_ratio</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Downsampling ratio to apply.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>down_sample_ratio_mode</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Downsampling mode from :class:<code>RATIO_MODE</code>.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>from_segment_index</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>First segment index to read.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>to_segment_index</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Last segment index to read.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>overflow</code></b>
+                  (<code><span title="ctypes.c_int16">c_int16</span></code>)
+              –
+              <div class="doc-md-description">
+                <p><code>ctypes.c_int16</code> instance that receives any overflow
+flags.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>wait_for_ready</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>True</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Whether to wait for the device to be ready.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>int</code></b>(                  <code><span title="int">int</span></code>
+)              –
+              <div class="doc-md-description">
+                <p>Actual number of samples copied from each segment.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <pre class="highlight"><code class="language-pycon">&gt;&gt;&gt; samples = scope.get_values_overlapped(
+...     start_index=0,              # read from start of buffer
+...     no_of_samples=1024,         # copy 1024 samples
+...     down_sample_ratio=1,        # no downsampling
+...     down_sample_ratio_mode=RATIO_MODE.RAW,
+...     from_segment_index=0,       # first segment only
+...     to_segment_index=0,
+... )
+&gt;&gt;&gt; scope.run_block_capture(timebase=1, samples=1024)
+&gt;&gt;&gt; data = scope.get_values(samples=1024)
+&gt;&gt;&gt; samples, scope.over_range
+(1024, 0)</code></pre>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps5000a.is_led_flashing" class="doc doc-heading">
+            <code class="highlight language-python">is_led_flashing()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Check if the LED is flashing.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>bool</code></b>(                  <code><span title="bool">bool</span></code>
+)              –
+              <div class="doc-md-description">
+                <p>True if the LED is flashing, False otherwise.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps5000a.is_over_range" class="doc doc-heading">
+            <code class="highlight language-python">is_over_range()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Logs and prints a warning if any channel has been over range.</p>
+<p>The :attr:<code>over_range</code> attribute stores a bit mask updated by data
+retrieval methods like :meth:<code>get_values</code> and
+:meth:<code>get_values_overlapped</code>. Calling this method logs a warning if
+any channel went over range and returns a list of the affected
+channel names.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>list</code></b>(                  <code><span title="list">list</span></code>
+)              –
+              <div class="doc-md-description">
+                <p>List of channels that have been over range</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps5000a.is_ready" class="doc doc-heading">
+            <code class="highlight language-python">is_ready()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Blocks execution until the PicoScope device is ready.</p>
+<p>Continuously calls the PicoSDK <code>IsReady</code> function in a loop, checking if
+the device is prepared to proceed with data acquisition.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code>None</code>
+              –
+              <div class="doc-md-description">
+                <p>None</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps5000a.no_of_streaming_values" class="doc doc-heading">
+            <code class="highlight language-python">no_of_streaming_values()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the number of values currently available while streaming.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../run/" class="btn btn-neutral float-left" title="Data Acquisition: Block &amp; Streaming"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../ets/" class="btn btn-neutral float-right" title="ETS Setup">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../run/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../ets/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../../..";</script>
+    <script src="../../../js/theme_extra.js"></script>
+    <script src="../../../js/theme.js"></script>
+      <script src="../../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

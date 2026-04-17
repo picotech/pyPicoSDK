@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../../img/favicon.ico" />
+    <title>Built-in Conversions - pyPicoSDK</title>
+    <link rel="stylesheet" href="../../../css/theme.css" />
+    <link rel="stylesheet" href="../../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../../assets/_mkdocstrings.css" rel="stylesheet" />
+        <link href="../../../css/mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Built-in Conversions";
+        var mkdocs_page_input_path = "ref/ps5000a/conversions.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../../.." class="icon icon-home"> pyPicoSDK
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../../introduction/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >PicoScope 6000E (ps6000a) Functions</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/init/">Initializing ps6000a</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/setup/">Setup / Initialization</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/firmware/">Firmware / Updates</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/channel/">Channel Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/digital/">Digital Port Control</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/trigger/">Trigger Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/siggen/">Signal Generator</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/buffers/">Memory / Buffer Management</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/conversions/">Built-in Conversions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/retrieval/">Data Retrieval</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >PicoScope 3000E (psospa) Functions</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/init/">Initializing psospa</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/setup/">Setup / Initialization</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/firmware/">Firmware / Updates</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/channel/">Channel Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/digital/">Digital Port Control</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/trigger/">Trigger Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/siggen/">Signal Generator</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/buffers/">Memory / Buffer Management</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/conversions/">Built-in Conversions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/retrieval/">Data Retrieval</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../psospa/led/">LED Control</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" >PicoScope 5000D (ps5000a) Functions</a>
+    <ul class="current">
+                <li class="toctree-l2"><a class="reference internal" href="../init/">Initializing ps5000a</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../setup/">Setup / Initialization</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../channel/">Channel Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../trigger/">Trigger Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../siggen/">Signal Generator</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../buffers/">Memory / Buffer Management</a>
+                </li>
+                <li class="toctree-l2 current"><a class="reference internal current" href="#">Built-in Conversions</a>
+    <ul class="current">
+    <li class="toctree-l3"><a class="reference internal" href="#example">Example</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#reference">Reference</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps5000a.adc_to_mv">adc_to_mv</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps5000a.adc_to_volts">adc_to_volts</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps5000a.interval_to_timebase">interval_to_timebase</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps5000a.mv_to_adc">mv_to_adc</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps5000a.sample_rate_to_timebase">sample_rate_to_timebase</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.ps5000a.volts_to_adc">volts_to_adc</a>
+    </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../retrieval/">Data Retrieval</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../ets/">ETS Setup</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../general/">General Functions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../constants/">Constants/Enums</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../configuration/">Config/Overrides</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Development</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/issues/">Issues</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/changelog/">Changelog</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/current/">Current Support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/roadmap/">Upcoming Roadmap</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../..">pyPicoSDK</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Reference</li>
+          <li class="breadcrumb-item">PicoScope 5000D (ps5000a) Functions</li>
+      <li class="breadcrumb-item active">Built-in Conversions</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="built-in-conversions">Built-in Conversions</h1>
+<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
+<p>These functions are general functions to convert data to another format.
+This is particularly useful for converting ADC data to mV or calculating
+the needed timebase for your PicoScope.</p>
+<p>As the conversions talk to the PicoScope to retrieve the resolution and ADC limits,
+the PicoScope needs to be initialized using <code>scope.open_unit()</code> followed by the conversion.</p>
+<h2 id="example">Example</h2>
+<pre><code>&gt;&gt;&gt; import pypicosdk as psdk
+&gt;&gt;&gt; scope = psdk.ps5000a()
+&gt;&gt;&gt; scope.open_unit(resolution=psdk.RESOLUTION._8BIT)
+&gt;&gt;&gt; scope.mv_to_adc(100, channel=psdk.CHANNEL.A)
+3251
+&gt;&gt;&gt; scope.close_unit()
+</code></pre>
+<h2 id="reference">Reference</h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pypicosdk.base.PicoScopeBase">PicoScopeBase</span></code>, <code><span title="pypicosdk.shared._ps5000a_ps6000a.Sharedps5000aPs6000a">Sharedps5000aPs6000a</span></code></p>
+
+
+
+        <p>PicoScope 5000 (A) API specific functions</p>
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Methods:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="adc_to_mv(buffer, channel=None) (pypicosdk.pypicosdk.ps5000a.adc_to_mv)" href="#pypicosdk.pypicosdk.ps5000a.adc_to_mv">adc_to_mv</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Converts ADC values into millivolt (mV) values.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="adc_to_volts(buffer, channel=None) (pypicosdk.pypicosdk.ps5000a.adc_to_volts)" href="#pypicosdk.pypicosdk.ps5000a.adc_to_volts">adc_to_volts</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Converts ADC values into voltage (V) values.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="interval_to_timebase(interval, unit=TIME_UNIT.S) (pypicosdk.pypicosdk.ps5000a.interval_to_timebase)" href="#pypicosdk.pypicosdk.ps5000a.interval_to_timebase">interval_to_timebase</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Converts a time interval (between samples) into a PicoScope timebase</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="mv_to_adc(mv, channel) (pypicosdk.pypicosdk.ps5000a.mv_to_adc)" href="#pypicosdk.pypicosdk.ps5000a.mv_to_adc">mv_to_adc</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Converts a millivolt (mV) value to an ADC value based on the device's</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="sample_rate_to_timebase(sample_rate, unit=SAMPLE_RATE.MSPS) (pypicosdk.pypicosdk.ps5000a.sample_rate_to_timebase)" href="#pypicosdk.pypicosdk.ps5000a.sample_rate_to_timebase">sample_rate_to_timebase</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Converts sample rate to a PicoScope timebase value based on the</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="volts_to_adc(volts, channel) (pypicosdk.pypicosdk.ps5000a.volts_to_adc)" href="#pypicosdk.pypicosdk.ps5000a.volts_to_adc">volts_to_adc</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Coverts a volt (V) value to an ADC value based on the channel range and device's maximum</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps5000a.adc_to_mv" class="doc doc-heading">
+            <code class="highlight language-python">adc_to_mv(buffer, channel=None)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Converts ADC values into millivolt (mV) values.
+The buffer can be from a channel buffer (dict), numpy array or single value.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>buffer</code></b>
+                  (<code>(<span title="dict">dict</span>, <span title="int">int</span>, <span title="float">float</span>, <span title="numpy.ndarray">ndarray</span>)</code>)
+              –
+              <div class="doc-md-description">
+                <p>ADC values to be converted to millivolt values</p>
+              </div>
+            </li>
+            <li>
+              <b><code>channel</code></b>
+                  (<code>(<span title="int">int</span>, <a class="autorefs autorefs-internal" title="CHANNEL (pypicosdk.constants.CHANNEL)" href="../../constants/#pypicosdk.constants.CHANNEL">CHANNEL</a>, <span title="str">str</span>)</code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Channel the ADC buffer is from. If the buffer is a channel buffer dict,
+set to None. Defaults to None.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="dict">dict</span> | <span title="float">float</span> | <span title="numpy.ndarray">ndarray</span></code>
+              –
+              <div class="doc-md-description">
+                <p>dict, int, float, np.ndarray: buffer converted into millivolts (mV)</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps5000a.adc_to_volts" class="doc doc-heading">
+            <code class="highlight language-python">adc_to_volts(buffer, channel=None)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Converts ADC values into voltage (V) values.
+The buffer can be from a channel buffer (dict), numpy array or single value.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>buffer</code></b>
+                  (<code>(<span title="dict">dict</span>, <span title="int">int</span>, <span title="float">float</span>, <span title="numpy.ndarray">ndarray</span>)</code>)
+              –
+              <div class="doc-md-description">
+                <p>ADC values to be converted to millivolt values</p>
+              </div>
+            </li>
+            <li>
+              <b><code>channel</code></b>
+                  (<code>(<span title="int">int</span>, <a class="autorefs autorefs-internal" title="CHANNEL (pypicosdk.constants.CHANNEL)" href="../../constants/#pypicosdk.constants.CHANNEL">CHANNEL</a>, <span title="str">str</span>)</code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Channel the ADC buffer is from. If the buffer is a channel buffer dict,
+set to None. Defaults to None.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="dict">dict</span> | <span title="float">float</span> | <span title="numpy.ndarray">ndarray</span></code>
+              –
+              <div class="doc-md-description">
+                <p>dict, int, float, np.ndarray: buffer converted into volts (V)</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps5000a.interval_to_timebase" class="doc doc-heading">
+            <code class="highlight language-python">interval_to_timebase(interval, unit=TIME_UNIT.S)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Converts a time interval (between samples) into a PicoScope timebase
+value based on the attached PicoScope.</p>
+<p>This function will return the closest possible timebase.
+Use <code>get_nearest_sample_interval(interval_s)</code> to get the full timebase and
+actual interval achieved.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>interval</code></b>
+                  (<code><span title="float">float</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Desired time interval between samples</p>
+              </div>
+            </li>
+            <li>
+              <b><code>unit</code></b>
+                  (<code><span title="pypicosdk.constants.TIME_UNIT">TIME_UNIT</span></code>, default:
+                      <code><span title="pypicosdk.constants.TIME_UNIT.S">S</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Time unit of interval.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps5000a.mv_to_adc" class="doc doc-heading">
+            <code class="highlight language-python">mv_to_adc(mv, channel)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Converts a millivolt (mV) value to an ADC value based on the device's
+maximum ADC range.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>mv</code></b>
+                  (<code><span title="float">float</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Voltage in millivolts (mV) to be converted.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>channel</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="CHANNEL (pypicosdk.constants.CHANNEL)" href="../../constants/#pypicosdk.constants.CHANNEL">CHANNEL</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>Channel associated with <code>mv</code>. The
+probe scaling for the channel will be applied if provided.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>int</code></b>(                  <code><span title="int">int</span></code>
+)              –
+              <div class="doc-md-description">
+                <p>ADC value corresponding to the input millivolt value.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps5000a.sample_rate_to_timebase" class="doc doc-heading">
+            <code class="highlight language-python">sample_rate_to_timebase(sample_rate, unit=SAMPLE_RATE.MSPS)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Converts sample rate to a PicoScope timebase value based on the
+attached PicoScope.</p>
+<p>This function will return the closest possible timebase.
+Use <code>get_nearest_sample_interval(interval_s)</code> to get the full timebase and
+actual interval achieved.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>sample_rate</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Desired sample rate</p>
+              </div>
+            </li>
+            <li>
+              <b><code>unit</code></b>
+                  (<code><span title="pypicosdk.constants.SAMPLE_RATE">SAMPLE_RATE</span></code>, default:
+                      <code><span title="pypicosdk.constants.SAMPLE_RATE.MSPS">MSPS</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>unit of sample rate.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.ps5000a.volts_to_adc" class="doc doc-heading">
+            <code class="highlight language-python">volts_to_adc(volts, channel)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Coverts a volt (V) value to an ADC value based on the channel range and device's maximum
+ADC value.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>volts</code></b>
+                  (<code><span title="float">float</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Voltage in volts (V) to be converted</p>
+              </div>
+            </li>
+            <li>
+              <b><code>channel</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="CHANNEL (pypicosdk.constants.CHANNEL)" href="../../constants/#pypicosdk.constants.CHANNEL">CHANNEL</a></code>)
+              –
+              <div class="doc-md-description">
+                <p>Channel associated with <code>volts</code>. The probe scaling will
+be applied if provided.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>int</code></b>(                  <code><span title="int">int</span></code>
+)              –
+              <div class="doc-md-description">
+                <p>ADC value corresponding to the input voltage.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../buffers/" class="btn btn-neutral float-left" title="Memory / Buffer Management"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../captures/" class="btn btn-neutral float-right" title="Capture Configuration">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../buffers/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../captures/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../../..";</script>
+    <script src="../../../js/theme_extra.js"></script>
+    <script src="../../../js/theme.js"></script>
+      <script src="../../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
