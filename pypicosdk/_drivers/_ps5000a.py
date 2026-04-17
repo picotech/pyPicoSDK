@@ -174,15 +174,38 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
                            direction=cst.TRIGGER_DIR.RISING, delay=0, auto_trigger=0):
         channel = _get_literal(channel, cst.channel_map)
         if channel == cst.CHANNEL.TRIGGER_AUX:
+            # TRIGGER_AUX is not in channel_db, so convert threshold manually
+            # using the EXT port's fixed ±5 V range before base class sees it.
             if threshold_unit in ('mv', 'v'):
                 threshold_mv = threshold * 1000 if threshold_unit == 'v' else threshold
                 threshold = int((threshold_mv / cst.PS5000A_TRIGGER_AUX_RANGE_MV) * self.max_adc_value)
                 threshold_unit = 'adc'
+            # Remap SDK virtual value (1001) to PS5000A_EXTERNAL (4) for the C API.
             channel = cst.PS5000A_TRIGGER_AUX_HW_CHANNEL  # type: ignore[assignment]
         status = super().set_simple_trigger(channel, threshold, threshold_unit, enable, direction,
                                             delay, auto_trigger=0)
         self.set_auto_trigger_microseconds(auto_trigger)
         return status
+
+    @override
+    def set_advanced_trigger(self, channel, state, direction, threshold_mode,
+                             threshold_upper_mv, threshold_lower_mv,
+                             hysteresis_upper_mv=0.0, hysteresis_lower_mv=0.0,
+                             aux_output_enable=0, auto_trigger_ms=0,
+                             action=cst.ACTION.CLEAR_ALL | cst.ACTION.ADD):
+        channel = _get_literal(channel, cst.channel_map)
+        if channel == cst.CHANNEL.TRIGGER_AUX:
+            def _mv_to_adc(mv):
+                return int((mv / cst.PS5000A_TRIGGER_AUX_RANGE_MV) * self.max_adc_value)
+            threshold_upper_mv = _mv_to_adc(threshold_upper_mv)
+            threshold_lower_mv = _mv_to_adc(threshold_lower_mv)
+            hysteresis_upper_mv = _mv_to_adc(hysteresis_upper_mv)
+            hysteresis_lower_mv = _mv_to_adc(hysteresis_lower_mv)
+            channel = cst.PS5000A_TRIGGER_AUX_HW_CHANNEL  # type: ignore[assignment]
+        super().set_advanced_trigger(channel, state, direction, threshold_mode,
+                                     threshold_upper_mv, threshold_lower_mv,
+                                     hysteresis_upper_mv, hysteresis_lower_mv,
+                                     aux_output_enable, auto_trigger_ms, action)
 
     def set_auto_trigger_microseconds(self, auto_trigger: int) -> int:
         """
