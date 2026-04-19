@@ -146,7 +146,7 @@ class ps6000a(PicoScopeBase, shared_ps6000a_psospa, shared_4000a_6000a, Sharedps
         range: str | cst.range_literal | cst.RANGE,  # pylint: disable=W0622
         coupling=cst.COUPLING.DC,
         offset=0.0,
-        bandwidth=cst.BANDWIDTH_CH.FULL,
+        bandwidth=cst.BANDWIDTH_CH.BW_FULL,
         probe_scale: float = 1.0
     ) -> int:
         """
