@@ -36,27 +36,39 @@ from ._classes import _general
 
 class PicoScopeBase:
     """PicoScope base class including common SDK and python modules and functions"""
-    # Class Functions
-    def __init__(self, dll_name, *args, **kwargs):
-        # Pytest override
-        self._pytest = "pytest" in args
+    _dll_cache: dict[str, ctypes.CDLL] = {}  # Persistent cache of loaded DLLs.
 
-        # Setup DLL location per device
+    @classmethod
+    def _load_dll(cls, dll_name: str) -> ctypes.CDLL:
+        """Loads the DLL for the given device name.
+
+        Args:
+            dll_name (str): The name of the DLL to load.
+
+        Returns:
+            ctypes.CDLL: The loaded DLL.
+        """
+        if dll_name in cls._dll_cache:
+            return cls._dll_cache[dll_name]
+        system = platform.system()
+        if system == "Windows":
+            lib_name = dll_name + ".dll"
+        elif system == "Linux":
+            lib_name = "lib" + dll_name + ".so"
+        elif system == "Darwin":
+            lib_name = "lib" + dll_name + ".dylib"
+        else:
+            lib_name = "lib" + dll_name + ".so"
+        dll = ctypes.CDLL(os.path.join(_get_lib_path(), lib_name))
+        cls._dll_cache[dll_name] = dll
+        return dll
+
+    def __init__(self, dll_name, *args, **kwargs):
+        self._pytest = "pytest" in args
         if self._pytest:
             self.dll = None
         else:
-            # Determine file extension and naming convention based on OS
-            system = platform.system()
-            if system == "Windows":
-                lib_name = dll_name + ".dll"
-            elif system == "Linux":
-                lib_name = "lib" + dll_name + ".so"
-            elif system == "Darwin":
-                lib_name = "lib" + dll_name + ".dylib"
-            else:
-                lib_name = "lib" + dll_name + ".so"  # Default to Unix-like naming
-
-            self.dll = ctypes.CDLL(os.path.join(_get_lib_path(), lib_name))
+            self.dll = self._load_dll(dll_name)
         self._unit_prefix_n = dll_name
 
         # Setup class variables
