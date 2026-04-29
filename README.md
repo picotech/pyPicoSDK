@@ -71,6 +71,6 @@ Current PicoScope support:
 - [pypi-nightly (dev repo)](https://pypi.org/project/pypicosdk-nightly/)
 
 ## Version Control
-pyPicoSDK: 1.7.3
+pyPicoSDK: 1.7.4
 
 Docs: 0.4.2
