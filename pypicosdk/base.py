@@ -2053,9 +2053,20 @@ class PicoScopeBase:
         )
         return c_sample_interval.value
 
-    def get_enumerated_units(self) -> tuple[int, str, int]:
+    def get_enumerated_units(self, parameter: str = None) -> tuple[int, str, int]:
         """
         Returns count, serials and serial string length of a specific PicoScope unit.
+
+        Args:
+            parameter (str, optional): On entry, serials can optionally contain the following 
+                parameters to request information:
+                '-v' : model number
+                '-c' : calibration date
+                '-h' : hardware version
+                '-u' : USB version
+                '-f' : firmware version
+                Example (any separator character can be used):
+                '-v:-c:-h:-u:-f'
 
         Returns:
             Number of devices of this type
@@ -2065,6 +2076,11 @@ class PicoScopeBase:
         string_buffer_length = 256
         count = ctypes.c_int16()
         serials = ctypes.create_string_buffer(string_buffer_length)
+
+        # If parameter is not None, encode it and set the value of the serials buffer
+        if parameter != None:
+            serials.value = parameter.encode()
+
         serial_length = ctypes.c_int16(string_buffer_length)
         self._call_attr_function(
             'EnumerateUnits',
