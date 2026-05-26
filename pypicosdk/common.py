@@ -86,7 +86,15 @@ def _get_lib_path() -> str:
     elif system == "Linux":
         return _check_path('/opt', ['picoscope/lib'])
     elif system == "Darwin":
-        raise PicoSDKException("macOS is not yet tested and supported")
+        framework_libs = '/Library/Frameworks/PicoSDK.framework/Libraries'
+        if os.path.exists(framework_libs):
+            return framework_libs
+        checklist = [
+            'PicoScope 7 T&M.app/Contents/Resources',
+            'PicoScope 7 T&M Early Access.app/Contents/Resources',
+            'PicoScope 7 T&M Stable.app/Contents/Resources',
+        ]
+        return _check_path('/Applications', checklist)
     else:
         raise PicoSDKException("Unsupported OS")
 
