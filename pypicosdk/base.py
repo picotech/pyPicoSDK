@@ -56,7 +56,12 @@ class PicoScopeBase:
             else:
                 lib_name = "lib" + dll_name + ".so"  # Default to Unix-like naming
 
-            self.dll = ctypes.CDLL(os.path.join(_get_lib_path(), lib_name))
+            lib_dir = _get_lib_path()
+            lib_path = os.path.join(lib_dir, lib_name)
+            if system == "Darwin" and not os.path.exists(lib_path):
+                # PicoSDK.framework stores each lib in its own subdirectory
+                lib_path = os.path.join(lib_dir, lib_name.removesuffix('.dylib'), lib_name)
+            self.dll = ctypes.CDLL(lib_path)
         self._unit_prefix_n = dll_name
 
         # Setup class variables
