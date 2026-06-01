@@ -389,8 +389,19 @@ class BANDWIDTH_CH(IntEnum):
 
     Attributes:
         BW_FULL: Full bandwidth configuration.
+        BW_100KHZ: Bandwidth of 100 kHz.
+        BW_20KHZ: Bandwidth of 20 kHz.
+        BW_1MHZ: Bandwidth of 1 MHz.
         BW_20MHZ: Bandwidth of 20 MHz.
+        BW_25MHZ: Bandwidth of 25 MHz.
+        BW_50MHZ: Bandwidth of 50 MHz.
+        BW_60MHZ: Bandwidth of 60 MHz.
+        BW_100MHZ: Bandwidth of 100 MHz.
         BW_200MHZ: Bandwidth of 200 MHz.
+        BW_250MHZ: Bandwidth of 250 MHz.
+        BW_300MHZ: Bandwidth of 300 MHz.
+        BW_350MHZ: Bandwidth of 350 MHz.
+        BW_500MHZ: Bandwidth of 500 MHz.
     """
     BW_FULL = 0
     BW_100KHZ = 100000
