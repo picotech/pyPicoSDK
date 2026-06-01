@@ -778,6 +778,10 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
             bandwidth (BANDWIDTH_CH, optional): Bandwidth filter to set. Defaults to FULL.
         """
         channel = _get_literal(channel, cst.channel_map)
+        
+        # Convert the bandwidth to the correct value for the ps5000a
+        if bandwidth == cst.BANDWIDTH_CH.BW_20MHZ:
+            bandwidth = 1
 
         self._call_attr_function(
             "SetBandwidthFilter",
