@@ -590,7 +590,7 @@ class shared_ps6000a_psospa(_ProtocolBase):
         enabled: bool = True,
         coupling: COUPLING = COUPLING.DC,
         offset: float = 0.0,
-        bandwidth: BANDWIDTH_CH = BANDWIDTH_CH.BW_FULL,
+        bandwidth: BANDWIDTH_CH | int = BANDWIDTH_CH.BW_FULL,
         probe_scale: float = 1.0,
     ) -> None:
         """
@@ -605,10 +605,15 @@ class shared_ps6000a_psospa(_ProtocolBase):
             enabled (bool, optional): Enable or disable channel.
             coupling (COUPLING, optional): AC/DC/DC 50 Ohm coupling of selected channel.
             offset (int, optional): Analog offset in volts (V) of selected channel.
-            bandwidth (BANDWIDTH_CH, optional): Bandwidth of channel (selected models).
+            bandwidth (BANDWIDTH_CH | int, optional): Bandwidth of channel (selected models).
+                Either using the BANDWIDTH_CH enum or directly using the bandwidth in Hz.
+                Defaults to BANDWIDTH_CH.BW_FULL.
             probe_scale (float, optional): Probe attenuation factor e.g. 10 for x10 probe.
                 Default value of 1.0 (x1).
         """
+        if isinstance(bandwidth, float):
+            bandwidth = int(bandwidth)
+
         if enabled:
             self.set_channel_on(channel, range, coupling, offset, bandwidth,
                                 probe_scale=probe_scale)
