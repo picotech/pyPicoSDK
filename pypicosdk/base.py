@@ -115,9 +115,11 @@ class PicoScopeBase:
             # Ignore codes as they are warnings or status updates.
             # 39 - Pico Busy
             # 407 - Pico Waiting For Data Buffers
+            # 281 - Pico Power Supply Connected (returned by CurrentPowerSource / ChangePowerSource)
             # 282 - Pico Power Supply Not Connected
             # 290 - Pico Channel Disabled Due To Usb Powered
-            if status in [407, 282, 290, 39]:
+            # 286 - Pico Usb3 0 Device Non Usb3 0 Port (ps5000a: warns in open_unit)
+            if status in [407, 281, 282, 286, 290, 39]:
                 return
             self.close_unit()
             raise PicoSDKException(error_code)

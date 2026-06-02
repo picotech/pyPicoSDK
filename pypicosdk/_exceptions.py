@@ -14,3 +14,7 @@ class PicoSDKNotFoundException(Exception):
 
 class NoArgumentsNeededWarning(UserWarning):
     "Warning no arguments needed for the function."
+
+
+class PowerSourceWarning(UserWarning):
+    "Warning that the device opened in a restricted power-source mode."

@@ -6,7 +6,7 @@ try:
 except ImportError:
     from typing_extensions import override  # type: ignore
 from warnings import warn
-from .._exceptions import NoArgumentsNeededWarning
+from .._exceptions import NoArgumentsNeededWarning, PowerSourceWarning
 
 import queue
 
@@ -49,13 +49,43 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
             serial_number,
             resolution
         )
+        # ps5000a OpenUnit returns 282 (USB-only) or 286 (USB-3 device on USB-2
+        # port) as prompts requiring acknowledgement via ChangePowerSource before
+        # the device is usable. Both restrict the unit to 2-channel operation.
         if status == cst.POWER_SOURCE.SUPPLY_NOT_CONNECTED:
+            warn(
+                'ps5000a opened without DC power supply — running on USB power, '
+                'restricted to 2-channel operation. Connect the supplied AC '
+                'adapter to enable all channels.',
+                PowerSourceWarning,
+                stacklevel=2,
+            )
             self.ac_adaptor = False
-            self.change_power_source(cst.POWER_SOURCE.SUPPLY_NOT_CONNECTED)
-            
+            self.change_power_source(status)
+        elif status == cst.POWER_SOURCE.USB3_0_DEVICE_NON_USB3_0_PORT:
+            warn(
+                'ps5000a is a USB 3.0 device plugged into a non-USB-3.0 port — '
+                'restricted to 2-channel operation. Move to a USB 3.0 port to '
+                'enable all channels.',
+                PowerSourceWarning,
+                stacklevel=2,
+            )
+            self.ac_adaptor = False
+            self.change_power_source(status)
+
         self.resolution = resolution
         self.min_adc_value, self.max_adc_value = self.get_adc_limits()
         self.set_all_channels_off()
+
+        if self.ac_adaptor:
+            usb_version = self.get_unit_info(cst.UNIT_INFO.PICO_USB_VERSION)
+            if usb_version != '3.0':
+                warn(
+                    f'ps5000a is connected to a USB {usb_version} port — '
+                    'for maximum data transfer performance, use a USB 3.0 port.',
+                    PowerSourceWarning,
+                    stacklevel=2,
+                )
 
         return status
 
@@ -105,10 +135,9 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
             power_source (str | POWER_SOURCE): Power source selection.
         """
         power_source = _get_literal(power_source, cst.PwrSrc_M)
-        if power_source == cst.POWER_SOURCE.SUPPLY_NOT_CONNECTED:
-            self.ac_adaptor = False
-        else:
-            self.ac_adaptor = True
+        # 282 (USB-only) and 286 (USB-3 on USB-2 port) both restrict the unit
+        # to a 2-channel feature set, equivalent to running without the AC PSU.
+        self.ac_adaptor = power_source == cst.POWER_SOURCE.SUPPLY_CONNECTED
         self._call_attr_function(
             'ChangePowerSource',
             self.handle,
