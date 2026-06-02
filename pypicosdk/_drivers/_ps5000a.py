@@ -58,6 +58,7 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
                 'restricted to 2-channel operation. Connect the supplied AC '
                 'adapter to enable all channels.',
                 PowerSourceWarning,
+                stacklevel=2,
             )
             self.ac_adaptor = False
             self.change_power_source(status)
@@ -67,6 +68,7 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
                 'restricted to 2-channel operation. Move to a USB 3.0 port to '
                 'enable all channels.',
                 PowerSourceWarning,
+                stacklevel=2,
             )
             self.ac_adaptor = False
             self.change_power_source(status)
@@ -74,6 +76,16 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
         self.resolution = resolution
         self.min_adc_value, self.max_adc_value = self.get_adc_limits()
         self.set_all_channels_off()
+
+        if self.ac_adaptor:
+            usb_version = self.get_unit_info(cst.UNIT_INFO.PICO_USB_VERSION)
+            if usb_version != '3.0':
+                warn(
+                    f'ps5000a is connected to a USB {usb_version} port — '
+                    'for maximum data transfer performance, use a USB 3.0 port.',
+                    PowerSourceWarning,
+                    stacklevel=2,
+                )
 
         return status
 
