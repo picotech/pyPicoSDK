@@ -388,18 +388,40 @@ ProbeScale_M = {
     'x1000': 1000
 }
 
-class BANDWIDTH_CH:
+class BANDWIDTH_CH(IntEnum):
     """
     Class for different bandwidth configurations.
 
     Attributes:
-        FULL: Full bandwidth configuration.
+        BW_FULL: Full bandwidth configuration.
+        BW_100KHZ: Bandwidth of 100 kHz.
+        BW_20KHZ: Bandwidth of 20 kHz.
+        BW_1MHZ: Bandwidth of 1 MHz.
         BW_20MHZ: Bandwidth of 20 MHz.
+        BW_25MHZ: Bandwidth of 25 MHz.
+        BW_50MHZ: Bandwidth of 50 MHz.
+        BW_60MHZ: Bandwidth of 60 MHz.
+        BW_100MHZ: Bandwidth of 100 MHz.
         BW_200MHZ: Bandwidth of 200 MHz.
+        BW_250MHZ: Bandwidth of 250 MHz.
+        BW_300MHZ: Bandwidth of 300 MHz.
+        BW_350MHZ: Bandwidth of 350 MHz.
+        BW_500MHZ: Bandwidth of 500 MHz.
     """
-    FULL = 0
-    BW_20MHZ = 1
-    BW_200MHZ = 2
+    BW_FULL = 0
+    BW_100KHZ = 100000
+    BW_20KHZ = 20000
+    BW_1MHZ = 1000000
+    BW_20MHZ = 20000000
+    BW_25MHZ = 25000000
+    BW_50MHZ = 50000000
+    BW_60MHZ = 60000000
+    BW_100MHZ = 100000000
+    BW_200MHZ = 200000000
+    BW_250MHZ = 250000000
+    BW_300MHZ = 300000000
+    BW_350MHZ = 350000000
+    BW_500MHZ = 500000000
 
 class ETS_MODE(IntEnum):
     """
@@ -1214,7 +1236,7 @@ class AWG_INDEX_MODE(IntEnum):
         QUAD: Quad index mode.
         MAX_INDEX_MODES: Maximum index mode.
     """
-    
+
     SINGLE = 0
     DOUBLE = 1
     QUAD = 2

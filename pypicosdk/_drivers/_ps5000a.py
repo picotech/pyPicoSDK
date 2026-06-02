@@ -122,7 +122,7 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
         enabled: bool = True,
         coupling: cst.COUPLING = cst.COUPLING.DC,
         offset: float = 0.0,
-        bandwidth: cst.BANDWIDTH_CH = cst.BANDWIDTH_CH.FULL,
+        bandwidth: cst.BANDWIDTH_CH = cst.BANDWIDTH_CH.BW_FULL,
         probe_scale: float = 1.0
     ) -> None:
         """
@@ -798,7 +798,7 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
     def set_bandwidth_filter(
         self,
         channel: str | cst.channel_literal | cst.CHANNEL,
-        bandwidth: cst.BANDWIDTH_CH = cst.BANDWIDTH_CH.FULL
+        bandwidth: cst.BANDWIDTH_CH = cst.BANDWIDTH_CH.BW_FULL
     ) -> None:
         """
         Set the bandwidth filter for a given channel.
@@ -808,6 +808,13 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
             bandwidth (BANDWIDTH_CH, optional): Bandwidth filter to set. Defaults to FULL.
         """
         channel = _get_literal(channel, cst.channel_map)
+        
+        # Convert the bandwidth to the correct value for the ps5000a
+        if bandwidth == cst.BANDWIDTH_CH.BW_20MHZ:
+            bandwidth = 1
+        # Check if the bandwidth is supported by the ps5000a
+        if bandwidth not in [0, 1]:
+            raise PicoSDKException(f"ps5000a only supports BW_FULL (0) and BW_20MHZ (1)")
 
         self._call_attr_function(
             "SetBandwidthFilter",

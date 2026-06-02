@@ -74,7 +74,7 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
         range: str | cst.range_literal | RANGE,
         coupling: COUPLING = COUPLING.DC,
         offset: float = 0,
-        bandwidth: BANDWIDTH_CH = BANDWIDTH_CH.FULL,
+        bandwidth: BANDWIDTH_CH = BANDWIDTH_CH.BW_FULL,
         range_type: PICO_PROBE_RANGE_INFO = PICO_PROBE_RANGE_INFO.X1_PROBE_NV,
         probe_scale: float = 1.0,
         ) -> int:
