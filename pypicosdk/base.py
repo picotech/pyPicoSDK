@@ -893,6 +893,25 @@ class PicoScopeBase:
         channel_range_v = self.channel_db[channel].range_v
         return int(((volts / scale) / channel_range_v) * self.max_adc_value)
 
+    def _digital_volts_to_adc(self, volts: float, full_scale_v: float) -> int:
+        """Convert a digital-port logic threshold in volts to ADC counts.
+
+        Digital ports use a fixed +/-32767 count range mapped to a fixed
+        full-scale voltage, independent of the device resolution, so this does
+        not use ``max_adc_value``.
+
+        Args:
+            volts (float): Logic threshold in volts (V).
+            full_scale_v (float): Port full-scale voltage (e.g. 5.0 on ps5000a,
+                8.0 on ps6000a).
+
+        Returns:
+            int: ADC count clamped to the +/-32767 logic-level range.
+        """
+        counts = round(volts / full_scale_v * cst.DIGITAL_LOGIC_LEVEL_MAX_ADC)
+        return max(-cst.DIGITAL_LOGIC_LEVEL_MAX_ADC,
+                   min(cst.DIGITAL_LOGIC_LEVEL_MAX_ADC, counts))
+
     # Data conversion ADC/mV & ctypes/int
     def mv_to_adc(self, mv: float, channel: cst.CHANNEL) -> int:
         """

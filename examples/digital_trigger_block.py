@@ -24,11 +24,8 @@ LOGIC_THRESHOLD_V = 1.5          # logic threshold on the fixed +/-5 V digital r
 scope = psdk.ps5000a()
 scope.open_unit(resolution=psdk.RESOLUTION.BIT_8)
 
-# Logic threshold is given in ADC counts over the digital port's +/-5 V range.
-logic_adc = int(LOGIC_THRESHOLD_V / 5.0 * scope.max_adc_value)
-
-# Enable digital PORT0 (channels D0..D7) and set the logic threshold.
-scope.set_digital_port(psdk.DIGITAL_PORT.PORT0, enabled=True, logic_level=logic_adc)
+# Enable digital PORT0 (channels D0..D7) and set the logic threshold in volts.
+scope.set_digital_port(psdk.DIGITAL_PORT.PORT0, enabled=True, logic_level_v=LOGIC_THRESHOLD_V)
 
 # Trigger when the PORT0 source condition is met...
 scope.set_trigger_channel_conditions(

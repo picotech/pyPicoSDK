@@ -120,6 +120,47 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
         )
         return status
 
+    @override
+    def set_digital_port_on(
+        self,
+        port: DIGITAL_PORT,
+        logic_threshold_level_v: float = 0.0,
+        hysteresis=None,
+        *,
+        logic_threshold_level: list[int] | None = None,
+    ) -> None:
+        """Enable a digital port using ``psospaSetDigitalPortOn``.
+
+        psospa takes the logic threshold directly in volts as a single value
+        for the whole port (the C API signature differs from the ps6000a, which
+        takes per-pin ADC counts). ``hysteresis`` is accepted for signature
+        parity with the ps6000a method but is not used by the psospa driver.
+
+        Args:
+            port: Digital port to enable.
+            logic_threshold_level_v (float): Logic threshold in volts applied to
+                the whole port. Defaults to 0.0.
+            hysteresis: Ignored on psospa; present for signature parity.
+            logic_threshold_level: Deprecated and unsupported on psospa; pass
+                ``logic_threshold_level_v`` in volts instead.
+        """
+        if logic_threshold_level is not None:
+            warn(
+                "logic_threshold_level (ADC counts) is not supported on psospa; "
+                "pass logic_threshold_level_v in volts instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        if isinstance(logic_threshold_level_v, (list, tuple)):
+            logic_threshold_level_v = logic_threshold_level_v[0]
+
+        self.digital_port_db.add(port)
+        self._call_attr_function(
+            "SetDigitalPortOn",
+            self.handle,
+            port,
+            ctypes.c_double(logic_threshold_level_v),
+        )
 
     @override
     def get_nearest_sampling_interval(self, interval_s:float, round_faster:int=True) -> dict:

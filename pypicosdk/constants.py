@@ -709,6 +709,14 @@ DigitalPortToChannelFlag = {
     DIGITAL_PORT.PORT1: PICO_CHANNEL_FLAGS.PORT1_FLAGS,
 }
 
+# Digital port logic thresholds map a fixed +/-32767 ADC count range onto a
+# fixed full-scale voltage, independent of the device resolution. The full
+# scale differs per driver: +/-5 V on ps5000a, +/-8 V on ps6000a. psospa takes
+# the threshold directly in volts and needs no count conversion.
+DIGITAL_LOGIC_LEVEL_MAX_ADC = 32767
+PS5000A_DIGITAL_FULL_SCALE_V = 5.0
+PS6000A_DIGITAL_FULL_SCALE_V = 8.0
+
 PicoChannelFlagsEnumMap = {
     PICO_CHANNEL_FLAGS.CHANNEL_A_FLAGS: 0,
     PICO_CHANNEL_FLAGS.CHANNEL_B_FLAGS: 1,
