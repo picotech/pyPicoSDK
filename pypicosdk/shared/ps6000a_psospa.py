@@ -748,6 +748,7 @@ class shared_ps6000a_psospa(_ProtocolBase):
             *logic_threshold_level
         )
 
+        self.digital_port_db.add(port)
         self._call_attr_function(
             "SetDigitalPortOn",
             self.handle,
@@ -760,6 +761,7 @@ class shared_ps6000a_psospa(_ProtocolBase):
     def set_digital_port_off(self, port: DIGITAL_PORT) -> None:
         """Disable a digital port using ``ps6000aSetDigitalPortOff``."""
 
+        self.digital_port_db.discard(port)
         self._call_attr_function(
             "SetDigitalPortOff",
             self.handle,

@@ -62,6 +62,7 @@ class PicoScopeBase:
         # Setup class variables
         self.handle = ctypes.c_short()
         self.channel_db: dict[int, ChannelClass] = {}
+        self.digital_port_db: set[int] = set()
         self.resolution = None
         self.max_adc_value = None
         self.min_adc_value = None
@@ -334,6 +335,10 @@ class PicoScopeBase:
         enabled_channel_byte = 0
         for channel in self.channel_db:
             enabled_channel_byte += 2**channel
+        # Digital ports are not in channel_db; OR in their PICO_CHANNEL_FLAGS bit
+        # so timebase/channel-combination queries see them as enabled channels.
+        for port in self.digital_port_db:
+            enabled_channel_byte |= cst.DigitalPortToChannelFlag[port]
         return enabled_channel_byte
 
     def get_nearest_sampling_interval(self, interval_s:float) -> dict:
