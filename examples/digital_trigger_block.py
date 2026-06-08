@@ -25,7 +25,7 @@ scope = psdk.ps5000a()
 scope.open_unit(resolution=psdk.RESOLUTION.BIT_8)
 
 # Enable digital PORT0 (channels D0..D7) and set the logic threshold in volts.
-scope.set_digital_port(psdk.DIGITAL_PORT.PORT0, enabled=True, logic_level_v=LOGIC_THRESHOLD_V)
+scope.set_digital_port(psdk.DIGITAL_PORT.PORT0, enabled=True, logic_threshold_level_v=LOGIC_THRESHOLD_V)
 
 # Trigger when the PORT0 source condition is met...
 scope.set_trigger_channel_conditions(

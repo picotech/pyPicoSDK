@@ -805,7 +805,7 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
         self,
         port: cst.DIGITAL_PORT,
         enabled: bool = True,
-        logic_level_v: float = 0.0,
+        logic_threshold_level_v: float = 0.0,
         *,
         logic_level: int | None = None,
     ) -> int:
@@ -819,22 +819,23 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
         Args:
             port (DIGITAL_PORT): Identifier for the digital port.
             enabled (bool, optional): Enable or disable the digital port. Defaults to True.
-            logic_level_v (float, optional): Logic threshold in volts, between
-                -5.0 V and +5.0 V. Defaults to 0.0.
+            logic_threshold_level_v (float, optional): Logic threshold in volts,
+                between -5.0 V and +5.0 V. Defaults to 0.0.
             logic_level (int, optional): Deprecated. Logic threshold in raw ADC
-                counts (-32767 to 32767). If given, it overrides ``logic_level_v``.
+                counts (-32767 to 32767). If given, it overrides
+                ``logic_threshold_level_v``.
 
         Returns:
             int: Status from device.
         """
         if logic_level is None:
             logic_level = self._digital_volts_to_adc(
-                logic_level_v, cst.PS5000A_DIGITAL_FULL_SCALE_V
+                logic_threshold_level_v, cst.PS5000A_DIGITAL_FULL_SCALE_V
             )
         else:
             warn(
-                "logic_level (ADC counts) is deprecated; pass logic_level_v in "
-                "volts instead.",
+                "logic_level (ADC counts) is deprecated; pass "
+                "logic_threshold_level_v in volts instead.",
                 DeprecationWarning,
                 stacklevel=2,
             )
