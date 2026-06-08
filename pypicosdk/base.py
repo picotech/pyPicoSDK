@@ -67,6 +67,7 @@ class PicoScopeBase:
         # Setup class variables
         self.handle = ctypes.c_short()
         self.channel_db: dict[int, ChannelClass] = {}
+        self.digital_port_db: set[int] = set()
         self.resolution = None
         self.max_adc_value = None
         self.min_adc_value = None
@@ -341,6 +342,10 @@ class PicoScopeBase:
         enabled_channel_byte = 0
         for channel in self.channel_db:
             enabled_channel_byte += 2**channel
+        # Digital ports are not in channel_db; OR in their PICO_CHANNEL_FLAGS bit
+        # so timebase/channel-combination queries see them as enabled channels.
+        for port in self.digital_port_db:
+            enabled_channel_byte |= cst.DigitalPortToChannelFlag[port]
         return enabled_channel_byte
 
     def get_nearest_sampling_interval(self, interval_s:float) -> dict:
@@ -894,6 +899,25 @@ class PicoScopeBase:
         scale = self.channel_db[channel].probe_scale
         channel_range_v = self.channel_db[channel].range_v
         return int(((volts / scale) / channel_range_v) * self.max_adc_value)
+
+    def _digital_volts_to_adc(self, volts: float, full_scale_v: float) -> int:
+        """Convert a digital-port logic threshold in volts to ADC counts.
+
+        Digital ports use a fixed +/-32767 count range mapped to a fixed
+        full-scale voltage, independent of the device resolution, so this does
+        not use ``max_adc_value``.
+
+        Args:
+            volts (float): Logic threshold in volts (V).
+            full_scale_v (float): Port full-scale voltage (e.g. 5.0 on ps5000a,
+                8.0 on ps6000a).
+
+        Returns:
+            int: ADC count clamped to the +/-32767 logic-level range.
+        """
+        counts = round(volts / full_scale_v * cst.DIGITAL_LOGIC_LEVEL_MAX_ADC)
+        return max(-cst.DIGITAL_LOGIC_LEVEL_MAX_ADC,
+                   min(cst.DIGITAL_LOGIC_LEVEL_MAX_ADC, counts))
 
     # Data conversion ADC/mV & ctypes/int
     def mv_to_adc(self, mv: float, channel: cst.CHANNEL) -> int:

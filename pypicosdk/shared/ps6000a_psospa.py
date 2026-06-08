@@ -738,21 +738,46 @@ class shared_ps6000a_psospa(_ProtocolBase):
     def set_digital_port_on(
         self,
         port: DIGITAL_PORT,
-        logic_threshold_level: list[int],
-        hysteresis: DIGITAL_PORT_HYSTERESIS,
+        logic_threshold_level_v: float | list[float] = 0.0,
+        hysteresis: DIGITAL_PORT_HYSTERESIS = DIGITAL_PORT_HYSTERESIS.NORMAL_100MV,
+        *,
+        logic_threshold_level: list[int] | None = None,
     ) -> None:
         """Enable a digital port using ``ps6000aSetDigitalPortOn``.
 
+        Thresholds are given in volts. The ps6000a digital port has a fixed
+        +/-8 V range, so each volts value is converted to ADC counts internally.
+
         Args:
             port: Digital port to enable.
-            logic_threshold_level: Threshold level for each pin in millivolts.
+            logic_threshold_level_v: Threshold in volts, between -8.0 V and
+                +8.0 V. A single value is applied to all 8 pins, or pass a list
+                of per-pin values. Defaults to 0.0.
             hysteresis: Hysteresis level applied to all pins.
+            logic_threshold_level: Deprecated. Per-pin thresholds in raw ADC
+                counts. If given, it overrides ``logic_threshold_level_v``.
         """
+
+        if logic_threshold_level is None:
+            if not isinstance(logic_threshold_level_v, (list, tuple)):
+                logic_threshold_level_v = [logic_threshold_level_v] * 8
+            logic_threshold_level = [
+                self._digital_volts_to_adc(v, cst.PS6000A_DIGITAL_FULL_SCALE_V)
+                for v in logic_threshold_level_v
+            ]
+        else:
+            warn(
+                "logic_threshold_level (ADC counts) is deprecated; pass "
+                "logic_threshold_level_v in volts instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
 
         level_array = (ctypes.c_int16 * len(logic_threshold_level))(
             *logic_threshold_level
         )
 
+        self.digital_port_db.add(port)
         self._call_attr_function(
             "SetDigitalPortOn",
             self.handle,
@@ -765,6 +790,7 @@ class shared_ps6000a_psospa(_ProtocolBase):
     def set_digital_port_off(self, port: DIGITAL_PORT) -> None:
         """Disable a digital port using ``ps6000aSetDigitalPortOff``."""
 
+        self.digital_port_db.discard(port)
         self._call_attr_function(
             "SetDigitalPortOff",
             self.handle,
