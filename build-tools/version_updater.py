@@ -8,11 +8,11 @@ This scipt copies the version numbers to specific files.
 """
 # flake8: noqa
 
-from version import docs_version, package_version
 import sys
 import os
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(parent_dir)
+from version import docs_version, package_version
 
 IMG_STR = '''<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
 <p align="center">
