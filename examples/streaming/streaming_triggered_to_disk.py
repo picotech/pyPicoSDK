@@ -58,8 +58,12 @@ Key Concepts:
     sample_rate. Below this, a trigger that fires within a single poll window
     may not have enough pre-trigger data in the deque yet. A warning is
     printed at startup if this constraint is violated.
-  - trigger_file_offset: the deque holds at most PRE_TRIGGER_SAMPLES, so
-    the trigger sample is at approximately PRE_TRIGGER_SAMPLES in the file.
+  - trigger_file_offset: the driver reports the trigger position as a
+    cumulative stream sample index ('triggered at'). Subtracting the stream
+    index of the oldest sample still in the deque converts it to an exact
+    sample index in the output file (the deque shedding is chunk-granular,
+    so the file holds between PRE_TRIGGER_SAMPLES and PRE_TRIGGER_SAMPLES +
+    one poll chunk of pre-trigger data — the offset accounts for this).
     data[:trigger_file_offset] = pre-trigger; data[trigger_file_offset:] = post.
 
 SDK Limitations for streaming triggers:
@@ -237,6 +241,12 @@ trigger_fired = False               # set True when triggered? first seen
 pre_trigger_deque = collections.deque()  # chunks buffered before trigger
 pre_trigger_total = 0               # total samples currently in deque
 
+# Trigger position — written once by acquisition_thread when the trigger
+# fires, read by the main thread for the summary and metadata.
+trigger_file_offset = None          # exact sample index of the trigger in the file
+trigger_at_stream_index = None      # driver's cumulative stream index of the trigger
+trigger_offset_exact = False        # False if the fallback approximation was used
+
 
 # ============================================================================
 # ACQUISITION THREAD
@@ -261,6 +271,7 @@ def acquisition_thread():
     """
     global stop_streaming, total_samples_received
     global trigger_fired, pre_trigger_deque, pre_trigger_total
+    global trigger_file_offset, trigger_at_stream_index, trigger_offset_exact
 
     print("Acquisition thread started")
     last_status = None
@@ -324,8 +335,31 @@ def acquisition_thread():
             # containing the trigger crossing is included in the deque flush.
             if info['triggered?'] and not trigger_fired:
                 trigger_fired = True
+
+                # The driver reports the trigger position as a cumulative
+                # sample index from the start of the stream. The deque holds
+                # the most recent pre_trigger_total samples, ending at
+                # total_samples_received, and is flushed to the front of the
+                # file — so the trigger's file offset is its position within
+                # the deque contents.
+                trigger_at_stream_index = int(info['triggered at'])
+                deque_start_stream_index = total_samples_received - pre_trigger_total
+                offset = trigger_at_stream_index - deque_start_stream_index
+                if 0 <= offset <= pre_trigger_total:
+                    trigger_file_offset = offset
+                    trigger_offset_exact = True
+                else:
+                    # Driver index outside the buffered window — fall back to
+                    # the chunk-approximate offset (deque length at flush).
+                    print(f"[WARNING] Driver trigger index {trigger_at_stream_index:,} "
+                          f"is outside the pre-trigger window — "
+                          f"trigger_file_offset is approximate")
+                    trigger_file_offset = pre_trigger_total
+                    trigger_offset_exact = False
+
                 print(f"\n[TRIGGER] Hardware trigger fired  "
-                      f"(sample {info['triggered at']:,} in stream)")
+                      f"(sample {trigger_at_stream_index:,} in stream, "
+                      f"file offset {trigger_file_offset:,})")
 
                 # Flush the entire pre-trigger deque to the write queue
                 for pre_chunk in pre_trigger_deque:
@@ -476,14 +510,19 @@ if trigger_fired and total_samples_written > 0:
     pct_during = samples_on_disk_at_stop * 100 // total_samples_written
     print(f"On disk at target      : {samples_on_disk_at_stop:,}  ({pct_during}% transferred during capture)")
 if trigger_fired:
-    print(f"Trigger file offset    : {PRE_TRIGGER_SAMPLES:,}  (index in output file)")
+    exact_note = "exact, from driver" if trigger_offset_exact else "approximate"
+    print(f"Trigger file offset    : {trigger_file_offset:,}  "
+          f"(index in output file, {exact_note})")
 print(f"{'─' * 50}\n")
 
 if not trigger_fired:
     print("[INFO] No trigger detected — output file contains pre-trigger data only.")
 else:
-    # The hardware guarantees exactly PRE_TRIGGER_SAMPLES before the trigger,
-    # so the trigger sample is always at index PRE_TRIGGER_SAMPLES in the file.
+    # trigger_file_offset is derived from the driver's cumulative trigger
+    # index ('triggered at'), so it is exact to the sample. The deque flush
+    # is chunk-granular, so the file holds between PRE_TRIGGER_SAMPLES and
+    # PRE_TRIGGER_SAMPLES + one poll chunk of pre-trigger data — which is
+    # why the offset is not simply PRE_TRIGGER_SAMPLES.
     metadata = {
         "timestamp": datetime.now().isoformat(),
         "channel": "A",
@@ -493,7 +532,9 @@ else:
         "dtype": "int8",
         "bytes_per_sample": 1,
         "n_samples": total_samples_written,
-        "trigger_file_offset": PRE_TRIGGER_SAMPLES,
+        "trigger_file_offset": trigger_file_offset,
+        "trigger_offset_exact": trigger_offset_exact,
+        "trigger_at_stream_index": trigger_at_stream_index,
         "pre_trigger_samples": PRE_TRIGGER_SAMPLES,
         "post_trigger_samples": POST_TRIGGER_SAMPLES,
         "trigger_threshold_mv": TRIGGER_THRESHOLD_MV,
