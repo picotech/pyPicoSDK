@@ -2099,7 +2099,9 @@ class PicoScopeBase:
             c_sample_interval = ctypes.c_uint32(interval_int)
 
             if overview_buffer_size is None:
-                overview_buffer_size = self.base_dataclass.last_buffer_size
+                # Falls back to 0 when no buffer has been registered yet;
+                # the driver rejects that with a meaningful status.
+                overview_buffer_size = self.base_dataclass.last_buffer_size or 0
 
             self._call_attr_function(
                 "RunStreaming",
