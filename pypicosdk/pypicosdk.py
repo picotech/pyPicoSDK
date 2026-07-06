@@ -14,7 +14,8 @@ from .common import (
     PicoSDKException,
     PicoSDKNotFoundException,
     OverrangeWarning,
-    PowerSupplyWarning
+    PowerSupplyWarning,
+    ParameterNotSupported
 )
 
 def get_all_enumerated_units() -> tuple[int, list[str]]:
@@ -136,6 +137,7 @@ __all__ = list(_constants.__all__) + [
     'PicoSDKException',
     'OverrangeWarning',
     'PowerSupplyWarning',
+    'ParameterNotSupported',
     'get_all_enumerated_units',
     'export_to_csv',
     'convert_time_axis',

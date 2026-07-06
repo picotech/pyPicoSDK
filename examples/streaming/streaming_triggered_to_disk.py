@@ -334,39 +334,51 @@ def acquisition_thread():
             # Check triggered? after buffering the current chunk so the chunk
             # containing the trigger crossing is included in the deque flush.
             if info['triggered?'] and not trigger_fired:
-                trigger_fired = True
-
                 # The driver reports the trigger position as a cumulative
-                # sample index from the start of the stream. The deque holds
-                # the most recent pre_trigger_total samples, ending at
-                # total_samples_received, and is flushed to the front of the
-                # file — so the trigger's file offset is its position within
-                # the deque contents.
+                # sample index from the start of the stream (sanity-check on
+                # hardware: a trigger firing seconds into a fast stream
+                # reports an index in the billions, not the millions). The
+                # deque holds the most recent pre_trigger_total samples,
+                # ending at total_samples_received, and is flushed to the
+                # front of the file — so the trigger's file offset is its
+                # position within the deque contents. The file is contiguous
+                # across the flush boundary, so an offset beyond the deque
+                # (trigger reported ahead of its chunk) still indexes
+                # correctly into the post-trigger region.
                 trigger_at_stream_index = int(info['triggered at'])
                 deque_start_stream_index = total_samples_received - pre_trigger_total
                 offset = trigger_at_stream_index - deque_start_stream_index
-                if 0 <= offset <= pre_trigger_total:
+                if offset >= 0:
                     trigger_file_offset = offset
                     trigger_offset_exact = True
                 else:
-                    # Driver index outside the buffered window — fall back to
-                    # the chunk-approximate offset (deque length at flush).
+                    # The trigger sample was already shed from the deque and
+                    # is not in the file — record the file start and flag it.
                     print(f"[WARNING] Driver trigger index {trigger_at_stream_index:,} "
-                          f"is outside the pre-trigger window — "
-                          f"trigger_file_offset is approximate")
-                    trigger_file_offset = pre_trigger_total
+                          f"precedes the buffered pre-trigger window — the trigger "
+                          f"sample is not in the file; trigger_file_offset is approximate")
+                    trigger_file_offset = 0
                     trigger_offset_exact = False
+
+                # Publish trigger_fired last so the main thread never sees it
+                # set while the offset fields above are still None.
+                trigger_fired = True
 
                 print(f"\n[TRIGGER] Hardware trigger fired  "
                       f"(sample {trigger_at_stream_index:,} in stream, "
                       f"file offset {trigger_file_offset:,})")
 
-                # Flush the entire pre-trigger deque to the write queue
+                # Flush the entire pre-trigger deque to the write queue. A
+                # blocking put is safe here (the write thread is draining) and
+                # keeps the file gap-free — a dropped chunk would shift every
+                # later file index and silently invalidate trigger_file_offset.
                 for pre_chunk in pre_trigger_deque:
                     try:
-                        write_queue.put_nowait(pre_chunk)
+                        write_queue.put(pre_chunk, timeout=30.0)
                     except queue.Full:
-                        print("[WARNING] Write queue full during pre-trigger flush")
+                        print("[WARNING] Write queue stalled during pre-trigger flush — "
+                              "chunk dropped, trigger_file_offset is no longer exact")
+                        trigger_offset_exact = False
                 pre_trigger_deque.clear()
                 pre_trigger_total = 0
 
@@ -516,13 +528,17 @@ if trigger_fired:
 print(f"{'─' * 50}\n")
 
 if not trigger_fired:
-    print("[INFO] No trigger detected — output file contains pre-trigger data only.")
+    print("[INFO] No trigger detected — output file is empty (pre-trigger data "
+          "is only flushed to disk when the trigger fires).")
 else:
     # trigger_file_offset is derived from the driver's cumulative trigger
-    # index ('triggered at'), so it is exact to the sample. The deque flush
-    # is chunk-granular, so the file holds between PRE_TRIGGER_SAMPLES and
-    # PRE_TRIGGER_SAMPLES + one poll chunk of pre-trigger data — which is
-    # why the offset is not simply PRE_TRIGGER_SAMPLES.
+    # index ('triggered at') and is exact to the sample when
+    # trigger_offset_exact is true; on the fallback paths (trigger index
+    # preceding the buffered window, or a dropped chunk during the flush) it
+    # is approximate and flagged false. The deque flush is chunk-granular,
+    # so the file holds between PRE_TRIGGER_SAMPLES and PRE_TRIGGER_SAMPLES +
+    # one poll chunk of pre-trigger data — which is why the offset is not
+    # simply PRE_TRIGGER_SAMPLES.
     metadata = {
         "timestamp": datetime.now().isoformat(),
         "channel": "A",
@@ -553,6 +569,6 @@ else:
     print("  import numpy as np, json")
     print(f"  meta = json.load(open('{metadata_path}'))")
     print(f"  data = np.fromfile('{OUTPUT_FILE}', dtype=np.int8)")
-    print(f"  trig = meta['trigger_file_offset']  # trigger sample is at this index")
+    print(f"  trig = meta['trigger_file_offset']  # exact if meta['trigger_offset_exact']")
     print(f"  pre  = data[:trig]                  # samples before trigger")
     print(f"  post = data[trig:]                  # samples from trigger onwards")

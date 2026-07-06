@@ -100,7 +100,12 @@ class PicoScopeBase:
         """
         Checks status code against error list; raises an exception if not 0.
 
-        Errors such as `SUPPLY_NOT_CONNECTED` are returned as warnings.
+        Status/warning codes (busy, waiting for buffers, supply not connected,
+        channel disabled due to USB power) are silently ignored. Recoverable
+        mid-stream errors (streaming failed, buffer stall) and codes missing
+        from the local error table raise while leaving the unit OPEN; every
+        other error closes the unit before raising, so a caught
+        PicoSDKException only has a live handle in those first two cases.
 
         Args:
             status (int): Returned status value from PicoSDK.
@@ -117,8 +122,12 @@ class PicoScopeBase:
         # 290 - Pico Channel Disabled Due To Usb Powered
         if status in [407, 282, 290, 39]:
             return
-        error_code = ERROR_STRING.get(
-            status, f"Unknown PicoSDK status: {status} (0x{status:08X})")
+        error_code = ERROR_STRING.get(status)
+        # Status missing from the local table (e.g. a newer driver): don't
+        # assume it is fatal - leave the unit open for the caller to decide.
+        if error_code is None:
+            raise PicoSDKException(
+                f"Unknown PicoSDK status: {status} (0x{status:08X})")
         # Recoverable mid-stream statuses: raise without closing the unit so
         # the caller can still Stop and salvage buffered data via
         # no_of_streaming_values() / get_streaming_latest_values().
@@ -1674,6 +1683,11 @@ class PicoScopeBase:
                 f"Buffer holds {buffer.size} samples but {samples} were "
                 "declared to the driver"
             )
+        if not buffer.flags.c_contiguous or not buffer.flags.writeable:
+            raise PicoSDKException(
+                "Buffer must be C-contiguous and writeable to be registered "
+                "with the driver"
+            )
 
     def set_data_buffer(
         self,
@@ -1773,9 +1787,11 @@ class PicoScopeBase:
             if np_dtype is None:
                 raise PicoSDKException("Invalid datatype selected for buffer")
              
-            # Create buffer based on ratio mode
+            # Create buffer based on ratio mode. AGGREGATE holds a min and a
+            # max plane of `samples` each per capture, matching the
+            # (2, samples) layout set_data_buffers registers.
             if ratio_mode == cst.RATIO_MODE.AGGREGATE:
-                buffer = np.zeros((captures, samples, 2), dtype=np_dtype)
+                buffer = np.zeros((captures, 2, samples), dtype=np_dtype)
             else:
                 buffer = np.zeros((captures, samples), dtype=np_dtype)
 
@@ -1975,9 +1991,11 @@ class PicoScopeBase:
             samples, from_segment_index=segment, to_segment_index=captures - 1, ratio=ratio, 
             ratio_mode=ratio_mode, start_index=start_index)
 
-        # Reduce samples based on actual samples
+        # Reduce samples based on actual samples (last axis is always the
+        # sample axis, for both (captures, samples) and AGGREGATE's
+        # (captures, 2, samples) layouts)
         for channel, array in channel_buffer.items():
-            channel_buffer[channel] = array[:, :actual_samples]
+            channel_buffer[channel] = array[..., :actual_samples]
 
         # Convert data to mV
         if output_unit != 'adc':
@@ -2078,11 +2096,14 @@ class PicoScopeBase:
         if self._unit_prefix_n in ['ps5000a', 'ps4000a']:
             # This API generation takes an integer sample interval. Rescale a
             # fractional interval to a finer time unit so the requested rate
-            # survives, e.g. 3.2 ns -> 3200 ps.
+            # survives, e.g. 3.2 ns -> 3200 ps. Stop descending if the
+            # rescaled value would no longer fit in uint32 - rounding at the
+            # current unit is then the closest representable request.
             unit_steps = 0
             while (abs(sample_interval - round(sample_interval))
                    > 1e-9 * max(1.0, abs(sample_interval))
-                   and pico_time_units > _PICO_TIME_UNIT.FS):
+                   and pico_time_units > _PICO_TIME_UNIT.FS
+                   and sample_interval * 1000 <= 0xFFFFFFFF):
                 sample_interval *= 1000
                 pico_time_units = _PICO_TIME_UNIT(pico_time_units - 1)
                 unit_steps += 1
@@ -2111,7 +2132,7 @@ class PicoScopeBase:
                 max_pre_trigger_samples,
                 max_post_trigger_samples,
                 auto_stop,
-                ratio,
+                ctypes.c_uint32(ratio),
                 ratio_mode,
                 ctypes.c_uint32(overview_buffer_size),
             )
@@ -2134,7 +2155,7 @@ class PicoScopeBase:
             max_pre_trigger_samples,
             max_post_trigger_samples,
             auto_stop,
-            ratio,
+            ctypes.c_uint64(ratio),
             ratio_mode,
         )
         return c_sample_interval.value

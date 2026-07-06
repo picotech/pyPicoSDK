@@ -17,11 +17,11 @@ from .. import constants as cst
 from ..common import (
     _get_literal,
     _siggen_get_buffer_args,
-    ParameterNotSupported
+    ParameterNotSupported,
+    PicoSDKException
 )
 from ..base import PicoScopeBase
 from .._classes._channel_class import ChannelClass
-from .._exceptions import PicoSDKException
 from ..shared._ps5000a_ps6000a import Sharedps5000aPs6000a
 
 
@@ -220,12 +220,18 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
 
         Returns:
             np.ndarray: Created buffer as a numpy array.
+
+        Note:
+            samples=0 clears the registration, but only for this
+            channel/segment/ratio_mode — unlike ACTION.CLEAR_ALL on other
+            drivers, which clears every registered buffer.
         """
-        # Warnings if moving to ps5000a from other drivers.
+        # Warnings if moving to ps5000a from other drivers. A samples==0 call
+        # is a clear, so the ADD warning does not apply there.
         if datatype not in [cst.DATA_TYPE.INT16_T, None]:
             warn(f'{self._unit_prefix_n} only supports datatype int16. Defaulting to int16.',
                  ParameterNotSupported)
-        if action not in [cst.ACTION.ADD, None]:
+        if samples != 0 and action not in [cst.ACTION.ADD, None]:
             warn(f'{self._unit_prefix_n} only supports the "ADD" action. Defaulting to ADD.',
                  ParameterNotSupported)
 
@@ -295,12 +301,18 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
 
         Returns:
             tuple[np.ndarray,np.ndarray]: Tuple of (buffer_min, buffer_max) numpy arrays.
+
+        Note:
+            samples=0 clears the registration, but only for this
+            channel/segment/ratio_mode — unlike ACTION.CLEAR_ALL on other
+            drivers, which clears every registered buffer.
         """
-        # Warnings if moving to ps5000a from other drivers.
+        # Warnings if moving to ps5000a from other drivers. A samples==0 call
+        # is a clear, so the ADD warning does not apply there.
         if datatype not in [cst.DATA_TYPE.INT16_T, None]:
             warn(f'{self._unit_prefix_n} only supports datatype int16. Defaulting to int16.',
                  ParameterNotSupported)
-        if action not in [cst.ACTION.ADD, None]:
+        if samples != 0 and action not in [cst.ACTION.ADD, None]:
             warn(f'{self._unit_prefix_n} only supports the "ADD" action. Defaulting to ADD.',
                  ParameterNotSupported)
 
@@ -930,8 +942,10 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
         )
 
     def _setup_streaming_callback(self):
+        # Argument types mirror the ps5000aStreamingReady typedef
+        # (ps5000aApi.h): triggerAt is uint32_t.
         self._streaming_callback_pointer = ctypes.CFUNCTYPE(
-            None, ctypes.c_int16, ctypes.c_int32, ctypes.c_uint32, ctypes.c_int16, ctypes.c_int32, 
+            None, ctypes.c_int16, ctypes.c_int32, ctypes.c_uint32, ctypes.c_int16, ctypes.c_uint32,
             ctypes.c_int16, ctypes.c_int16, ctypes.c_void_p)(self._streaming_callback)
 
     def _streaming_callback(
