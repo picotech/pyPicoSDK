@@ -389,6 +389,41 @@ class shared_ps6000a_psospa(_ProtocolBase):
         min_dwell = ctypes.c_double()
         max_dwell = ctypes.c_double()
 
+        if self._unit_prefix_n == 'psospa':
+            # psospaSigGenFrequencyLimits is the 9-arg form: no start
+            # frequency, sweep flag or manual clock inputs; it returns
+            # min/max frequency instead of a max stop frequency.
+            if (sweep_enabled or manual_dac_clock_frequency is not None
+                    or manual_prescale_ratio is not None):
+                warn('psospa siggen_frequency_limits does not take '
+                     'sweep_enabled or manual clock parameters; ignoring.',
+                     ParameterNotSupported)
+            min_freq = ctypes.c_double()
+            max_freq = ctypes.c_double()
+            self._call_attr_function(
+                "SigGenFrequencyLimits",
+                self.handle,
+                wave_type,
+                ctypes.byref(c_num_samples),
+                ctypes.byref(min_freq),
+                ctypes.byref(max_freq),
+                ctypes.byref(min_step),
+                ctypes.byref(max_step),
+                ctypes.byref(min_dwell),
+                ctypes.byref(max_dwell),
+            )
+            return {
+                "min_frequency": min_freq.value,
+                "max_frequency": max_freq.value,
+                # Alias so cross-driver callers reading the ps6000a key
+                # still get the meaningful ceiling.
+                "max_stop_frequency": max_freq.value,
+                "min_frequency_step": min_step.value,
+                "max_frequency_step": max_step.value,
+                "min_dwell_time": min_dwell.value,
+                "max_dwell_time": max_dwell.value,
+            }
+
         self._call_attr_function(
             "SigGenFrequencyLimits",
             self.handle,
@@ -754,14 +789,24 @@ class shared_ps6000a_psospa(_ProtocolBase):
     ) -> None:
         """Enable a digital port.
 
+        WARNING - the threshold unit currently differs per driver: ps6000a
+        passes the values to the driver as raw ADC counts (-32767..+32767
+        maps to -8 V..+8 V per the programmer's guide), while psospa treats
+        each value as millivolts (converted to the driver's volts argument).
+        A volts-canonical unified contract is tracked separately.
+
         Args:
             port: Digital port to enable.
-            logic_threshold_level: Threshold level for each pin in millivolts.
-                psospa supports a single threshold for the whole port; the
-                first value is used and any others are ignored with a warning.
+            logic_threshold_level: Threshold level for each pin (ps6000a:
+                ADC counts; psospa: millivolts). psospa supports a single
+                threshold for the whole port; the first value is used and any
+                others are ignored with a warning.
             hysteresis: Hysteresis level applied to all pins (ps6000a only;
                 ignored with a warning on psospa).
         """
+        if not logic_threshold_level:
+            raise PicoSDKException(
+                "logic_threshold_level must contain at least one value")
 
         if self._unit_prefix_n == 'psospa':
             # psospaSetDigitalPortOn takes a single threshold for the whole

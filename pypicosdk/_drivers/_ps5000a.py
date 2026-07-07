@@ -872,13 +872,26 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
 
         The ps5000a API has no GetMaximumAvailableMemory call; this queries
         MemorySegments with a single segment, which reports the full capture
-        memory at the current resolution. Note this (re)configures the device
-        to 1 memory segment as a side effect.
+        memory at the current resolution. Unlike the ps6000a/psospa query,
+        this is a settings change: it (re)configures the device to 1 memory
+        segment and discards any previously captured data. Do not call it
+        while a capture or stream is in progress.
 
         Returns:
             int: Maximum number of samples supported.
+
+        Raises:
+            PicoSDKException: If the driver did not report a sample count
+                (e.g. the device was busy capturing).
         """
-        return self.memory_segments(1)
+        max_samples = self.memory_segments(1)
+        # A busy device returns PICO_BUSY (swallowed as a warning status by
+        # the error handler), leaving the out-param at 0 - surface it.
+        if max_samples == 0:
+            raise PicoSDKException(
+                "Could not query maximum available memory - the device may "
+                "be busy capturing. Stop the capture first.")
+        return max_samples
 
     @override
     def get_streaming_latest_values(self, *args, **kwargs) -> dict:

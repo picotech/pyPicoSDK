@@ -389,11 +389,14 @@ class StreamingSession:
     Per-driver behaviour handled internally:
      - ps6000a/psospa: double-buffer registration (ACTION.ADD), coherent
        multi-channel draining via ``get_streaming_latest_values_multi``,
-       buffer-index rotation with hot-swap re-registration, and re-ADD
-       recovery when the driver is starved of buffers (status 407).
+       buffer-index rotation with hot-swap re-registration, and a stall
+       warning if the driver reports buffer starvation (status 407)
+       persistently rather than transiently.
      - ps5000a: a single persistent overview buffer per channel; INT8_T
        requests are routed to the native unscaled 8-bit transfer path
        (``set_unscaled_data_buffer``).
+
+    Analog channels only for now; digital/MSO ports are not yet supported.
 
     Capability walls are surfaced, not hidden: configurations a driver cannot
     express (e.g. SUM downsampling or >2^32 sample targets on ps5000a) raise
@@ -448,9 +451,9 @@ class StreamingSession:
             samples_per_buffer (int, optional): Driver transfer buffer length
                 per channel. Defaults to ~200 ms of data at the requested
                 rate, clamped to [10_000, 10_000_000].
-            poll_interval (float, optional): Seconds to sleep between polls
-                that return no data. Defaults to a tenth of the buffer
-                duration, clamped to [0.005, 0.05].
+            poll_interval (float, optional): Minimum seconds between driver
+                polls. Defaults to a tenth of the buffer duration, clamped
+                to [0.005, 0.05].
             pre_trigger_samples (int, optional): Pre-trigger sample target
                 passed to the driver. Defaults to 0.
             post_trigger_samples (int, optional): Post-trigger sample target.
@@ -476,6 +479,12 @@ class StreamingSession:
             raise PicoSDKException(
                 "No channels to stream: enable channels with set_channel() "
                 "or pass channels=[...]")
+        unknown = [ch for ch in channels if ch not in scope.channel_db]
+        if unknown:
+            raise PicoSDKException(
+                f"Channels {unknown} are not enabled analog channels - "
+                "enable them with set_channel() first. Digital/MSO ports are "
+                "not yet supported by StreamingSession.")
         self.channels = list(channels)
 
         # --- ratio mode validation (surface capability walls early) ---
@@ -491,6 +500,11 @@ class StreamingSession:
         if ratio_mode not in (RATIO_MODE.RAW, RATIO_MODE.NONE) and ratio < 1:
             raise PicoSDKException(
                 f"ratio must be >= 1 for downsampled streaming (got {ratio})")
+        # The 6000a generation spells no-downsampling RAW (0x80000000); NONE
+        # (0) exists only in the ps5000a enum. Mirror of the ps5000a driver's
+        # RAW->NONE conversion, in the opposite direction.
+        if not self._is_ps5000a and ratio_mode == RATIO_MODE.NONE:
+            ratio_mode = RATIO_MODE.RAW
         self.ratio = ratio
         self.ratio_mode = ratio_mode
 
@@ -526,11 +540,15 @@ class StreamingSession:
         if samples_per_buffer is None:
             samples_per_buffer = int(min(max(0.2 / interval_s, 10_000),
                                          10_000_000))
+        elif samples_per_buffer < 1:
+            raise PicoSDKException("samples_per_buffer must be >= 1")
         self.samples_per_buffer = samples_per_buffer
 
         if poll_interval is None:
             buffer_seconds = samples_per_buffer * interval_s
             poll_interval = min(max(buffer_seconds / 10, 0.005), 0.05)
+        elif poll_interval < 0:
+            raise PicoSDKException("poll_interval must be >= 0")
         self.poll_interval = poll_interval
 
         # --- stop targets ---
@@ -549,8 +567,11 @@ class StreamingSession:
         self._current_index: dict = {}  # channel -> active buffer index (6000a-gen)
         self._started = False
         self._finished = False
+        self._draining = False          # auto-stop seen; deliver the tail
         self._stop_requested = False
+        self._starved_polls = 0
         self._starve_warned = False
+        self._next_poll_time = 0.0
         self.actual_sample_interval: float | None = None
         self.last_info = None           # most recent raw poll result (debugging)
         self.total_samples: dict = {ch: 0 for ch in self.channels}
@@ -667,23 +688,27 @@ class StreamingSession:
                 ratio_mode=self.ratio_mode, action=ACTION.ADD,
                 buffer=self._buffers[ch][1 - index])
 
-    def _recover_starvation(self) -> None:
-        """Re-ADD buffers after status 407 (driver waiting for data buffers).
+    def _check_starvation(self, status: int) -> None:
+        """Track persistent buffer starvation (status 407 with no data).
 
-        PicoStatus.h prescribes registering a fresh buffer on
-        PICO_WAITING_FOR_DATA_BUFFERS; without this a starved stream polls
-        forever with no data.
+        A transient 407 is normal on the 6000a generation and resolves by
+        re-polling - the rotation hot-swap keeps returning buffers to the
+        driver. Proactively re-ADDing a buffer here would double-register
+        memory the driver already holds and desynchronise the buffer-index
+        mapping, so the session only watches for a persistent stall and
+        warns once instead of stalling silently.
         """
-        for ch in self.channels:
-            self.scope.set_data_buffer(
-                ch, self.samples_per_buffer, datatype=self.datatype,
-                ratio_mode=self.ratio_mode, action=ACTION.ADD,
-                buffer=self._buffers[ch][1 - self._current_index[ch]])
-        if not self._starve_warned:
+        if status != 407 or self._is_ps5000a:
+            self._starved_polls = 0
+            return
+        self._starved_polls += 1
+        starved_seconds = self._starved_polls * max(self.poll_interval, 1e-3)
+        if not self._starve_warned and starved_seconds > 2.0:
             self._starve_warned = True
-            warn("Streaming driver was starved of buffers (status 407); "
-                 "buffers re-registered. Consider a larger "
-                 "samples_per_buffer or faster polling.", BufferTooSmall)
+            warn("Streaming driver has reported WAITING_FOR_DATA_BUFFERS "
+                 "with no data for over 2 seconds; the stream may be "
+                 "stalled. Consider a larger samples_per_buffer.",
+                 BufferTooSmall)
 
     # -- iteration ----------------------------------------------------------
 
@@ -699,20 +724,35 @@ class StreamingSession:
                 self.stop()
                 raise StopIteration
 
+            # Pace driver polls to poll_interval regardless of data flow so
+            # chunk size tracks the configured cadence, not user-loop speed.
+            now = time.monotonic()
+            if now < self._next_poll_time:
+                time.sleep(self._next_poll_time - now)
+            self._next_poll_time = time.monotonic() + self.poll_interval
+
             per_channel, trigger, status = self._poll()
             got_samples = any(e['no of samples'] > 0 for e in per_channel)
 
             if got_samples:
+                self._starved_polls = 0
                 data = {}
                 overflowed = []
                 for entry in per_channel:
                     ch = entry['channel']
                     n = entry['no of samples']
+                    if n <= 0:
+                        # An entry the driver did not fill carries zeroed
+                        # index fields - never rotate or copy from it.
+                        data[ch] = np.empty(0, dtype=self._np_dtype)
+                        continue
                     start = entry['start index']
                     buffers = self._buffers[ch]
                     buf = buffers[entry['Buffer index'] % len(buffers)]
                     data[ch] = buf[start:start + n].copy()
                     self.total_samples[ch] += n
+                    # Per-entry over-range flag on the 6000a generation; the
+                    # ps5000a path decodes its channel bitmask in _poll().
                     if entry['overflowed?']:
                         overflowed.append(ch)
                     if not self._is_ps5000a:
@@ -724,10 +764,11 @@ class StreamingSession:
                          "channels are listed in chunk.overflowed.",
                          OverrangeWarning)
 
-                # Honour auto-stop only after the samples delivered with the
-                # flag have been processed, so the final chunk is never lost.
+                # Auto-stop starts a drain: keep delivering buffered chunks
+                # until a poll returns no data, so the tail the driver
+                # reports alongside/after the flag is never lost.
                 if trigger['auto stopped?']:
-                    self._finished = True
+                    self._draining = True
 
                 return StreamingChunk(
                     data=data,
@@ -737,12 +778,9 @@ class StreamingSession:
                     auto_stopped=bool(trigger['auto stopped?']),
                 )
 
-            if trigger['auto stopped?']:
+            # No data in this poll.
+            if self._draining or trigger['auto stopped?']:
                 self._finished = True
                 continue
 
-            # No data this poll: recover a starved 6000a-generation stream,
-            # otherwise wait before polling again.
-            if status == 407 and not self._is_ps5000a:
-                self._recover_starvation()
-            time.sleep(self.poll_interval)
+            self._check_starvation(status)

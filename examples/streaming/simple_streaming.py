@@ -117,9 +117,9 @@ scope.close_unit()
 # ============================================================================
 
 elapsed = time.perf_counter() - start
-print(f"\n{'─' * 50}")
+print(f"\n{'-' * 50}")
 print(f"Samples captured : {total_samples:,} in {elapsed:.2f} s "
       f"({total_samples / elapsed / 1e6:.2f} MS/s)")
 if running_min is not None:
     print(f"Signal envelope  : {running_min} .. {running_max} ADC counts")
-print(f"{'─' * 50}")
+print(f"{'-' * 50}")
