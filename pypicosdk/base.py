@@ -2087,6 +2087,13 @@ class PicoScopeBase:
         # Convert max_pre_trigger_samples and max_post_trigger_samples to ctypes
         # depending on the device type (32 or 64 bit device)
         if self._unit_prefix_n in ['ps5000a', 'ps4000a']:
+            # ctypes.c_uint32 silently masks oversize values - surface the
+            # driver's 32-bit sample-count ceiling instead.
+            if (max_pre_trigger_samples > 0xFFFFFFFF
+                    or max_post_trigger_samples > 0xFFFFFFFF):
+                raise PicoSDKException(
+                    "max_pre/post_trigger_samples exceed this driver's uint32 "
+                    "limit (4,294,967,295 samples per phase)")
             max_pre_trigger_samples = ctypes.c_uint32(max_pre_trigger_samples)
             max_post_trigger_samples = ctypes.c_uint32(max_post_trigger_samples)
         else:

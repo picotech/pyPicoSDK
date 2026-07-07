@@ -867,6 +867,19 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
         )
         return max_segments.value
 
+    def get_maximum_available_memory(self) -> int:
+        """Return the maximum sample depth of the device.
+
+        The ps5000a API has no GetMaximumAvailableMemory call; this queries
+        MemorySegments with a single segment, which reports the full capture
+        memory at the current resolution. Note this (re)configures the device
+        to 1 memory segment as a side effect.
+
+        Returns:
+            int: Maximum number of samples supported.
+        """
+        return self.memory_segments(1)
+
     @override
     def get_streaming_latest_values(self, *args, **kwargs) -> dict:
         if len(args) > 0 or len(kwargs) > 0:
