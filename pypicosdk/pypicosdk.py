@@ -10,6 +10,7 @@ from .ps6000a import ps6000a
 from .psospa import psospa
 from ._drivers._ps5000a import ps5000a
 from .base import PicoScopeBase
+from .streaming import StreamingSession, StreamingChunk
 from .common import (
     PicoSDKException,
     PicoSDKNotFoundException,
@@ -145,5 +146,7 @@ __all__ = list(_constants.__all__) + [
     'ps6000a',
     'psospa',
     'ps5000a',
+    'StreamingSession',
+    'StreamingChunk',
     '__version__',
 ]
