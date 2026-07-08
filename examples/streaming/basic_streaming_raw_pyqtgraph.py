@@ -87,10 +87,10 @@ SAMPLE_INTERVAL_NS = 1000
 # ============================================================================
 
 # Create "scope" class for a PicoScope 6000E device
-scope = psdk.ps6000a()
+scope = psdk.ps5000a()
 
 # Open the device and connect to it
-scope.open_unit()
+scope.open_unit(resolution="12bit")
 
 # Print the serial number of the connected instrument
 print(f"Connected to PicoScope: {scope.get_unit_serial()}")

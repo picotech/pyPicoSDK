@@ -403,7 +403,10 @@ class StreamingSession:
     PicoSDKException at construction or start, never silently degrade.
 
     The session is single-threaded: iterate it from one thread and hand the
-    chunk copies to consumers. ``last_info`` always holds the most recent raw
+    chunk copies to consumers. The one thread-safe entry point is
+    :meth:`request_stop`, which only sets a flag - another thread (e.g. a
+    GUI thread) may call it to end the loop while every driver call stays
+    on the iterating thread. ``last_info`` always holds the most recent raw
     poll result for debugging.
     """
 
@@ -627,11 +630,25 @@ class StreamingSession:
         self._started = True
 
     def stop(self) -> None:
-        """Stop the capture. Safe to call more than once."""
+        """Stop the capture. Safe to call more than once.
+
+        Makes a driver call, so it must run on the thread that iterates the
+        session; from any other thread use :meth:`request_stop` instead.
+        """
         self._stop_requested = True
         if self._started:
             self.scope.stop()
             self._started = False
+
+    def request_stop(self) -> None:
+        """Ask the streaming loop to finish, without touching the driver.
+
+        Unlike :meth:`stop`, this only sets the stop flag, so it is safe to
+        call from another thread (e.g. a GUI thread) while the session is
+        being iterated. The iterating thread observes the flag within one
+        poll interval, performs the driver stop itself and ends iteration.
+        """
+        self._stop_requested = True
 
     def __enter__(self):
         self.start()
