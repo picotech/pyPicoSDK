@@ -1,6 +1,6 @@
-# Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
+# Copyright (C) 2025-2026 Pico Technology Ltd. See LICENSE file for terms.
 
-mkdocs
-mkdocstrings-python
-mkdocs-include-markdown-plugin
-griffe-inherited-docstrings
+mkdocs==1.6.1
+mkdocstrings-python==2.0.4
+mkdocs-include-markdown-plugin==7.3.0
+griffe-inherited-docstrings==1.1.3

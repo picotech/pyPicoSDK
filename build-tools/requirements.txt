@@ -1,10 +1,10 @@
-# Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms.
+# Copyright (C) 2025-2026 Pico Technology Ltd. See LICENSE file for terms.
 # Requirements for development
 -e .
-numpy
-pandas
-matplotlib
+numpy==2.4.6
+pandas==3.0.3
+matplotlib==3.11.0
 
-build
-pytest
+build==1.5.0
+pytest==9.1.0
 
