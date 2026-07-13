@@ -55,8 +55,6 @@ import pypicosdk as psdk
 # CONFIGURATION
 # ============================================================================
 
-SCOPE_CLASS = psdk.ps6000a      # ps6000a / psospa / ps5000a — change this only
-
 SAMPLE_INTERVAL = 1000          # requested interval between samples
 TIME_UNITS = psdk.TIME_UNIT.NS  # 1000 ns -> 1 MS/s (driver rounds to nearest)
 DATA_TYPE = psdk.DATA_TYPE.INT16_T  # native on every driver
@@ -70,6 +68,7 @@ REFRESH_MS = 60                 # plot refresh interval (milliseconds)
 # HARDWARE SETUP
 # ============================================================================
 
+scope = psdk.psospa()
 scope.open_unit()
 print(f"Connected to PicoScope: {scope.get_unit_serial()}")
 
