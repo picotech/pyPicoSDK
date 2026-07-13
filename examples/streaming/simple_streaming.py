@@ -70,7 +70,6 @@ REFRESH_MS = 60                 # plot refresh interval (milliseconds)
 # HARDWARE SETUP
 # ============================================================================
 
-scope = psdk.psospa()
 scope.open_unit()
 print(f"Connected to PicoScope: {scope.get_unit_serial()}")
 
