@@ -641,7 +641,7 @@ class shared_ps6000a_psospa(_ProtocolBase):
         enabled: bool = True,
         coupling: COUPLING = COUPLING.DC,
         offset: float = 0.0,
-        bandwidth: BANDWIDTH_CH = BANDWIDTH_CH.FULL,
+        bandwidth: BANDWIDTH_CH | int = BANDWIDTH_CH.BW_FULL,
         probe_scale: float = 1.0,
     ) -> None:
         """
@@ -656,10 +656,15 @@ class shared_ps6000a_psospa(_ProtocolBase):
             enabled (bool, optional): Enable or disable channel.
             coupling (COUPLING, optional): AC/DC/DC 50 Ohm coupling of selected channel.
             offset (int, optional): Analog offset in volts (V) of selected channel.
-            bandwidth (BANDWIDTH_CH, optional): Bandwidth of channel (selected models).
+            bandwidth (BANDWIDTH_CH | int, optional): Bandwidth of channel (selected models).
+                Either using the BANDWIDTH_CH enum or directly using the bandwidth in Hz.
+                Defaults to BANDWIDTH_CH.BW_FULL.
             probe_scale (float, optional): Probe attenuation factor e.g. 10 for x10 probe.
                 Default value of 1.0 (x1).
         """
+        if isinstance(bandwidth, float):
+            bandwidth = int(bandwidth)
+
         if enabled:
             self.set_channel_on(channel, range, coupling, offset, bandwidth,
                                 probe_scale=probe_scale)
@@ -784,8 +789,10 @@ class shared_ps6000a_psospa(_ProtocolBase):
     def set_digital_port_on(
         self,
         port: DIGITAL_PORT,
-        logic_threshold_level: list[int],
-        hysteresis: DIGITAL_PORT_HYSTERESIS,
+        logic_threshold_level_v: float | list[float] = 0.0,
+        hysteresis: DIGITAL_PORT_HYSTERESIS = DIGITAL_PORT_HYSTERESIS.NORMAL_100MV,
+        *,
+        logic_threshold_level: list[int] | None = None,
     ) -> None:
         """Enable a digital port.
 
@@ -794,6 +801,9 @@ class shared_ps6000a_psospa(_ProtocolBase):
         maps to -8 V..+8 V per the programmer's guide), while psospa treats
         each value as millivolts (converted to the driver's volts argument).
         A volts-canonical unified contract is tracked separately.
+
+        Thresholds are given in volts. The ps6000a digital port has a fixed
+        +/-8 V range, so each volts value is converted to ADC counts internally.
 
         Args:
             port: Digital port to enable.
@@ -824,10 +834,26 @@ class shared_ps6000a_psospa(_ProtocolBase):
             )
             return
 
+        if logic_threshold_level is None:
+            if not isinstance(logic_threshold_level_v, (list, tuple)):
+                logic_threshold_level_v = [logic_threshold_level_v] * 8
+            logic_threshold_level = [
+                self._digital_volts_to_adc(v, cst.PS6000A_DIGITAL_FULL_SCALE_V)
+                for v in logic_threshold_level_v
+            ]
+        else:
+            warn(
+                "logic_threshold_level (ADC counts) is deprecated; pass "
+                "logic_threshold_level_v in volts instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
         level_array = (ctypes.c_int16 * len(logic_threshold_level))(
             *logic_threshold_level
         )
 
+        self.digital_port_db.add(port)
         self._call_attr_function(
             "SetDigitalPortOn",
             self.handle,
@@ -840,6 +866,7 @@ class shared_ps6000a_psospa(_ProtocolBase):
     def set_digital_port_off(self, port: DIGITAL_PORT) -> None:
         """Disable a digital port using ``ps6000aSetDigitalPortOff``."""
 
+        self.digital_port_db.discard(port)
         self._call_attr_function(
             "SetDigitalPortOff",
             self.handle,

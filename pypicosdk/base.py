@@ -59,12 +59,18 @@ class PicoScopeBase:
             else:
                 lib_name = "lib" + dll_name + ".so"  # Default to Unix-like naming
 
-            self.dll = ctypes.CDLL(os.path.join(_get_lib_path(), lib_name))
+            lib_dir = _get_lib_path()
+            lib_path = os.path.join(lib_dir, lib_name)
+            if system == "Darwin" and not os.path.exists(lib_path):
+                # PicoSDK.framework stores each lib in its own subdirectory
+                lib_path = os.path.join(lib_dir, lib_name.removesuffix('.dylib'), lib_name)
+            self.dll = ctypes.CDLL(lib_path)
         self._unit_prefix_n = dll_name
 
         # Setup class variables
         self.handle = ctypes.c_short()
         self.channel_db: dict[int, ChannelClass] = {}
+        self.digital_port_db: set[int] = set()
         self.resolution = None
         self.max_adc_value = None
         self.min_adc_value = None
@@ -113,14 +119,17 @@ class PicoScopeBase:
         Raises:
             PicoSDKException: Pythonic exception based on status value.
         """
+        
         if status == 0:
             return
         # Ignore codes as they are warnings or status updates.
         # 39 - Pico Busy
         # 407 - Pico Waiting For Data Buffers
+        # 281 - Pico Power Supply Connected (returned by CurrentPowerSource / ChangePowerSource)
         # 282 - Pico Power Supply Not Connected
+        # 286 - Pico Usb3 0 Device Non Usb3 0 Port (ps5000a: warns in open_unit)
         # 290 - Pico Channel Disabled Due To Usb Powered
-        if status in [407, 282, 290, 39]:
+        if status in [407, 281, 282, 286, 290, 39]:
             return
         error_code = ERROR_STRING.get(status)
         # Status missing from the local table (e.g. a newer driver): don't
@@ -354,6 +363,10 @@ class PicoScopeBase:
         enabled_channel_byte = 0
         for channel in self.channel_db:
             enabled_channel_byte += 2**channel
+        # Digital ports are not in channel_db; OR in their PICO_CHANNEL_FLAGS bit
+        # so timebase/channel-combination queries see them as enabled channels.
+        for port in self.digital_port_db:
+            enabled_channel_byte |= cst.DigitalPortToChannelFlag[port]
         return enabled_channel_byte
 
     def get_nearest_sampling_interval(self, interval_s:float) -> dict:
@@ -739,7 +752,7 @@ class PicoScopeBase:
         # If wait_for_ready is True, wait for the device to be ready before getting values
         if wait_for_ready:
             self.is_ready()
-            
+
         no_samples = ctypes.c_uint64(samples)
         overflow = np.zeros(to_segment_index + 1, dtype=np.int16)
         self._call_attr_function(
@@ -907,6 +920,25 @@ class PicoScopeBase:
         scale = self.channel_db[channel].probe_scale
         channel_range_v = self.channel_db[channel].range_v
         return int(((volts / scale) / channel_range_v) * self.max_adc_value)
+
+    def _digital_volts_to_adc(self, volts: float, full_scale_v: float) -> int:
+        """Convert a digital-port logic threshold in volts to ADC counts.
+
+        Digital ports use a fixed +/-32767 count range mapped to a fixed
+        full-scale voltage, independent of the device resolution, so this does
+        not use ``max_adc_value``.
+
+        Args:
+            volts (float): Logic threshold in volts (V).
+            full_scale_v (float): Port full-scale voltage (e.g. 5.0 on ps5000a,
+                8.0 on ps6000a).
+
+        Returns:
+            int: ADC count clamped to the +/-32767 logic-level range.
+        """
+        counts = round(volts / full_scale_v * cst.DIGITAL_LOGIC_LEVEL_MAX_ADC)
+        return max(-cst.DIGITAL_LOGIC_LEVEL_MAX_ADC,
+                   min(cst.DIGITAL_LOGIC_LEVEL_MAX_ADC, counts))
 
     # Data conversion ADC/mV & ctypes/int
     def mv_to_adc(self, mv: float, channel: cst.CHANNEL) -> int:
@@ -1212,7 +1244,7 @@ class PicoScopeBase:
         aux_output_enable: int = 0,
         auto_trigger_us: int = 0,
     ) -> None:
-        """Configure trigger thresholds for ``channel``. All threshold and hysteresis values are 
+        """Configure trigger thresholds for ``channel``. All threshold and hysteresis values are
         specified in ADC counts.
         Be aware if using raw ADC values, threshold is always scaled to a 16-bit ADC value,
         (Even when using 8-bit resolution).
@@ -1356,7 +1388,7 @@ class PicoScopeBase:
             self.handle,
             ctypes.c_uint64(delay),
         )
-    
+
     def trigger_within_pre_trigger_samples(self, state: int) -> None:
         """Control trigger positioning relative to pre-trigger samples.
         Args:
@@ -1988,7 +2020,7 @@ class PicoScopeBase:
 
         # Return values
         actual_samples, _ = self.get_values_bulk(
-            samples, from_segment_index=segment, to_segment_index=captures - 1, ratio=ratio, 
+            samples, from_segment_index=segment, to_segment_index=captures - 1, ratio=ratio,
             ratio_mode=ratio_mode, start_index=start_index)
 
         # Reduce samples based on actual samples (last axis is always the
@@ -2076,7 +2108,7 @@ class PicoScopeBase:
             auto_stop: Whether the driver should stop when the buffer is full. Defaults to 0.
             ratio: Down sampling ratio. Defaults to 0.
             ratio_mode: Down sampling mode. Defaults to RATIO_MODE.RAW.
-            overview_buffer_size: Size of the overview buffer. Only applicable for ps5000a. 
+            overview_buffer_size: Size of the overview buffer. Only applicable for ps5000a.
                 Defaults to None.
         Returns:
             float: The actual sample interval configured by the driver.
@@ -2168,9 +2200,20 @@ class PicoScopeBase:
         )
         return c_sample_interval.value
 
-    def get_enumerated_units(self) -> tuple[int, str, int]:
+    def get_enumerated_units(self, parameter: str = None) -> tuple[int, str, int]:
         """
         Returns count, serials and serial string length of a specific PicoScope unit.
+
+        Args:
+            parameter (str, optional): On entry, serials can optionally contain the following 
+                parameters to request information:
+                '-v' : model number
+                '-c' : calibration date
+                '-h' : hardware version
+                '-u' : USB version
+                '-f' : firmware version
+                Example (any separator character can be used):
+                '-v:-c:-h:-u:-f'
 
         Returns:
             Number of devices of this type
@@ -2180,6 +2223,11 @@ class PicoScopeBase:
         string_buffer_length = 256
         count = ctypes.c_int16()
         serials = ctypes.create_string_buffer(string_buffer_length)
+
+        # If parameter is not None, encode it and set the value of the serials buffer
+        if parameter != None:
+            serials.value = parameter.encode()
+
         serial_length = ctypes.c_int16(string_buffer_length)
         self._call_attr_function(
             'EnumerateUnits',

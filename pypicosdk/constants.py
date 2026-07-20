@@ -213,6 +213,11 @@ class CHANNEL(IntEnum):
 
 CHANNEL_NAMES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 
+# ps5000a EXT trigger port (CHANNEL.TRIGGER_AUX) hardware constants.
+# The port has a fixed ±5 V input range; the C API channel value is PS5000A_EXTERNAL = 4.
+PS5000A_TRIGGER_AUX_RANGE_MV = 5000
+PS5000A_TRIGGER_AUX_HW_CHANNEL = 4
+
 channel_literal = Literal[
     'channel_a',
     'channel_b',
@@ -383,18 +388,40 @@ ProbeScale_M = {
     'x1000': 1000
 }
 
-class BANDWIDTH_CH:
+class BANDWIDTH_CH(IntEnum):
     """
     Class for different bandwidth configurations.
 
     Attributes:
-        FULL: Full bandwidth configuration.
+        BW_FULL: Full bandwidth configuration.
+        BW_100KHZ: Bandwidth of 100 kHz.
+        BW_20KHZ: Bandwidth of 20 kHz.
+        BW_1MHZ: Bandwidth of 1 MHz.
         BW_20MHZ: Bandwidth of 20 MHz.
+        BW_25MHZ: Bandwidth of 25 MHz.
+        BW_50MHZ: Bandwidth of 50 MHz.
+        BW_60MHZ: Bandwidth of 60 MHz.
+        BW_100MHZ: Bandwidth of 100 MHz.
         BW_200MHZ: Bandwidth of 200 MHz.
+        BW_250MHZ: Bandwidth of 250 MHz.
+        BW_300MHZ: Bandwidth of 300 MHz.
+        BW_350MHZ: Bandwidth of 350 MHz.
+        BW_500MHZ: Bandwidth of 500 MHz.
     """
-    FULL = 0
-    BW_20MHZ = 1
-    BW_200MHZ = 2
+    BW_FULL = 0
+    BW_100KHZ = 100000
+    BW_20KHZ = 20000
+    BW_1MHZ = 1000000
+    BW_20MHZ = 20000000
+    BW_25MHZ = 25000000
+    BW_50MHZ = 50000000
+    BW_60MHZ = 60000000
+    BW_100MHZ = 100000000
+    BW_200MHZ = 200000000
+    BW_250MHZ = 250000000
+    BW_300MHZ = 300000000
+    BW_350MHZ = 350000000
+    BW_500MHZ = 500000000
 
 class ETS_MODE(IntEnum):
     """
@@ -703,6 +730,19 @@ PicoChannelFlagsMap = {
     PICO_CHANNEL_FLAGS.PORT2_FLAGS: 'PORT2',
     PICO_CHANNEL_FLAGS.PORT3_FLAGS: 'PORT3',
 }
+
+DigitalPortToChannelFlag = {
+    DIGITAL_PORT.PORT0: PICO_CHANNEL_FLAGS.PORT0_FLAGS,
+    DIGITAL_PORT.PORT1: PICO_CHANNEL_FLAGS.PORT1_FLAGS,
+}
+
+# Digital port logic thresholds map a fixed +/-32767 ADC count range onto a
+# fixed full-scale voltage, independent of the device resolution. The full
+# scale differs per driver: +/-5 V on ps5000a, +/-8 V on ps6000a. psospa takes
+# the threshold directly in volts and needs no count conversion.
+DIGITAL_LOGIC_LEVEL_MAX_ADC = 32767
+PS5000A_DIGITAL_FULL_SCALE_V = 5.0
+PS6000A_DIGITAL_FULL_SCALE_V = 8.0
 
 PicoChannelFlagsEnumMap = {
     PICO_CHANNEL_FLAGS.CHANNEL_A_FLAGS: 0,
@@ -1209,7 +1249,7 @@ class AWG_INDEX_MODE(IntEnum):
         QUAD: Quad index mode.
         MAX_INDEX_MODES: Maximum index mode.
     """
-    
+
     SINGLE = 0
     DOUBLE = 1
     QUAD = 2
@@ -1337,4 +1377,6 @@ __all__ = [
     'waveform_literal',
     'waveform_map',
     'output_unit_l',
+    'PS5000A_TRIGGER_AUX_RANGE_MV',
+    'PS5000A_TRIGGER_AUX_HW_CHANNEL',
 ]

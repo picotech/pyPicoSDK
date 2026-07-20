@@ -61,7 +61,9 @@ For details on raising an issue, find information here: [Issue documentation](ht
 Current PicoScope support:
 - PicoScope 6000E (ps6000a drivers)
 - PicoScope 3000E (psospa drivers)
+- PicoScope 5000E (psospa drivers)
 - PicoScope 5000D (ps5000a drivers)
+
 [More info here](https://picotech.github.io/pyPicoSDK/dev/current/)
 
 ## Useful links and references
@@ -71,6 +73,6 @@ Current PicoScope support:
 - [pypi-nightly (dev repo)](https://pypi.org/project/pypicosdk-nightly/)
 
 ## Version Control
-pyPicoSDK: 1.7.2
+pyPicoSDK: 1.7.5
 
 Docs: 0.4.2

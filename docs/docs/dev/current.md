@@ -29,6 +29,19 @@
   </tr>
   <tr>
     <td>
+      <img src="https://www.picotech.com/images/uploads/series/5000E-oscilloscope-page.webp" alt="PicoScope 5000E" width="200"/>
+    </td>
+    <td>
+      <strong>psospa API (PicoScope 5000E Series)</strong><br/>
+      &ndash; Simple/Advanced Block Mode<br/>
+      &ndash; Simple/Advanced Rapid Block Mode<br/>
+      &ndash; Signal Generator (inc. AWG)<br/>
+      &ndash; Advanced Trigger Functions<br/>
+      &ndash; All other direct driver functions
+    </td>
+  </tr>
+  <tr>
+    <td>
       <img src="https://www.picotech.com/images/uploads/series/5444D-MSO.png" alt="PicoScope 5000D" width="200"/>
     </td>
     <td>

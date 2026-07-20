@@ -6,7 +6,7 @@ try:
 except ImportError:
     from typing_extensions import override  # type: ignore
 from warnings import warn
-from .._exceptions import NoArgumentsNeededWarning
+from .._exceptions import NoArgumentsNeededWarning, PowerSourceWarning
 
 import queue
 
@@ -49,13 +49,43 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
             serial_number,
             resolution
         )
+        # ps5000a OpenUnit returns 282 (USB-only) or 286 (USB-3 device on USB-2
+        # port) as prompts requiring acknowledgement via ChangePowerSource before
+        # the device is usable. Both restrict the unit to 2-channel operation.
         if status == cst.POWER_SOURCE.SUPPLY_NOT_CONNECTED:
+            warn(
+                'ps5000a opened without DC power supply — running on USB power, '
+                'restricted to 2-channel operation. Connect the supplied AC '
+                'adapter to enable all channels.',
+                PowerSourceWarning,
+                stacklevel=2,
+            )
             self.ac_adaptor = False
-            self.change_power_source(cst.POWER_SOURCE.SUPPLY_NOT_CONNECTED)
-            
+            self.change_power_source(status)
+        elif status == cst.POWER_SOURCE.USB3_0_DEVICE_NON_USB3_0_PORT:
+            warn(
+                'ps5000a is a USB 3.0 device plugged into a non-USB-3.0 port — '
+                'restricted to 2-channel operation. Move to a USB 3.0 port to '
+                'enable all channels.',
+                PowerSourceWarning,
+                stacklevel=2,
+            )
+            self.ac_adaptor = False
+            self.change_power_source(status)
+
         self.resolution = resolution
         self.min_adc_value, self.max_adc_value = self.get_adc_limits()
         self.set_all_channels_off()
+
+        if self.ac_adaptor:
+            usb_version = self.get_unit_info(cst.UNIT_INFO.PICO_USB_VERSION)
+            if usb_version != '3.0':
+                warn(
+                    f'ps5000a is connected to a USB {usb_version} port — '
+                    'for maximum data transfer performance, use a USB 3.0 port.',
+                    PowerSourceWarning,
+                    stacklevel=2,
+                )
 
         return status
 
@@ -105,10 +135,9 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
             power_source (str | POWER_SOURCE): Power source selection.
         """
         power_source = _get_literal(power_source, cst.PwrSrc_M)
-        if power_source == cst.POWER_SOURCE.SUPPLY_NOT_CONNECTED:
-            self.ac_adaptor = False
-        else:
-            self.ac_adaptor = True
+        # 282 (USB-only) and 286 (USB-3 on USB-2 port) both restrict the unit
+        # to a 2-channel feature set, equivalent to running without the AC PSU.
+        self.ac_adaptor = power_source == cst.POWER_SOURCE.SUPPLY_CONNECTED
         self._call_attr_function(
             'ChangePowerSource',
             self.handle,
@@ -122,7 +151,7 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
         enabled: bool = True,
         coupling: cst.COUPLING = cst.COUPLING.DC,
         offset: float = 0.0,
-        bandwidth: cst.BANDWIDTH_CH = cst.BANDWIDTH_CH.FULL,
+        bandwidth: cst.BANDWIDTH_CH = cst.BANDWIDTH_CH.BW_FULL,
         probe_scale: float = 1.0
     ) -> None:
         """
@@ -172,10 +201,40 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
     @override
     def set_simple_trigger(self, channel, threshold=0, threshold_unit='mv', enable=True,
                            direction=cst.TRIGGER_DIR.RISING, delay=0, auto_trigger=0):
+        channel = _get_literal(channel, cst.channel_map)
+        if channel == cst.CHANNEL.TRIGGER_AUX:
+            # TRIGGER_AUX is not in channel_db, so convert threshold manually
+            # using the EXT port's fixed ±5 V range before base class sees it.
+            if threshold_unit in ('mv', 'v'):
+                threshold_mv = threshold * 1000 if threshold_unit == 'v' else threshold
+                threshold = int((threshold_mv / cst.PS5000A_TRIGGER_AUX_RANGE_MV) * self.max_adc_value)
+                threshold_unit = 'adc'
+            # Remap SDK virtual value (1001) to PS5000A_EXTERNAL (4) for the C API.
+            channel = cst.PS5000A_TRIGGER_AUX_HW_CHANNEL  # type: ignore[assignment]
         status = super().set_simple_trigger(channel, threshold, threshold_unit, enable, direction,
                                             delay, auto_trigger=0)
         self.set_auto_trigger_microseconds(auto_trigger)
         return status
+
+    @override
+    def set_advanced_trigger(self, channel, state, direction, threshold_mode,
+                             threshold_upper_mv, threshold_lower_mv,
+                             hysteresis_upper_mv=0.0, hysteresis_lower_mv=0.0,
+                             aux_output_enable=0, auto_trigger_ms=0,
+                             action=cst.ACTION.CLEAR_ALL | cst.ACTION.ADD):
+        channel = _get_literal(channel, cst.channel_map)
+        if channel == cst.CHANNEL.TRIGGER_AUX:
+            def _mv_to_adc(mv):
+                return int((mv / cst.PS5000A_TRIGGER_AUX_RANGE_MV) * self.max_adc_value)
+            threshold_upper_mv = _mv_to_adc(threshold_upper_mv)
+            threshold_lower_mv = _mv_to_adc(threshold_lower_mv)
+            hysteresis_upper_mv = _mv_to_adc(hysteresis_upper_mv)
+            hysteresis_lower_mv = _mv_to_adc(hysteresis_lower_mv)
+            channel = cst.PS5000A_TRIGGER_AUX_HW_CHANNEL  # type: ignore[assignment]
+        super().set_advanced_trigger(channel, state, direction, threshold_mode,
+                                     threshold_upper_mv, threshold_lower_mv,
+                                     hysteresis_upper_mv, hysteresis_lower_mv,
+                                     aux_output_enable, auto_trigger_ms, action)
 
     def set_auto_trigger_microseconds(self, auto_trigger: int) -> int:
         """
@@ -1003,7 +1062,7 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
     def set_bandwidth_filter(
         self,
         channel: str | cst.channel_literal | cst.CHANNEL,
-        bandwidth: cst.BANDWIDTH_CH = cst.BANDWIDTH_CH.FULL
+        bandwidth: cst.BANDWIDTH_CH = cst.BANDWIDTH_CH.BW_FULL
     ) -> None:
         """
         Set the bandwidth filter for a given channel.
@@ -1013,6 +1072,13 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
             bandwidth (BANDWIDTH_CH, optional): Bandwidth filter to set. Defaults to FULL.
         """
         channel = _get_literal(channel, cst.channel_map)
+        
+        # Convert the bandwidth to the correct value for the ps5000a
+        if bandwidth == cst.BANDWIDTH_CH.BW_20MHZ:
+            bandwidth = 1
+        # Check if the bandwidth is supported by the ps5000a
+        if bandwidth not in [0, 1]:
+            raise PicoSDKException(f"ps5000a only supports BW_FULL (0) and BW_20MHZ (1)")
 
         self._call_attr_function(
             "SetBandwidthFilter",
@@ -1040,20 +1106,44 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
         self,
         port: cst.DIGITAL_PORT,
         enabled: bool = True,
-        logic_level: int = 0,
+        logic_threshold_level_v: float = 0.0,
+        *,
+        logic_level: int | None = None,
     ) -> int:
         """
         This function enables or disables a digital port and sets the logic threshold.
 
+        The threshold is given in volts. On the ps5000a the digital port has a
+        fixed +/-5 V range, so the volts value is converted to ADC counts
+        internally.
+
         Args:
             port (DIGITAL_PORT): Identifier for the digital port.
             enabled (bool, optional): Enable or disable the digital port. Defaults to True.
-            logic_level (int, optional): Logic level for the digital port in ADC counts. 
-                Between -32767 (-5V) to 32767 (5V). Defaults to 0.
+            logic_threshold_level_v (float, optional): Logic threshold in volts,
+                between -5.0 V and +5.0 V. Defaults to 0.0.
+            logic_level (int, optional): Deprecated. Logic threshold in raw ADC
+                counts (-32767 to 32767). If given, it overrides
+                ``logic_threshold_level_v``.
 
         Returns:
             int: Status from device.
         """
+        if logic_level is None:
+            logic_level = self._digital_volts_to_adc(
+                logic_threshold_level_v, cst.PS5000A_DIGITAL_FULL_SCALE_V
+            )
+        else:
+            warn(
+                "logic_level (ADC counts) is deprecated; pass "
+                "logic_threshold_level_v in volts instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+        if enabled:
+            self.digital_port_db.add(port)
+        else:
+            self.digital_port_db.discard(port)
         return self._call_attr_function(
             "SetDigitalPort",
             self.handle,
