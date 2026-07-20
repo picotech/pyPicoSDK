@@ -17,11 +17,11 @@ from .. import constants as cst
 from ..common import (
     _get_literal,
     _siggen_get_buffer_args,
-    ParameterNotSupported
+    ParameterNotSupported,
+    PicoSDKException
 )
 from ..base import PicoScopeBase
 from .._classes._channel_class import ChannelClass
-from .._exceptions import PicoSDKException
 from ..shared._ps5000a_ps6000a import Sharedps5000aPs6000a
 
 
@@ -279,12 +279,18 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
 
         Returns:
             np.ndarray: Created buffer as a numpy array.
+
+        Note:
+            samples=0 clears the registration, but only for this
+            channel/segment/ratio_mode — unlike ACTION.CLEAR_ALL on other
+            drivers, which clears every registered buffer.
         """
-        # Warnings if moving to ps5000a from other drivers.
+        # Warnings if moving to ps5000a from other drivers. A samples==0 call
+        # is a clear, so the ADD warning does not apply there.
         if datatype not in [cst.DATA_TYPE.INT16_T, None]:
             warn(f'{self._unit_prefix_n} only supports datatype int16. Defaulting to int16.',
                  ParameterNotSupported)
-        if action not in [cst.ACTION.ADD, None]:
+        if samples != 0 and action not in [cst.ACTION.ADD, None]:
             warn(f'{self._unit_prefix_n} only supports the "ADD" action. Defaulting to ADD.',
                  ParameterNotSupported)
 
@@ -295,15 +301,27 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
         # Set the last buffer size
         self.base_dataclass.last_buffer_size = samples
 
-        # If no samples, set buffers to None
+        # If no samples, clear the registration with a NULL pointer
         if samples == 0:
             buffer = None
-        # Else create new buffer
-        elif buffer is None:
-            buffer = np.zeros(samples, dtype=np.int16)
-
-        # Create pointer
-        buf_ptr = npc.as_ctypes(buffer)
+            buf_ptr = None
+        else:
+            # Create new buffer if none given
+            if buffer is None:
+                buffer = np.zeros(samples, dtype=np.int16)
+            # The driver always writes int16 to this pointer; any other dtype
+            # makes it write past the end of the numpy allocation.
+            elif buffer.dtype != np.int16:
+                raise PicoSDKException(
+                    f"ps5000a data buffers must be int16, got {buffer.dtype}. "
+                    "For native 8-bit transfers use set_unscaled_data_buffer()."
+                )
+            elif buffer.size < samples:
+                raise PicoSDKException(
+                    f"Buffer holds {buffer.size} samples but {samples} were "
+                    "declared to the driver"
+                )
+            buf_ptr = npc.as_ctypes(buffer)
 
         self._call_attr_function(
             "SetDataBuffer",
@@ -342,12 +360,18 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
 
         Returns:
             tuple[np.ndarray,np.ndarray]: Tuple of (buffer_min, buffer_max) numpy arrays.
+
+        Note:
+            samples=0 clears the registration, but only for this
+            channel/segment/ratio_mode — unlike ACTION.CLEAR_ALL on other
+            drivers, which clears every registered buffer.
         """
-        # Warnings if moving to ps5000a from other drivers.
+        # Warnings if moving to ps5000a from other drivers. A samples==0 call
+        # is a clear, so the ADD warning does not apply there.
         if datatype not in [cst.DATA_TYPE.INT16_T, None]:
             warn(f'{self._unit_prefix_n} only supports datatype int16. Defaulting to int16.',
                  ParameterNotSupported)
-        if action not in [cst.ACTION.ADD, None]:
+        if samples != 0 and action not in [cst.ACTION.ADD, None]:
             warn(f'{self._unit_prefix_n} only supports the "ADD" action. Defaulting to ADD.',
                  ParameterNotSupported)
 
@@ -358,22 +382,183 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
         if ratio_mode == cst.RATIO_MODE.RAW:
             ratio_mode = cst.RATIO_MODE.NONE
 
-        # If buffers are given, split into seperate buffers
-        if buffers is not None:
-            buffer_min = buffers[0]
-            buffer_max = buffers[1]
-
-        # Else create new buffer
+        # If no samples, clear the registration with NULL pointers
+        if samples == 0:
+            buffer_min = None
+            buffer_max = None
+            buf_min_ptr = None
+            buf_max_ptr = None
         else:
-            buffer_max = np.zeros(samples, dtype=np.int16)
-            buffer_min = np.zeros(samples, dtype=np.int16)
+            # If buffers are given, split into seperate buffers
+            if buffers is not None:
+                buffer_min = buffers[0]
+                buffer_max = buffers[1]
+                for buf in (buffer_min, buffer_max):
+                    # The driver always writes int16 to these pointers; any
+                    # other dtype makes it write past the end of the allocation.
+                    if buf.dtype != np.int16:
+                        raise PicoSDKException(
+                            f"ps5000a data buffers must be int16, got {buf.dtype}. "
+                            "For native 8-bit transfers use set_unscaled_data_buffers()."
+                        )
+                    if buf.size < samples:
+                        raise PicoSDKException(
+                            f"Buffer holds {buf.size} samples but {samples} "
+                            "were declared to the driver"
+                        )
+            # Else create new buffer
+            else:
+                buffer_max = np.zeros(samples, dtype=np.int16)
+                buffer_min = np.zeros(samples, dtype=np.int16)
 
-        # Create pointer
-        buf_max_ptr = npc.as_ctypes(buffer_max)
-        buf_min_ptr = npc.as_ctypes(buffer_min)
+            # Create pointer
+            buf_max_ptr = npc.as_ctypes(buffer_max)
+            buf_min_ptr = npc.as_ctypes(buffer_min)
 
         self._call_attr_function(
             "SetDataBuffers",
+            self.handle,
+            channel,
+            buf_max_ptr,
+            buf_min_ptr,
+            samples,
+            segment,
+            ratio_mode,
+        )
+
+        return buffer_min, buffer_max
+
+    def set_unscaled_data_buffer(
+        self,
+        channel: cst.CHANNEL,
+        samples: int,
+        segment: int = 0,
+        ratio_mode: cst.RATIO_MODE = cst.RATIO_MODE.NONE,
+        buffer: np.ndarray | None = None,
+    ) -> np.ndarray | None:
+        """
+        Allocate and assign a NumPy-backed int8 data buffer using the driver's
+        native unscaled 8-bit transfer path (``ps5000aSetUnscaledDataBuffers``).
+
+        At 8-bit resolution this halves the USB bandwidth and host memory per
+        sample compared with the standard int16 path. The driver delivers raw
+        8-bit ADC codes with no scaling applied.
+
+        Args:
+            channel (CHANNEL): Channel to associate the buffer with.
+            samples (int): Number of samples to allocate. 0 clears the
+                registration for this channel/segment/mode.
+            segment (int, optional): Memory segment to use. Defaults to 0.
+            ratio_mode (RATIO_MODE, optional): Downsampling mode. Defaults to
+                NONE. For AGGREGATE use :meth:`set_unscaled_data_buffers`.
+            buffer (np.ndarray | None, optional): Preallocated int8 buffer to
+                be populated. If None, this function creates its own.
+
+        Returns:
+            np.ndarray | None: The registered int8 buffer, or None when clearing.
+        """
+        # Convert RAW (unsupported in ps5000a) to NONE.
+        if ratio_mode == cst.RATIO_MODE.RAW:
+            ratio_mode = cst.RATIO_MODE.NONE
+
+        # Set the last buffer size
+        self.base_dataclass.last_buffer_size = samples
+
+        # If no samples, clear the registration with a NULL pointer
+        if samples == 0:
+            buffer = None
+            buf_ptr = None
+        else:
+            if buffer is None:
+                buffer = np.zeros(samples, dtype=np.int8)
+            elif buffer.dtype != np.int8:
+                raise PicoSDKException(
+                    f"Unscaled data buffers must be int8, got {buffer.dtype}"
+                )
+            elif buffer.size < samples:
+                raise PicoSDKException(
+                    f"Buffer holds {buffer.size} samples but {samples} were "
+                    "declared to the driver"
+                )
+            buf_ptr = npc.as_ctypes(buffer)
+
+        self._call_attr_function(
+            "SetUnscaledDataBuffers",
+            self.handle,
+            channel,
+            buf_ptr,
+            None,
+            samples,
+            segment,
+            ratio_mode,
+        )
+
+        return buffer
+
+    def set_unscaled_data_buffers(
+        self,
+        channel: cst.CHANNEL,
+        samples: int,
+        segment: int = 0,
+        ratio_mode: cst.RATIO_MODE = cst.RATIO_MODE.AGGREGATE,
+        buffers: list[np.ndarray, np.ndarray] | np.ndarray | None = None,
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Allocate and assign max and min NumPy-backed int8 data buffers using
+        the driver's native unscaled 8-bit transfer path
+        (``ps5000aSetUnscaledDataBuffers``).
+
+        Args:
+            channel (CHANNEL): Channel to associate the buffers with.
+            samples (int): Number of samples to allocate. 0 clears the
+                registration for this channel/segment/mode.
+            segment (int, optional): Memory segment to use. Defaults to 0.
+            ratio_mode (RATIO_MODE, optional): Downsampling mode. Defaults to
+                AGGREGATE.
+            buffers (list[np.ndarray, np.ndarray] | np.ndarray | None, optional):
+                Preallocated int8 buffers to be populated. Min buffer first,
+                followed by max buffer. If None, this function creates its own.
+
+        Returns:
+            tuple[np.ndarray, np.ndarray]: Tuple of (buffer_min, buffer_max)
+            int8 numpy arrays, or (None, None) when clearing.
+        """
+        # Convert RAW (unsupported in ps5000a) to NONE.
+        if ratio_mode == cst.RATIO_MODE.RAW:
+            ratio_mode = cst.RATIO_MODE.NONE
+
+        # Set the last buffer size
+        self.base_dataclass.last_buffer_size = samples
+
+        # If no samples, clear the registration with NULL pointers
+        if samples == 0:
+            buffer_min = None
+            buffer_max = None
+            buf_min_ptr = None
+            buf_max_ptr = None
+        else:
+            if buffers is not None:
+                buffer_min = buffers[0]
+                buffer_max = buffers[1]
+                for buf in (buffer_min, buffer_max):
+                    if buf.dtype != np.int8:
+                        raise PicoSDKException(
+                            f"Unscaled data buffers must be int8, got {buf.dtype}"
+                        )
+                    if buf.size < samples:
+                        raise PicoSDKException(
+                            f"Buffer holds {buf.size} samples but {samples} "
+                            "were declared to the driver"
+                        )
+            else:
+                buffer_max = np.zeros(samples, dtype=np.int8)
+                buffer_min = np.zeros(samples, dtype=np.int8)
+
+            buf_max_ptr = npc.as_ctypes(buffer_max)
+            buf_min_ptr = npc.as_ctypes(buffer_min)
+
+        self._call_attr_function(
+            "SetUnscaledDataBuffers",
             self.handle,
             channel,
             buf_max_ptr,
@@ -741,6 +926,32 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
         )
         return max_segments.value
 
+    def get_maximum_available_memory(self) -> int:
+        """Return the maximum sample depth of the device.
+
+        The ps5000a API has no GetMaximumAvailableMemory call; this queries
+        MemorySegments with a single segment, which reports the full capture
+        memory at the current resolution. Unlike the ps6000a/psospa query,
+        this is a settings change: it (re)configures the device to 1 memory
+        segment and discards any previously captured data. Do not call it
+        while a capture or stream is in progress.
+
+        Returns:
+            int: Maximum number of samples supported.
+
+        Raises:
+            PicoSDKException: If the driver did not report a sample count
+                (e.g. the device was busy capturing).
+        """
+        max_samples = self.memory_segments(1)
+        # A busy device returns PICO_BUSY (swallowed as a warning status by
+        # the error handler), leaving the out-param at 0 - surface it.
+        if max_samples == 0:
+            raise PicoSDKException(
+                "Could not query maximum available memory - the device may "
+                "be busy capturing. Stop the capture first.")
+        return max_samples
+
     @override
     def get_streaming_latest_values(self, *args, **kwargs) -> dict:
         if len(args) > 0 or len(kwargs) > 0:
@@ -757,8 +968,10 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
             info['status'] = status
             return info
         except queue.Empty:
+            # No callback fired this poll. Return the real driver status
+            # (e.g. PICO_BUSY) rather than fabricating success.
             return {
-            'status': 0,
+            'status': status,
             'no of samples': 0,
             'Buffer index': 0,
             'start index': 0,
@@ -767,6 +980,14 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
             'triggered?': 0,
             'auto stopped?': 0,
         }
+
+    @override
+    def get_streaming_latest_values_multi(self, requests) -> dict:
+        raise PicoSDKException(
+            "ps5000a does not take per-channel poll requests - its streaming "
+            "callback covers every registered buffer at once. Use "
+            "get_streaming_latest_values() instead."
+        )
 
     @override
     def run_streaming(
@@ -778,6 +999,7 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
         auto_stop: int = 0,
         ratio: int = 1,
         ratio_mode: cst.RATIO_MODE = cst.RATIO_MODE.NONE,
+        overview_buffer_size: int = None,
     ) -> float:
         # Convert the ratio mode to None for ps5000a
         if ratio_mode == cst.RATIO_MODE.RAW:
@@ -786,6 +1008,12 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
             ratio = 1
         # Setup the streaming callback
         self._setup_streaming_callback()
+        # Discard poll results left over from a previous run
+        while True:
+            try:
+                self._streaming_queue.get_nowait()
+            except queue.Empty:
+                break
         # Run the streaming
         return super().run_streaming(
             sample_interval,
@@ -795,11 +1023,14 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
             auto_stop,
             ratio,
             ratio_mode,
+            overview_buffer_size,
         )
 
     def _setup_streaming_callback(self):
+        # Argument types mirror the ps5000aStreamingReady typedef
+        # (ps5000aApi.h): triggerAt is uint32_t.
         self._streaming_callback_pointer = ctypes.CFUNCTYPE(
-            None, ctypes.c_int16, ctypes.c_int32, ctypes.c_uint32, ctypes.c_int16, ctypes.c_int32, 
+            None, ctypes.c_int16, ctypes.c_int32, ctypes.c_uint32, ctypes.c_int16, ctypes.c_uint32,
             ctypes.c_int16, ctypes.c_int16, ctypes.c_void_p)(self._streaming_callback)
 
     def _streaming_callback(
@@ -813,10 +1044,14 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a):  # pylint: disable=C0103
         auto_stop: ctypes.c_int16, 
         param: ctypes.c_void_p
     ) -> None:
+        # 'Buffer index' is always 0: the ps5000a streams into a single
+        # persistent overview buffer, so there is no driver-side buffer
+        # rotation. A constant int keeps the cross-driver poll-dict contract
+        # (e.g. `info['Buffer index'] % 2`) working without spurious swaps.
         self._streaming_queue.put({
             'status': None,
             'no of samples': no_samples,
-            'Buffer index': None,
+            'Buffer index': 0,
             'start index': start_index,
             'overflowed?': overflow,
             'triggered at': trigger_at,

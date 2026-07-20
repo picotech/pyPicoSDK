@@ -29,9 +29,8 @@ from ..common import (
     _struct_to_dict,
     _get_literal,
     _siggen_get_buffer_args,
-)
-from .._exceptions import (
-    PicoSDKException
+    ParameterNotSupported,
+    PicoSDKException,
 )
 
 from ._protocol import _ProtocolBase
@@ -242,19 +241,36 @@ class shared_ps6000a_psospa(_ProtocolBase):
         c_stop_freq = ctypes.c_double()
         c_freq_incr = ctypes.c_double()
         c_dwell_time = ctypes.c_double()
-        self._call_attr_function(
-            'SigGenApply',
-            self.handle,
-            enabled,
-            sweep_enabled,
-            trigger_enabled,
-            auto_clock_optimise_enabled,
-            override_auto_clock_prescale,
-            ctypes.byref(c_frequency),
-            ctypes.byref(c_stop_freq),
-            ctypes.byref(c_freq_incr),
-            ctypes.byref(c_dwell_time)
-        )
+        if self._unit_prefix_n == 'psospa':
+            # psospaSigGenApply has no auto-clock parameters (8-arg call).
+            if auto_clock_optimise_enabled or override_auto_clock_prescale:
+                warn('psospa does not support the auto clock parameters; ignoring.',
+                     ParameterNotSupported)
+            self._call_attr_function(
+                'SigGenApply',
+                self.handle,
+                enabled,
+                sweep_enabled,
+                trigger_enabled,
+                ctypes.byref(c_frequency),
+                ctypes.byref(c_stop_freq),
+                ctypes.byref(c_freq_incr),
+                ctypes.byref(c_dwell_time)
+            )
+        else:
+            self._call_attr_function(
+                'SigGenApply',
+                self.handle,
+                enabled,
+                sweep_enabled,
+                trigger_enabled,
+                auto_clock_optimise_enabled,
+                override_auto_clock_prescale,
+                ctypes.byref(c_frequency),
+                ctypes.byref(c_stop_freq),
+                ctypes.byref(c_freq_incr),
+                ctypes.byref(c_dwell_time)
+            )
         return {'Freq': c_frequency.value,
                 'StopFreq': c_stop_freq.value,
                 'FreqInc': c_freq_incr.value,
@@ -372,6 +388,41 @@ class shared_ps6000a_psospa(_ProtocolBase):
         max_step = ctypes.c_double()
         min_dwell = ctypes.c_double()
         max_dwell = ctypes.c_double()
+
+        if self._unit_prefix_n == 'psospa':
+            # psospaSigGenFrequencyLimits is the 9-arg form: no start
+            # frequency, sweep flag or manual clock inputs; it returns
+            # min/max frequency instead of a max stop frequency.
+            if (sweep_enabled or manual_dac_clock_frequency is not None
+                    or manual_prescale_ratio is not None):
+                warn('psospa siggen_frequency_limits does not take '
+                     'sweep_enabled or manual clock parameters; ignoring.',
+                     ParameterNotSupported)
+            min_freq = ctypes.c_double()
+            max_freq = ctypes.c_double()
+            self._call_attr_function(
+                "SigGenFrequencyLimits",
+                self.handle,
+                wave_type,
+                ctypes.byref(c_num_samples),
+                ctypes.byref(min_freq),
+                ctypes.byref(max_freq),
+                ctypes.byref(min_step),
+                ctypes.byref(max_step),
+                ctypes.byref(min_dwell),
+                ctypes.byref(max_dwell),
+            )
+            return {
+                "min_frequency": min_freq.value,
+                "max_frequency": max_freq.value,
+                # Alias so cross-driver callers reading the ps6000a key
+                # still get the meaningful ceiling.
+                "max_stop_frequency": max_freq.value,
+                "min_frequency_step": min_step.value,
+                "max_frequency_step": max_step.value,
+                "min_dwell_time": min_dwell.value,
+                "max_dwell_time": max_dwell.value,
+            }
 
         self._call_attr_function(
             "SigGenFrequencyLimits",
@@ -743,20 +794,45 @@ class shared_ps6000a_psospa(_ProtocolBase):
         *,
         logic_threshold_level: list[int] | None = None,
     ) -> None:
-        """Enable a digital port using ``ps6000aSetDigitalPortOn``.
+        """Enable a digital port.
+
+        WARNING - the threshold unit currently differs per driver: ps6000a
+        passes the values to the driver as raw ADC counts (-32767..+32767
+        maps to -8 V..+8 V per the programmer's guide), while psospa treats
+        each value as millivolts (converted to the driver's volts argument).
+        A volts-canonical unified contract is tracked separately.
 
         Thresholds are given in volts. The ps6000a digital port has a fixed
         +/-8 V range, so each volts value is converted to ADC counts internally.
 
         Args:
             port: Digital port to enable.
-            logic_threshold_level_v: Threshold in volts, between -8.0 V and
-                +8.0 V. A single value is applied to all 8 pins, or pass a list
-                of per-pin values. Defaults to 0.0.
-            hysteresis: Hysteresis level applied to all pins.
-            logic_threshold_level: Deprecated. Per-pin thresholds in raw ADC
-                counts. If given, it overrides ``logic_threshold_level_v``.
+            logic_threshold_level: Threshold level for each pin (ps6000a:
+                ADC counts; psospa: millivolts). psospa supports a single
+                threshold for the whole port; the first value is used and any
+                others are ignored with a warning.
+            hysteresis: Hysteresis level applied to all pins (ps6000a only;
+                ignored with a warning on psospa).
         """
+        if not logic_threshold_level:
+            raise PicoSDKException(
+                "logic_threshold_level must contain at least one value")
+
+        if self._unit_prefix_n == 'psospa':
+            # psospaSetDigitalPortOn takes a single threshold for the whole
+            # port, as a double in volts - no per-pin array, no hysteresis.
+            if len(set(logic_threshold_level)) > 1:
+                warn('psospa supports one logic threshold for the whole port; '
+                     'using the first value.', ParameterNotSupported)
+            warn('psospa does not support digital port hysteresis; ignoring.',
+                 ParameterNotSupported)
+            self._call_attr_function(
+                "SetDigitalPortOn",
+                self.handle,
+                port,
+                ctypes.c_double(logic_threshold_level[0] / 1000),
+            )
+            return
 
         if logic_threshold_level is None:
             if not isinstance(logic_threshold_level_v, (list, tuple)):

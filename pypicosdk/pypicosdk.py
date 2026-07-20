@@ -10,11 +10,13 @@ from .ps6000a import ps6000a
 from .psospa import psospa
 from ._drivers._ps5000a import ps5000a
 from .base import PicoScopeBase
+from .streaming import StreamingSession, StreamingChunk
 from .common import (
     PicoSDKException,
     PicoSDKNotFoundException,
     OverrangeWarning,
-    PowerSupplyWarning
+    PowerSupplyWarning,
+    ParameterNotSupported
 )
 
 def get_all_enumerated_units() -> tuple[int, list[str]]:
@@ -136,6 +138,7 @@ __all__ = list(_constants.__all__) + [
     'PicoSDKException',
     'OverrangeWarning',
     'PowerSupplyWarning',
+    'ParameterNotSupported',
     'get_all_enumerated_units',
     'export_to_csv',
     'convert_time_axis',
@@ -143,5 +146,7 @@ __all__ = list(_constants.__all__) + [
     'ps6000a',
     'psospa',
     'ps5000a',
+    'StreamingSession',
+    'StreamingChunk',
     '__version__',
 ]

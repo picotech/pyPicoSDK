@@ -24,11 +24,14 @@ from .constants import (
     OutputUnitV_L,
     OutputUnitV_M,
     _StandardPicoConv,
+    _PICO_TIME_UNIT,
+    _PicoTimeUnitText,
 )
 from .common import *
 from .common import (
     _get_literal,
     ProbeScaleWarning,
+    ParameterNotSupported,
     PicoSDKException
 )
 from ._classes import _general
@@ -103,7 +106,12 @@ class PicoScopeBase:
         """
         Checks status code against error list; raises an exception if not 0.
 
-        Errors such as `SUPPLY_NOT_CONNECTED` are returned as warnings.
+        Status/warning codes (busy, waiting for buffers, supply not connected,
+        channel disabled due to USB power) are silently ignored. Recoverable
+        mid-stream errors (streaming failed, buffer stall) and codes missing
+        from the local error table raise while leaving the unit OPEN; every
+        other error closes the unit before raising, so a caught
+        PicoSDKException only has a live handle in those first two cases.
 
         Args:
             status (int): Returned status value from PicoSDK.
@@ -111,20 +119,33 @@ class PicoScopeBase:
         Raises:
             PicoSDKException: Pythonic exception based on status value.
         """
-        error_code = ERROR_STRING[status]
-        if status != 0:
-            # Ignore codes as they are warnings or status updates.
-            # 39 - Pico Busy
-            # 407 - Pico Waiting For Data Buffers
-            # 281 - Pico Power Supply Connected (returned by CurrentPowerSource / ChangePowerSource)
-            # 282 - Pico Power Supply Not Connected
-            # 290 - Pico Channel Disabled Due To Usb Powered
-            # 286 - Pico Usb3 0 Device Non Usb3 0 Port (ps5000a: warns in open_unit)
-            if status in [407, 281, 282, 286, 290, 39]:
-                return
-            self.close_unit()
+        
+        if status == 0:
+            return
+        # Ignore codes as they are warnings or status updates.
+        # 39 - Pico Busy
+        # 407 - Pico Waiting For Data Buffers
+        # 281 - Pico Power Supply Connected (returned by CurrentPowerSource / ChangePowerSource)
+        # 282 - Pico Power Supply Not Connected
+        # 286 - Pico Usb3 0 Device Non Usb3 0 Port (ps5000a: warns in open_unit)
+        # 290 - Pico Channel Disabled Due To Usb Powered
+        if status in [407, 281, 282, 286, 290, 39]:
+            return
+        error_code = ERROR_STRING.get(status)
+        # Status missing from the local table (e.g. a newer driver): don't
+        # assume it is fatal - leave the unit open for the caller to decide.
+        if error_code is None:
+            raise PicoSDKException(
+                f"Unknown PicoSDK status: {status} (0x{status:08X})")
+        # Recoverable mid-stream statuses: raise without closing the unit so
+        # the caller can still Stop and salvage buffered data via
+        # no_of_streaming_values() / get_streaming_latest_values().
+        # 20 - Pico Streaming Failed
+        # 28 - Pico Buffer Stall
+        if status in [20, 28]:
             raise PicoSDKException(error_code)
-        return
+        self.close_unit()
+        raise PicoSDKException(error_code)
 
     def _call_attr_function(self, function_name:str, *args) -> int:
         """
@@ -1664,6 +1685,42 @@ class PicoScopeBase:
 
         return channels_buffer
 
+    def _validate_buffer(self, buffer: np.ndarray, samples: int, datatype) -> None:
+        """
+        Checks a caller-supplied buffer against the data type and sample count
+        being registered with the driver.
+
+        The driver writes ``samples`` elements of ``datatype`` to the pointer
+        it is given; a dtype or size mismatch makes it write past the end of
+        the numpy allocation and corrupt the heap.
+
+        Args:
+            buffer (np.ndarray): Caller-supplied buffer to check.
+            samples (int): Number of samples being declared to the driver.
+            datatype (DATA_TYPE): Data type being declared to the driver.
+
+        Raises:
+            PicoSDKException: If the dtype or size does not match the registration.
+        """
+        expected_dtype = cst.DataTypeNPMap.get(datatype, None)
+        if expected_dtype is None:
+            raise PicoSDKException("Invalid datatype selected for buffer")
+        if buffer.dtype != expected_dtype:
+            raise PicoSDKException(
+                f"Buffer dtype {buffer.dtype} does not match datatype "
+                f"{np.dtype(expected_dtype).name} being registered with the driver"
+            )
+        if buffer.size < samples:
+            raise PicoSDKException(
+                f"Buffer holds {buffer.size} samples but {samples} were "
+                "declared to the driver"
+            )
+        if not buffer.flags.c_contiguous or not buffer.flags.writeable:
+            raise PicoSDKException(
+                "Buffer must be C-contiguous and writeable to be registered "
+                "with the driver"
+            )
+
     def set_data_buffer(
         self,
         channel,
@@ -1697,6 +1754,7 @@ class PicoScopeBase:
             buffer = None
             buf_ptr = None
         elif buffer is not None:
+            self._validate_buffer(buffer, samples, datatype)
             buf_ptr = npc.as_ctypes(buffer)
         else:
             # Map to NumPy dtype and update ADC limits
@@ -1760,10 +1818,12 @@ class PicoScopeBase:
             np_dtype = cst.DataTypeNPMap.get(datatype, None)
             if np_dtype is None:
                 raise PicoSDKException("Invalid datatype selected for buffer")
-
-            # Create buffer based on ratio mode
+             
+            # Create buffer based on ratio mode. AGGREGATE holds a min and a
+            # max plane of `samples` each per capture, matching the
+            # (2, samples) layout set_data_buffers registers.
             if ratio_mode == cst.RATIO_MODE.AGGREGATE:
-                buffer = np.zeros((captures, samples, 2), dtype=np_dtype)
+                buffer = np.zeros((captures, 2, samples), dtype=np_dtype)
             else:
                 buffer = np.zeros((captures, samples), dtype=np_dtype)
 
@@ -1808,8 +1868,8 @@ class PicoScopeBase:
             PicoSDKException: If an unsupported data type is provided.
         """
         if buffers is not None:
-            buffer_min = buffers[0]
-            buffer_max = buffers[1]
+            self._validate_buffer(buffers[0], samples, datatype)
+            self._validate_buffer(buffers[1], samples, datatype)
         else:
             # Map to NumPy dtype and update ADC limits
             self.get_adc_limits(datatype)
@@ -1963,9 +2023,11 @@ class PicoScopeBase:
             samples, from_segment_index=segment, to_segment_index=captures - 1, ratio=ratio,
             ratio_mode=ratio_mode, start_index=start_index)
 
-        # Reduce samples based on actual samples
+        # Reduce samples based on actual samples (last axis is always the
+        # sample axis, for both (captures, samples) and AGGREGATE's
+        # (captures, 2, samples) layouts)
         for channel, array in channel_buffer.items():
-            channel_buffer[channel] = array[:, :actual_samples]
+            channel_buffer[channel] = array[..., :actual_samples]
 
         # Convert data to mV
         if output_unit != 'adc':
@@ -2052,35 +2114,89 @@ class PicoScopeBase:
             float: The actual sample interval configured by the driver.
         """
 
-        time_units = _StandardPicoConv[time_units]
-        if self._unit_prefix_n == 'ps5000a':
-            c_sample_interval = ctypes.c_uint32(sample_interval)
-        else:
-            c_sample_interval = ctypes.c_double(sample_interval)
+        pico_time_units = _StandardPicoConv[time_units]
 
         # Convert max_pre_trigger_samples and max_post_trigger_samples to ctypes
         # depending on the device type (32 or 64 bit device)
         if self._unit_prefix_n in ['ps5000a', 'ps4000a']:
+            # ctypes.c_uint32 silently masks out-of-range values - surface
+            # the driver's 32-bit sample-count ceiling instead.
+            if not (0 <= max_pre_trigger_samples <= 0xFFFFFFFF
+                    and 0 <= max_post_trigger_samples <= 0xFFFFFFFF):
+                raise PicoSDKException(
+                    "max_pre/post_trigger_samples must be within this "
+                    "driver's uint32 range (0 to 4,294,967,295 samples per "
+                    "phase)")
             max_pre_trigger_samples = ctypes.c_uint32(max_pre_trigger_samples)
             max_post_trigger_samples = ctypes.c_uint32(max_post_trigger_samples)
         else:
             max_pre_trigger_samples = ctypes.c_uint64(max_pre_trigger_samples)
             max_post_trigger_samples = ctypes.c_uint64(max_post_trigger_samples)
 
-        if overview_buffer_size is None:
-            overview_buffer_size = self.base_dataclass.last_buffer_size
+        if self._unit_prefix_n in ['ps5000a', 'ps4000a']:
+            # This API generation takes an integer sample interval. Rescale a
+            # fractional interval to a finer time unit so the requested rate
+            # survives, e.g. 3.2 ns -> 3200 ps. Stop descending if the
+            # rescaled value would no longer fit in uint32 - rounding at the
+            # current unit is then the closest representable request.
+            unit_steps = 0
+            while (abs(sample_interval - round(sample_interval))
+                   > 1e-9 * max(1.0, abs(sample_interval))
+                   and pico_time_units > _PICO_TIME_UNIT.FS
+                   and sample_interval * 1000 <= 0xFFFFFFFF):
+                sample_interval *= 1000
+                pico_time_units = _PICO_TIME_UNIT(pico_time_units - 1)
+                unit_steps += 1
+            if (abs(sample_interval - round(sample_interval))
+                    > 1e-9 * max(1.0, abs(sample_interval))):
+                warnings.warn(
+                    f"Sample interval rounded to {round(sample_interval)} "
+                    f"{_PicoTimeUnitText[pico_time_units]}.",
+                    ParameterNotSupported)
+            interval_int = int(round(sample_interval))
+            if interval_int > 0xFFFFFFFF:
+                raise PicoSDKException(
+                    "Sample interval too large to marshal as uint32 for this driver")
+            c_sample_interval = ctypes.c_uint32(interval_int)
 
+            if overview_buffer_size is None:
+                # Falls back to 0 when no buffer has been registered yet;
+                # the driver rejects that with a meaningful status.
+                overview_buffer_size = self.base_dataclass.last_buffer_size or 0
+
+            self._call_attr_function(
+                "RunStreaming",
+                self.handle,
+                ctypes.byref(c_sample_interval),
+                pico_time_units,
+                max_pre_trigger_samples,
+                max_post_trigger_samples,
+                auto_stop,
+                ctypes.c_uint32(ratio),
+                ratio_mode,
+                ctypes.c_uint32(overview_buffer_size),
+            )
+            # Return the actual interval in the unit the caller asked for.
+            if unit_steps:
+                return c_sample_interval.value / (1000 ** unit_steps)
+            return c_sample_interval.value
+
+        # ps6000a / psospa: 8-parameter call with no overviewBufferSize.
+        if overview_buffer_size is not None:
+            warnings.warn(
+                "overview_buffer_size only applies to the ps5000a driver; ignoring.",
+                ParameterNotSupported)
+        c_sample_interval = ctypes.c_double(sample_interval)
         self._call_attr_function(
             "RunStreaming",
             self.handle,
             ctypes.byref(c_sample_interval),
-            time_units,
+            pico_time_units,
             max_pre_trigger_samples,
             max_post_trigger_samples,
             auto_stop,
-            ratio,
+            ctypes.c_uint64(ratio),
             ratio_mode,
-            overview_buffer_size,
         )
         return c_sample_interval.value
 
@@ -2183,6 +2299,21 @@ class PicoScopeBase:
         ratio_mode,
         data_type
     ):
+        """
+        Poll the driver for the latest streamed data on a single channel/mode.
+
+        To drain several channels (or RAW plus a downsampled mode) coherently
+        in one driver call, use :meth:`get_streaming_latest_values_multi`.
+
+        Args:
+            channel (CHANNEL): Channel the data buffer was registered for.
+            ratio_mode (RATIO_MODE): Ratio mode the buffer was registered for.
+            data_type (DATA_TYPE): Data type the buffer was registered for.
+
+        Returns:
+            dict: Poll result with sample count, buffer/start indices,
+            overflow flag and trigger information.
+        """
         info = PICO_STREAMING_DATA_INFO(
             channel_ = channel,
             mode_ = ratio_mode,
@@ -2203,6 +2334,70 @@ class PicoScopeBase:
             'Buffer index': info.bufferIndex_,
             'start index': info.startIndex_,
             'overflowed?': info.overflow_,
+            'triggered at': trigger.triggerAt_,
+            'triggered?': trigger.triggered_,
+            'auto stopped?': trigger.autoStop_,
+        }
+
+    def get_streaming_latest_values_multi(
+        self,
+        requests: list[tuple],
+    ) -> dict:
+        """
+        Poll the driver for the latest streamed data on several channel/mode
+        combinations in a single call.
+
+        The driver fills every requested buffer set from the same snapshot,
+        so multi-channel captures (or simultaneous RAW + downsampled
+        streaming) stay sample-aligned. Polling channels one at a time with
+        :meth:`get_streaming_latest_values` returns misaligned snapshots.
+
+        Args:
+            requests (list[tuple]): One ``(channel, ratio_mode, data_type)``
+                tuple per registered buffer set to drain, e.g.
+                ``[(CHANNEL.A, RATIO_MODE.RAW, DATA_TYPE.INT16_T),
+                (CHANNEL.B, RATIO_MODE.RAW, DATA_TYPE.INT16_T)]``.
+
+        Returns:
+            dict: ``'status'`` plus stream-wide trigger keys (``'triggered
+            at'``, ``'triggered?'``, ``'auto stopped?'``) and a ``'channels'``
+            list holding one dict per request with the same per-channel keys
+            as :meth:`get_streaming_latest_values`.
+
+        Raises:
+            PicoSDKException: If ``requests`` is empty.
+        """
+        if not requests:
+            raise PicoSDKException(
+                "get_streaming_latest_values_multi requires at least one "
+                "(channel, ratio_mode, data_type) request")
+
+        infos = (PICO_STREAMING_DATA_INFO * len(requests))()
+        for info, (channel, ratio_mode, data_type) in zip(infos, requests):
+            info.channel_ = channel
+            info.mode_ = ratio_mode
+            info.type_ = data_type
+        trigger = PICO_STREAMING_DATA_TRIGGER_INFO()
+
+        status = self._call_attr_function(
+            "GetStreamingLatestValues",
+            self.handle,
+            infos,
+            ctypes.c_uint64(len(requests)),
+            ctypes.byref(trigger)
+        )
+        return {
+            'status': status,
+            'channels': [
+                {
+                    'channel': info.channel_,
+                    'no of samples': info.noOfSamples_,
+                    'Buffer index': info.bufferIndex_,
+                    'start index': info.startIndex_,
+                    'overflowed?': info.overflow_,
+                }
+                for info in infos
+            ],
             'triggered at': trigger.triggerAt_,
             'triggered?': trigger.triggered_,
             'auto stopped?': trigger.autoStop_,

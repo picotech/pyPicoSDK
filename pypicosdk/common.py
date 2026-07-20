@@ -166,6 +166,7 @@ __all__ = [
     'PicoSDKNotFoundException',
     'OverrangeWarning',
     'PowerSupplyWarning',
+    'ParameterNotSupported',
     '_struct_to_dict',
     '_get_lib_path',
     '_check_path',
