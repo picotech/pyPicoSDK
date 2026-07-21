@@ -1268,7 +1268,7 @@ class PicoScopeBase:
             call_function,
             self.handle,
             ctypes.byref(prop_array),
-            ctypes.c_int16(1),
+            ctypes.c_int16(prop_len),
             ctypes.c_int16(aux_output_enable),
             ctypes.c_uint32(auto_trigger_us),
         )
@@ -1359,11 +1359,7 @@ class PicoScopeBase:
         self.set_trigger_channel_conditions([(channel, state)], action)
         self.set_trigger_channel_directions(channel, direction, threshold_mode)
         self.set_trigger_channel_properties(
-            upper_adc,
-            hyst_upper_adc,
-            lower_adc,
-            hyst_lower_adc,
-            channel,
+            [(upper_adc, hyst_upper_adc, lower_adc, hyst_lower_adc, channel)],
             aux_output_enable,
             auto_trigger_ms * 1000,
         )
@@ -1580,10 +1576,8 @@ class PicoScopeBase:
         )
 
         self.set_trigger_channel_properties(
-            threshold_upper=upper_adc, hysteresis_upper=hyst_upper_adc,
-            threshold_lower=lower_adc, hysteresis_lower=hyst_lower_adc,
-            channel=channel,
-            auto_trigger_us=auto_trigger_us
+            [(upper_adc, hyst_upper_adc, lower_adc, hyst_lower_adc, channel)],
+            auto_trigger_us=auto_trigger_us,
         )
 
         # Determine actual sample interval from the selected timebase
