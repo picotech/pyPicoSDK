@@ -44,7 +44,9 @@ class Sharedps5000aPs6000a:
             tuple[float, float]: Maximum and minimum allowed analogue offset values.
         """
 
-        if self._unit_prefix_n == 'ps5000a':
+        # ps5000a and ps4000a expose GetAnalogueOffset (float*); the 6000a
+        # generation exposes GetAnalogueOffsetLimits (double*).
+        if self._unit_prefix_n in ('ps5000a', 'ps4000a'):
             call = 'GetAnalogueOffset'
             max_v = ctypes.c_float()
             min_v = ctypes.c_float()

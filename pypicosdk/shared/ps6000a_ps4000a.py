@@ -30,8 +30,15 @@ class shared_4000a_6000a:
         if serial_number is not None:
             serial_number = serial_number.encode()
 
+        # ps4000aOpenUnitAsync has no resolution parameter; the ps4000a
+        # equivalent of this 3-argument call is OpenUnitAsyncWithResolution.
+        if self._unit_prefix_n == 'ps4000a':
+            call = "OpenUnitAsyncWithResolution"
+        else:
+            call = "OpenUnitAsync"
+
         self._call_attr_function(
-            "OpenUnitAsync",
+            call,
             ctypes.byref(status_flag),
             serial_number,
             resolution,
@@ -62,6 +69,6 @@ class shared_4000a_6000a:
         if complete.value:
             self.handle = handle
             self.resolution = getattr(self, "_pending_resolution", 0)
-            self.get_adc_limits()
+            self.min_adc_value, self.max_adc_value = self.get_adc_limits()
 
         return handle.value, progress.value, complete.value
