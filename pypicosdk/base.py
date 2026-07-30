@@ -601,7 +601,7 @@ class PicoScopeBase:
         time = ctypes.c_int64()
         returned_unit = ctypes.c_int32()
 
-        if self._unit_prefix_n in ['ps5000a']:
+        if self._unit_prefix_n in ['ps5000a', 'ps4000a']:
             call = "GetTriggerTimeOffset64"
         else:
             call = "GetTriggerTimeOffset"
@@ -682,7 +682,7 @@ class PicoScopeBase:
         times = (ctypes.c_int64 * count)()
         units = (ctypes.c_int32 * count)()
 
-        if self._unit_prefix_n in ['ps5000a']:
+        if self._unit_prefix_n in ['ps5000a', 'ps4000a']:
             call = "GetValuesTriggerTimeOffsetBulk64"
         else:
             call = "GetValuesTriggerTimeOffsetBulk"

@@ -218,6 +218,14 @@ CHANNEL_NAMES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 PS5000A_TRIGGER_AUX_RANGE_MV = 5000
 PS5000A_TRIGGER_AUX_HW_CHANNEL = 4
 
+# ps4000a trigger source hardware constants (ps4000aApi.h: PS4000A_EXTERNAL = 8,
+# PS4000A_TRIGGER_AUX = 9). The EXT input has a fixed ±5 V range (4824A data
+# sheet) scaled to PS4000A_EXT_MAX_VALUE counts regardless of resolution.
+PS4000A_EXT_RANGE_MV = 5000
+PS4000A_EXT_MAX_VALUE = 32767
+PS4000A_EXTERNAL_HW_CHANNEL = 8
+PS4000A_TRIGGER_AUX_HW_CHANNEL = 9
+
 channel_literal = Literal[
     'channel_a',
     'channel_b',
@@ -1046,6 +1054,55 @@ class PICO_TRIGGER_CHANNEL_PROPERTIES(ctypes.Structure):
     ]
 
 
+class PS4000A_TRIGGER_CHANNEL_PROPERTIES(ctypes.Structure):
+    """Trigger threshold configuration for a single channel on the ps4000a.
+
+    ``PS4000A_TRIGGER_CHANNEL_PROPERTIES`` in ps4000aApi.h is 16 bytes packed
+    and, unlike the generic :class:`PICO_TRIGGER_CHANNEL_PROPERTIES`, carries
+    a trailing ``thresholdMode`` field. Passing the 12-byte generic struct
+    makes the driver read 4 bytes past the buffer.
+
+    Attributes:
+        thresholdUpper_: ADC counts for the upper trigger threshold.
+        thresholdUpperHysteresis_: Hysteresis for ``thresholdUpper_`` in ADC counts.
+        thresholdLower_: ADC counts for the lower trigger threshold.
+        thresholdLowerHysteresis_: Hysteresis for ``thresholdLower_`` in ADC counts.
+        channel_: Input channel as a PS4000A_CHANNEL value.
+        thresholdMode_: :class:`THRESHOLD_MODE` (LEVEL or WINDOW).
+    """
+
+    _pack_ = 1
+
+    _fields_ = [
+        ("thresholdUpper_", ctypes.c_int16),
+        ("thresholdUpperHysteresis_", ctypes.c_uint16),
+        ("thresholdLower_", ctypes.c_int16),
+        ("thresholdLowerHysteresis_", ctypes.c_uint16),
+        ("channel_", ctypes.c_int32),
+        ("thresholdMode_", ctypes.c_int32),
+    ]
+
+
+class PS4000A_DIRECTION(ctypes.Structure):
+    """Direction descriptor for ``ps4000aSetTriggerChannelDirections``.
+
+    ``PS4000A_DIRECTION`` is 8 bytes packed with no thresholdMode field —
+    window semantics are encoded in the direction value itself. The generic
+    12-byte :class:`PICO_DIRECTION` garbles every array entry after the first.
+
+    Attributes:
+        channel_: Channel index as a PS4000A_CHANNEL value.
+        direction_: Direction from :class:`THRESHOLD_DIRECTION`.
+    """
+
+    _pack_ = 1
+
+    _fields_ = [
+        ("channel_", ctypes.c_int32),
+        ("direction_", ctypes.c_int32),
+    ]
+
+
 class PICO_CONDITION(ctypes.Structure):
     """Trigger condition used by ``SetTriggerChannelConditions``.
 
@@ -1385,4 +1442,10 @@ __all__ = [
     'output_unit_l',
     'PS5000A_TRIGGER_AUX_RANGE_MV',
     'PS5000A_TRIGGER_AUX_HW_CHANNEL',
+    'PS4000A_TRIGGER_CHANNEL_PROPERTIES',
+    'PS4000A_DIRECTION',
+    'PS4000A_EXT_RANGE_MV',
+    'PS4000A_EXT_MAX_VALUE',
+    'PS4000A_EXTERNAL_HW_CHANNEL',
+    'PS4000A_TRIGGER_AUX_HW_CHANNEL',
 ]

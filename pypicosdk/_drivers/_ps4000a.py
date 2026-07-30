@@ -540,3 +540,332 @@ class ps4000a(PicoScopeBase, Sharedps5000aPs6000a, Sharedps5000aPs4000a,
             ctypes.byref(count),
         )
         return count.value
+
+    # Trigger layer
+
+    @staticmethod
+    def _remap_trigger_channel(channel: int) -> int:
+        """Remap pypicosdk's virtual EXTERNAL/TRIGGER_AUX channel values to
+        the PS4000A_CHANNEL ordinals (EXTERNAL=8, TRIGGER_AUX=9)."""
+        if channel == cst.CHANNEL.EXTERNAL:
+            return cst.PS4000A_EXTERNAL_HW_CHANNEL
+        if channel == cst.CHANNEL.TRIGGER_AUX:
+            return cst.PS4000A_TRIGGER_AUX_HW_CHANNEL
+        return channel
+
+    def _auto_trigger_us_to_ms(self, auto_trigger_us: int, limit_ms: int = 32767) -> int:
+        """Convert the cross-driver microsecond auto-trigger argument to the
+        millisecond value the ps4000a C calls take.
+
+        Args:
+            auto_trigger_us: Auto-trigger timeout in microseconds. 0 waits
+                indefinitely.
+            limit_ms: The C argument's ceiling - 32767 for SetSimpleTrigger's
+                int16, larger for SetTriggerChannelProperties' int32.
+
+        Raises:
+            PicoSDKException: If the converted value exceeds ``limit_ms``.
+        """
+        if auto_trigger_us == 0:
+            return 0
+        auto_trigger_ms = round(auto_trigger_us / 1000)
+        if auto_trigger_ms == 0:
+            # Rounding a sub-millisecond timeout to 0 would flip the meaning
+            # to "wait indefinitely" - clamp up instead.
+            auto_trigger_ms = 1
+        if auto_trigger_us % 1000:
+            warn(
+                f'ps4000a auto-trigger has millisecond resolution; '
+                f'{auto_trigger_us} us rounded to {auto_trigger_ms} ms.',
+                ParameterNotSupported)
+        if auto_trigger_ms > limit_ms:
+            raise PicoSDKException(
+                f"auto_trigger of {auto_trigger_us} us ({auto_trigger_ms} ms) "
+                f"exceeds the ps4000a limit of {limit_ms} ms")
+        return auto_trigger_ms
+
+    @override
+    def set_simple_trigger(self, channel, threshold=0, threshold_unit='mv', enable=True,
+                           direction=cst.TRIGGER_DIR.RISING, delay=0, auto_trigger=0):
+        """
+        Sets up a simple trigger. Arguments as base, except that on the
+        ps4000a the C call's auto-trigger argument is in **milliseconds**
+        (int16), so the cross-driver microsecond value is converted here.
+        """
+        channel = _get_literal(channel, cst.channel_map)
+        if channel in (cst.CHANNEL.EXTERNAL, cst.CHANNEL.TRIGGER_AUX):
+            # EXT/AUX are not in channel_db, so convert the threshold manually
+            # using the EXT port's fixed +/-5 V range before base sees it.
+            if threshold_unit in ('mv', 'v'):
+                threshold_mv = threshold * 1000 if threshold_unit == 'v' else threshold
+                threshold = int(
+                    (threshold_mv / cst.PS4000A_EXT_RANGE_MV) * cst.PS4000A_EXT_MAX_VALUE)
+                threshold_unit = 'adc'
+            channel = self._remap_trigger_channel(channel)
+        return super().set_simple_trigger(
+            channel, threshold, threshold_unit, enable, direction, delay,
+            auto_trigger=self._auto_trigger_us_to_ms(auto_trigger))
+
+    @override
+    def set_advanced_trigger(self, channel, state, direction, threshold_mode,
+                             threshold_upper_mv, threshold_lower_mv,
+                             hysteresis_upper_mv=0.0, hysteresis_lower_mv=0.0,
+                             aux_output_enable=0, auto_trigger_ms=0,
+                             action=cst.ACTION.CLEAR_ALL | cst.ACTION.ADD):
+        channel = _get_literal(channel, cst.channel_map)
+        if channel in (cst.CHANNEL.EXTERNAL, cst.CHANNEL.TRIGGER_AUX):
+            # EXT/AUX are not in channel_db; convert mV using the EXT port's
+            # fixed +/-5 V range. The channel value itself is remapped inside
+            # each sub-call.
+            def _mv_to_adc(mv):
+                return int((mv / cst.PS4000A_EXT_RANGE_MV) * cst.PS4000A_EXT_MAX_VALUE)
+            threshold_upper_mv = _mv_to_adc(threshold_upper_mv)
+            threshold_lower_mv = _mv_to_adc(threshold_lower_mv)
+            hysteresis_upper_mv = _mv_to_adc(hysteresis_upper_mv)
+            hysteresis_lower_mv = _mv_to_adc(hysteresis_lower_mv)
+        super().set_advanced_trigger(channel, state, direction, threshold_mode,
+                                     threshold_upper_mv, threshold_lower_mv,
+                                     hysteresis_upper_mv, hysteresis_lower_mv,
+                                     aux_output_enable, auto_trigger_ms, action)
+
+    @override
+    def set_trigger_channel_conditions(
+        self,
+        conditions: list[tuple[cst.CHANNEL, cst.TRIGGER_STATE]],
+        action: int = cst.ACTION.CLEAR_ALL | cst.ACTION.ADD,
+    ) -> None:
+        # PS4000A_CONDITION matches the generic 8-byte PICO_CONDITION layout;
+        # only the virtual EXTERNAL/TRIGGER_AUX values need remapping.
+        conditions = [(self._remap_trigger_channel(source), state)
+                      for source, state in conditions]
+        return super().set_trigger_channel_conditions(conditions, action)
+
+    @override
+    def set_trigger_channel_properties(  # pylint: disable=W0221
+        self,
+        threshold_upper: int,
+        hysteresis_upper: int,
+        threshold_lower: int,
+        hysteresis_lower: int,
+        channel: int,
+        aux_output_enable: int = 0,
+        auto_trigger_us: int = 0,
+        threshold_mode: cst.THRESHOLD_MODE = cst.THRESHOLD_MODE.LEVEL,
+    ) -> None:
+        """Configure trigger thresholds for ``channel``. All threshold and
+        hysteresis values are specified in ADC counts.
+
+        The PS4000A properties struct is 16 bytes and carries a trailing
+        ``thresholdMode`` field, and the C call's auto-trigger argument is in
+        milliseconds (int32) - both differ from the generic base call.
+
+        Args:
+            threshold_upper (int): Upper trigger level.
+            hysteresis_upper (int): Hysteresis for ``threshold_upper``.
+            threshold_lower (int): Lower trigger level.
+            hysteresis_lower (int): Hysteresis for ``threshold_lower``.
+            channel (int): Target channel as a :class:`CHANNEL` value.
+            aux_output_enable (int, optional): Auxiliary output flag.
+            auto_trigger_us (int, optional): Auto-trigger timeout in
+                microseconds. ``0`` waits indefinitely.
+            threshold_mode (THRESHOLD_MODE, optional): LEVEL or WINDOW.
+        """
+        prop = cst.PS4000A_TRIGGER_CHANNEL_PROPERTIES(
+            threshold_upper,
+            hysteresis_upper,
+            threshold_lower,
+            hysteresis_lower,
+            self._remap_trigger_channel(channel),
+            threshold_mode,
+        )
+
+        self._call_attr_function(
+            "SetTriggerChannelProperties",
+            self.handle,
+            ctypes.byref(prop),
+            ctypes.c_int16(1),
+            ctypes.c_int16(aux_output_enable),
+            ctypes.c_int32(
+                self._auto_trigger_us_to_ms(auto_trigger_us, limit_ms=2**31 - 1)),
+        )
+
+    @override
+    def set_trigger_channel_directions(
+        self,
+        channel: cst.CHANNEL | list,
+        direction: cst.THRESHOLD_DIRECTION | list,
+        threshold_mode: cst.THRESHOLD_MODE | list = None,
+    ) -> None:
+        """
+        Specify the trigger direction for ``channel``. If multiple directions
+        are needed, channel and direction can be given as lists.
+
+        ``PS4000A_DIRECTION`` has no thresholdMode field - window semantics
+        are encoded in the direction value itself (INSIDE/OUTSIDE/ENTER/EXIT
+        aliases) - so ``threshold_mode`` is accepted for cross-driver
+        compatibility and ignored.
+        """
+        if isinstance(channel, list):
+            dir_len = len(channel)
+            dir_struct = (cst.PS4000A_DIRECTION * dir_len)()
+            for i in range(dir_len):
+                dir_struct[i] = cst.PS4000A_DIRECTION(
+                    self._remap_trigger_channel(channel[i]), direction[i])
+        else:
+            dir_len = 1
+            dir_struct = cst.PS4000A_DIRECTION(
+                self._remap_trigger_channel(channel), direction)
+
+        return self._call_attr_function(
+            "SetTriggerChannelDirections",
+            self.handle,
+            ctypes.byref(dir_struct),
+            ctypes.c_int16(dir_len),
+        )
+
+    @override
+    def set_pulse_width_qualifier_properties(  # pylint: disable=W0221
+        self,
+        lower: int,
+        upper: int,
+        pw_type: int,
+        direction: cst.THRESHOLD_DIRECTION = cst.THRESHOLD_DIRECTION.RISING,
+    ) -> None:
+        """Configure pulse width qualifier thresholds.
+
+        ``ps4000aSetPulseWidthQualifierProperties`` takes the qualifier
+        direction as its leading argument - there is no separate
+        SetPulseWidthQualifierDirections call on this driver.
+
+        Args:
+            lower: Lower bound of the pulse width (inclusive), in samples.
+            upper: Upper bound of the pulse width (inclusive), in samples.
+            pw_type: Pulse width comparison type.
+            direction (THRESHOLD_DIRECTION, optional): Pulse polarity the
+                qualifier applies to. Defaults to RISING.
+        """
+        self._call_attr_function(
+            "SetPulseWidthQualifierProperties",
+            self.handle,
+            direction,
+            ctypes.c_uint32(lower),
+            ctypes.c_uint32(upper),
+            pw_type,
+        )
+
+    @override
+    def set_pulse_width_qualifier_conditions(
+        self,
+        conditions: list[tuple[cst.CHANNEL, cst.TRIGGER_STATE]],
+        action: int = cst.ACTION.CLEAR_ALL | cst.ACTION.ADD,
+    ) -> None:
+        conditions = [(self._remap_trigger_channel(source), state)
+                      for source, state in conditions]
+        return super().set_pulse_width_qualifier_conditions(conditions, action)
+
+    @override
+    def set_pulse_width_qualifier_directions(self, channel=None, direction=None,
+                                             threshold_mode=None) -> None:
+        raise PicoSDKException(
+            "ps4000a has no SetPulseWidthQualifierDirections call - pass "
+            "direction to set_pulse_width_qualifier_properties() instead."
+        )
+
+    @override
+    def set_pulse_width_trigger(
+        self,
+        channel: cst.CHANNEL,
+        timebase: int,
+        samples: int,
+        direction: cst.THRESHOLD_DIRECTION,
+        pulse_width_type: cst.PULSE_WIDTH_TYPE,
+        time_upper=0,
+        time_upper_units: cst.TIME_UNIT = cst.TIME_UNIT.US,
+        time_lower=0,
+        time_lower_units: cst.TIME_UNIT = cst.TIME_UNIT.US,
+        threshold_upper_mv: float = 0.0,
+        threshold_lower_mv: float = 0.0,
+        hysteresis_upper_mv: float = 0.0,
+        hysteresis_lower_mv: float = 0.0,
+        trig_dir: cst.THRESHOLD_DIRECTION = None,
+        threshold_mode: cst.THRESHOLD_MODE = cst.THRESHOLD_MODE.LEVEL,
+        auto_trigger_us=0
+    ) -> None:
+        """
+        Configures a pulse width trigger. Arguments as the base class helper;
+        on the ps4000a the qualifier direction is passed to
+        ``set_pulse_width_qualifier_properties`` (leading C argument) instead
+        of a separate directions call, which this driver does not have.
+        """
+        # If no times are set, raise an error.
+        if time_upper == 0 and time_lower == 0:
+            raise PicoSDKException(
+                'No time_upper or time_lower bounds specified for Pulse Width Trigger')
+
+        self.set_trigger_channel_conditions(
+            conditions=[
+                (channel, cst.TRIGGER_STATE.TRUE),
+                (cst.CHANNEL.PULSE_WIDTH_SOURCE, cst.TRIGGER_STATE.TRUE)
+            ]
+        )
+
+        # If no trigger direction is specified, use the opposite direction
+        if trig_dir is None:
+            if direction is cst.THRESHOLD_DIRECTION.RISING:
+                trig_dir = cst.THRESHOLD_DIRECTION.FALLING
+            elif direction is cst.THRESHOLD_DIRECTION.FALLING:
+                trig_dir = cst.THRESHOLD_DIRECTION.RISING
+            else:
+                raise PicoSDKException(
+                    'THRESHOLD_DIRECTION for trig_dir has not been specified')
+
+        self.set_trigger_channel_directions(
+            channel=channel,
+            direction=trig_dir,
+            threshold_mode=threshold_mode
+        )
+
+        upper_adc, lower_adc, hyst_upper_adc, hyst_lower_adc = self._thr_hyst_mv_to_adc(
+            channel,
+            threshold_upper_mv,
+            threshold_lower_mv,
+            hysteresis_upper_mv,
+            hysteresis_lower_mv
+        )
+
+        self.set_trigger_channel_properties(
+            threshold_upper=upper_adc, hysteresis_upper=hyst_upper_adc,
+            threshold_lower=lower_adc, hysteresis_lower=hyst_lower_adc,
+            channel=channel,
+            auto_trigger_us=auto_trigger_us,
+            threshold_mode=threshold_mode
+        )
+
+        # Determine actual sample interval from the selected timebase
+        interval_ns = self.get_timebase(timebase, samples)["Interval(ns)"]
+        sample_interval_s = interval_ns / 1e9
+
+        # Convert pulse width threshold to samples
+        pw_upper = int((time_upper / time_upper_units) / sample_interval_s)
+        pw_lower = int((time_lower / time_lower_units) / sample_interval_s)
+
+        # Configure pulse width qualifier; the qualifier direction rides in
+        # the properties call on this driver.
+        self.set_pulse_width_qualifier_properties(
+            lower=pw_lower,
+            upper=pw_upper,
+            pw_type=pulse_width_type,
+            direction=direction,
+        )
+        self.set_pulse_width_qualifier_conditions(
+            [(channel, cst.TRIGGER_STATE.TRUE)]
+        )
+
+    @override
+    def get_trigger_info(self, first_segment_index: int = 0,
+                         to_segment_index: int = 1) -> list[dict]:
+        raise PicoSDKException(
+            "ps4000a has no GetTriggerInfo/GetTriggerInfoBulk call - use "
+            "get_trigger_time_offset() or "
+            "get_values_trigger_time_offset_bulk() instead."
+        )

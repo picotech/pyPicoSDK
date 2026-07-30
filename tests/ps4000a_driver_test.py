@@ -230,3 +230,134 @@ def test_v50_range_for_4824a():
     from pypicosdk._classes._channel_class import ChannelClass
     assert RANGE.V50 == 11
     assert ChannelClass(ch_range=RANGE.V50, probe_scale=1.0).range_mv == 50000
+
+
+# --- trigger layer ---------------------------------------------------------------
+
+def test_trigger_struct_sizes_match_header():
+    """PS4000A trigger structs are pack(1): 16-byte properties, 8-byte direction."""
+    from pypicosdk.constants import PS4000A_TRIGGER_CHANNEL_PROPERTIES, PS4000A_DIRECTION
+    assert ctypes.sizeof(PS4000A_TRIGGER_CHANNEL_PROPERTIES) == 16
+    assert ctypes.sizeof(PS4000A_DIRECTION) == 8
+
+
+def test_simple_trigger_converts_us_to_ms():
+    """ps4000aSetSimpleTrigger's timeout is milliseconds (int16), not us."""
+    scope, calls = _scope_with_recorded_calls(ps4000a)
+    scope.set_simple_trigger(CHANNEL.A, threshold=100, threshold_unit='adc',
+                             auto_trigger=5000)
+    (name, args), = calls
+    assert name == 'SetSimpleTrigger'
+    assert args[6] == 5  # 5000 us -> 5 ms
+
+
+def test_simple_trigger_us_overflow_raises():
+    from pypicosdk import PicoSDKException
+    scope, _ = _scope_with_recorded_calls(ps4000a)
+    with pytest.raises(PicoSDKException):
+        scope.set_simple_trigger(CHANNEL.A, threshold=0, threshold_unit='adc',
+                                 auto_trigger=40_000_000)  # 40000 ms > int16
+
+
+def test_simple_trigger_sub_ms_rounds_up_not_infinite():
+    """500 us must not round to 0 ms (which would mean wait-forever)."""
+    from pypicosdk.common import ParameterNotSupported
+    scope, calls = _scope_with_recorded_calls(ps4000a)
+    with pytest.warns(ParameterNotSupported):
+        scope.set_simple_trigger(CHANNEL.A, threshold=0, threshold_unit='adc',
+                                 auto_trigger=500)
+    assert calls[0][1][6] == 1
+
+
+def test_simple_trigger_external_remap():
+    """CHANNEL.EXTERNAL (virtual 1000) -> PS4000A_EXTERNAL = 8; mV threshold
+    converted against the fixed +/-5 V EXT range."""
+    scope, calls = _scope_with_recorded_calls(ps4000a)
+    scope.set_simple_trigger(CHANNEL.EXTERNAL, threshold=2500, threshold_unit='mv')
+    (name, args), = calls
+    assert args[2] == 8
+    assert args[3] == int((2500 / 5000) * 32767)
+
+
+def test_trigger_properties_struct_and_ms():
+    from pypicosdk.constants import PS4000A_TRIGGER_CHANNEL_PROPERTIES, THRESHOLD_MODE
+    scope, calls = _scope_with_recorded_calls(ps4000a)
+    scope.set_trigger_channel_properties(1000, 10, -1000, 10, CHANNEL.B,
+                                         auto_trigger_us=2_000_000)
+    (name, args), = calls
+    assert name == 'SetTriggerChannelProperties'
+    prop = args[1]._obj
+    assert isinstance(prop, PS4000A_TRIGGER_CHANNEL_PROPERTIES)
+    assert prop.channel_ == CHANNEL.B
+    assert prop.thresholdMode_ == THRESHOLD_MODE.LEVEL
+    assert args[4].value == 2000  # int32 milliseconds
+
+
+def test_trigger_directions_two_field_struct():
+    from pypicosdk.constants import PS4000A_DIRECTION, THRESHOLD_DIRECTION
+    scope, calls = _scope_with_recorded_calls(ps4000a)
+    scope.set_trigger_channel_directions(
+        [CHANNEL.A, CHANNEL.EXTERNAL],
+        [THRESHOLD_DIRECTION.RISING, THRESHOLD_DIRECTION.FALLING])
+    (name, args), = calls
+    assert name == 'SetTriggerChannelDirections'
+    dir_array = args[1]._obj
+    assert ctypes.sizeof(dir_array) == 2 * 8  # 8-byte stride
+    assert dir_array[1].channel_ == 8  # EXTERNAL remapped
+    assert dir_array[1].direction_ == THRESHOLD_DIRECTION.FALLING
+
+
+def test_pwq_properties_leading_direction():
+    from pypicosdk.constants import THRESHOLD_DIRECTION, PULSE_WIDTH_TYPE
+    scope, calls = _scope_with_recorded_calls(ps4000a)
+    scope.set_pulse_width_qualifier_properties(
+        10, 100, PULSE_WIDTH_TYPE.GREATER_THAN,
+        direction=THRESHOLD_DIRECTION.FALLING)
+    (name, args), = calls
+    assert name == 'SetPulseWidthQualifierProperties'
+    assert args[1] == THRESHOLD_DIRECTION.FALLING  # leading direction
+    assert (args[2].value, args[3].value) == (10, 100)
+
+
+def test_pwq_directions_raises():
+    from pypicosdk import PicoSDKException
+    scope, _ = _scope_with_recorded_calls(ps4000a)
+    with pytest.raises(PicoSDKException):
+        scope.set_pulse_width_qualifier_directions(CHANNEL.A, 0, 0)
+
+
+def test_trigger_time_offset_uses_64_variant():
+    scope, calls = _scope_with_recorded_calls(ps4000a)
+    from pypicosdk.constants import TIME_UNIT
+    scope.get_trigger_time_offset(TIME_UNIT.NS)
+    assert calls[0][0] == 'GetTriggerTimeOffset64'
+
+
+def test_get_trigger_info_raises():
+    from pypicosdk import PicoSDKException
+    scope, _ = _scope_with_recorded_calls(ps4000a)
+    with pytest.raises(PicoSDKException):
+        scope.get_trigger_info(0, 1)
+
+
+def test_advanced_trigger_end_to_end_remap_and_ms():
+    """set_advanced_trigger drives conditions/directions/properties with the
+    remapped channel and a millisecond auto-trigger."""
+    from pypicosdk.constants import (
+        THRESHOLD_DIRECTION, THRESHOLD_MODE, TRIGGER_STATE)
+    scope, calls = _scope_with_recorded_calls(ps4000a)
+    scope.set_advanced_trigger(
+        CHANNEL.EXTERNAL, TRIGGER_STATE.TRUE, THRESHOLD_DIRECTION.RISING,
+        THRESHOLD_MODE.LEVEL, threshold_upper_mv=2500, threshold_lower_mv=-2500,
+        auto_trigger_ms=100)
+    names = [name for name, _ in calls]
+    assert names == ['SetTriggerChannelConditions', 'SetTriggerChannelDirections',
+                     'SetTriggerChannelProperties']
+    # Conditions: PICO_CONDITION array with remapped source
+    cond = calls[0][1][1]._obj
+    assert cond[0].source_ == 8
+    # Properties: remapped channel, EXT-range-scaled threshold, 100 ms
+    prop = calls[2][1][1]._obj
+    assert prop.channel_ == 8
+    assert prop.thresholdUpper_ == int((2500 / 5000) * 32767)
+    assert calls[2][1][4].value == 100
