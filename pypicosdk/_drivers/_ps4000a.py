@@ -7,7 +7,9 @@ except ImportError:
     from typing_extensions import override  # type: ignore
 from warnings import warn
 
-from .._exceptions import PowerSourceWarning
+import queue
+
+from .._exceptions import NoArgumentsNeededWarning, PowerSourceWarning
 
 import numpy as np
 import numpy.ctypeslib as npc
@@ -31,6 +33,7 @@ class ps4000a(PicoScopeBase, Sharedps5000aPs6000a, Sharedps5000aPs4000a,
     @override
     def __init__(self, *args, **kwargs):
         self.ac_adaptor = True
+        self._streaming_queue = queue.Queue()
         super().__init__("ps4000a", *args, **kwargs)
 
     @override
@@ -868,4 +871,115 @@ class ps4000a(PicoScopeBase, Sharedps5000aPs6000a, Sharedps5000aPs4000a,
             "ps4000a has no GetTriggerInfo/GetTriggerInfoBulk call - use "
             "get_trigger_time_offset() or "
             "get_values_trigger_time_offset_bulk() instead."
+        )
+
+    # Streaming (callback-based, like the ps5000a)
+
+    @override
+    def run_streaming(
+        self,
+        sample_interval: float,
+        time_units: cst.TIME_UNIT,
+        max_pre_trigger_samples: int,
+        max_post_trigger_samples: int,
+        auto_stop: int = 0,
+        ratio: int = 1,
+        ratio_mode: cst.RATIO_MODE = cst.RATIO_MODE.NONE,
+        overview_buffer_size: int = None,
+    ) -> float:
+        # Convert the ratio mode to NONE for ps4000a
+        if ratio_mode == cst.RATIO_MODE.RAW:
+            ratio_mode = cst.RATIO_MODE.NONE
+        if ratio == 0:
+            ratio = 1
+        # Setup the streaming callback
+        self._setup_streaming_callback()
+        # Discard poll results left over from a previous run
+        while True:
+            try:
+                self._streaming_queue.get_nowait()
+            except queue.Empty:
+                break
+        # Run the streaming (base handles the ps4000a uint32 marshalling)
+        return super().run_streaming(
+            sample_interval,
+            time_units,
+            max_pre_trigger_samples,
+            max_post_trigger_samples,
+            auto_stop,
+            ratio,
+            ratio_mode,
+            overview_buffer_size,
+        )
+
+    def _setup_streaming_callback(self):
+        # Argument types mirror the ps4000aStreamingReady typedef
+        # (ps4000aApi.h): identical to ps5000aStreamingReady, with a
+        # uint32_t triggerAt.
+        self._streaming_callback_pointer = ctypes.CFUNCTYPE(
+            None, ctypes.c_int16, ctypes.c_int32, ctypes.c_uint32, ctypes.c_int16,
+            ctypes.c_uint32, ctypes.c_int16, ctypes.c_int16, ctypes.c_void_p
+        )(self._streaming_callback)
+
+    def _streaming_callback(
+        self,
+        handle: ctypes.c_int16,
+        no_samples: ctypes.c_int32,
+        start_index: ctypes.c_uint32,
+        overflow: ctypes.c_int16,
+        trigger_at: ctypes.c_uint32,
+        triggered: ctypes.c_int16,
+        auto_stop: ctypes.c_int16,
+        param: ctypes.c_void_p
+    ) -> None:
+        # 'Buffer index' is always 0: the ps4000a streams into a single
+        # persistent overview buffer, so there is no driver-side buffer
+        # rotation. A constant int keeps the cross-driver poll-dict contract
+        # (e.g. `info['Buffer index'] % 2`) working without spurious swaps.
+        self._streaming_queue.put({
+            'status': None,
+            'no of samples': no_samples,
+            'Buffer index': 0,
+            'start index': start_index,
+            'overflowed?': overflow,
+            'triggered at': trigger_at,
+            'triggered?': triggered,
+            'auto stopped?': auto_stop,
+        })
+
+    @override
+    def get_streaming_latest_values(self, *args, **kwargs) -> dict:
+        if len(args) > 0 or len(kwargs) > 0:
+            warn("ps4000a get_streaming_latest_values() takes no arguments",
+                 NoArgumentsNeededWarning)
+        status = self._call_attr_function(
+            "GetStreamingLatestValues",
+            self.handle,
+            self._streaming_callback_pointer,
+            None,
+        )
+        try:
+            info = self._streaming_queue.get_nowait()
+            info['status'] = status
+            return info
+        except queue.Empty:
+            # No callback fired this poll. Return the real driver status
+            # (e.g. PICO_BUSY) rather than fabricating success.
+            return {
+                'status': status,
+                'no of samples': 0,
+                'Buffer index': 0,
+                'start index': 0,
+                'overflowed?': 0,
+                'triggered at': 0,
+                'triggered?': 0,
+                'auto stopped?': 0,
+            }
+
+    @override
+    def get_streaming_latest_values_multi(self, requests) -> dict:
+        raise PicoSDKException(
+            "ps4000a does not take per-channel poll requests - its streaming "
+            "callback covers every registered buffer at once. Use "
+            "get_streaming_latest_values() instead."
         )

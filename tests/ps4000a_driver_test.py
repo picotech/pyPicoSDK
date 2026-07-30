@@ -361,3 +361,50 @@ def test_advanced_trigger_end_to_end_remap_and_ms():
     assert prop.channel_ == 8
     assert prop.thresholdUpper_ == int((2500 / 5000) * 32767)
     assert calls[2][1][4].value == 100
+
+
+# --- streaming --------------------------------------------------------------------
+
+def test_run_streaming_uint32_interval_and_raw_remap():
+    """ps4000aRunStreaming takes a uint32* sampleInterval and an
+    overviewBufferSize; RAW remaps to NONE."""
+    from pypicosdk.constants import TIME_UNIT
+    scope, calls = _scope_with_recorded_calls(ps4000a)
+    scope.base_dataclass.last_buffer_size = 5000
+    scope.run_streaming(8, TIME_UNIT.NS, 0, 10000, ratio_mode=RATIO_MODE.RAW)
+    (name, args), = calls
+    assert name == 'RunStreaming'
+    assert len(args) == 9
+    assert isinstance(args[1]._obj, ctypes.c_uint32)   # sampleInterval*
+    assert args[7] == RATIO_MODE.NONE                  # ratio mode remapped
+    assert args[8].value == 5000                       # overviewBufferSize
+    assert scope._streaming_callback_pointer is not None
+
+
+def test_streaming_callback_feeds_poll_dict():
+    scope, calls = _scope_with_recorded_calls(ps4000a)
+    scope._setup_streaming_callback()
+    scope._streaming_callback(1, 512, 100, 0, 42, 1, 0, None)
+    info = scope.get_streaming_latest_values()
+    assert calls[0][0] == 'GetStreamingLatestValues'
+    assert info['no of samples'] == 512
+    assert info['start index'] == 100
+    assert info['triggered at'] == 42
+    assert info['triggered?'] == 1
+    assert info['status'] == 0
+
+
+def test_streaming_poll_without_callback_returns_status():
+    """An empty queue must report the real driver status, not fake data."""
+    scope, _ = _scope_with_recorded_calls(ps4000a, returns={'GetStreamingLatestValues': 39})
+    scope._setup_streaming_callback()
+    info = scope.get_streaming_latest_values()
+    assert info['status'] == 39  # PICO_BUSY passthrough
+    assert info['no of samples'] == 0
+
+
+def test_streaming_multi_poll_raises():
+    from pypicosdk import PicoSDKException
+    scope, _ = _scope_with_recorded_calls(ps4000a)
+    with pytest.raises(PicoSDKException):
+        scope.get_streaming_latest_values_multi([(CHANNEL.A, RATIO_MODE.NONE, 1)])
