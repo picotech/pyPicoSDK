@@ -1282,24 +1282,5 @@ class ps5000a(PicoScopeBase, Sharedps5000aPs6000a, Sharedps5000aPs4000a):  # pyl
             n_directions,
         )
 
-    def is_trigger_or_pulse_width_qualifier_enabled(self) -> dict:
-        """
-        This function returns the status of the trigger and pulse width qualifier.
-
-        Returns:
-            dict: A dictionary with the status of the trigger and pulse width qualifier.
-            trigger_enabled: The status of the trigger.
-            pulse_width_qualifier_enabled: The status of the pulse width qualifier.
-        """
-        tirgger_enabled = ctypes.c_int16()
-        pulse_width_qualifier_enabled = ctypes.c_int16()
-        self._call_attr_function(
-            "IsTriggerOrPulseWidthQualifierEnabled",
-            self.handle,
-            ctypes.byref(tirgger_enabled),
-            ctypes.byref(pulse_width_qualifier_enabled),
-        )
-        return {
-            "trigger_enabled": tirgger_enabled.value,
-            "pulse_width_qualifier_enabled": pulse_width_qualifier_enabled.value,
-        }
+    # is_trigger_or_pulse_width_qualifier_enabled is provided by
+    # Sharedps5000aPs4000a.

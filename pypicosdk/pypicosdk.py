@@ -33,7 +33,7 @@ def get_all_enumerated_units() -> tuple[int, list[str]]:
     """
     n_units = 0
     units = {}
-    for scope in [ps6000a(), psospa(), ps5000a()]:
+    for scope in [ps6000a(), psospa(), ps5000a(), ps4000a()]:
         try:
             unit_serial = scope.get_enumerated_units()
         except PicoSDKException:

@@ -475,6 +475,15 @@ class StreamingSession:
         self.scope = scope
         self._is_ps5000a = scope._unit_prefix_n == 'ps5000a'
 
+        # ps4000a streams through a legacy single-buffer callback that this
+        # session does not drive yet - reject it up front rather than
+        # registering rotating buffers the driver would silently discard.
+        if scope._unit_prefix_n == 'ps4000a':
+            raise PicoSDKException(
+                "StreamingSession does not support the ps4000a driver yet - "
+                "use run_streaming() and get_streaming_latest_values() "
+                "directly.")
+
         # --- channels ---
         if channels is None:
             channels = sorted(scope.channel_db.keys())

@@ -53,4 +53,17 @@
       &ndash; All other direct driver functions
     </td>
   </tr>
+  <tr>
+    <td>
+      <img src="https://www.picotech.com/images/uploads/series/4444.png" alt="PicoScope 4000A" width="200"/>
+    </td>
+    <td>
+      <strong>ps4000a API (PicoScope 4000A Series)</strong><br/>
+      &ndash; Simple/Advanced Block Mode<br/>
+      &ndash; Simple/Advanced Rapid Block Mode<br/>
+      &ndash; Advanced Trigger Functions<br/>
+      &ndash; Streaming Mode (callback-based)<br/>
+      &ndash; No signal generator / ETS wrappers yet
+    </td>
+  </tr>
 </table>

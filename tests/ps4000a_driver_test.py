@@ -408,3 +408,32 @@ def test_streaming_multi_poll_raises():
     scope, _ = _scope_with_recorded_calls(ps4000a)
     with pytest.raises(PicoSDKException):
         scope.get_streaming_latest_values_multi([(CHANNEL.A, RATIO_MODE.NONE, 1)])
+
+
+def test_streaming_poll_before_run_raises_cleanly():
+    """Polling before run_streaming() raises PicoSDKException, not AttributeError."""
+    from pypicosdk import PicoSDKException
+    scope, _ = _scope_with_recorded_calls(ps4000a)
+    with pytest.raises(PicoSDKException):
+        scope.get_streaming_latest_values()
+
+
+def test_streaming_callback_prototype_via_c_pointer():
+    """Drive the callback through the CFUNCTYPE pointer itself so a wrong
+    prototype (arg count/width) fails the suite."""
+    scope, _ = _scope_with_recorded_calls(ps4000a)
+    scope._setup_streaming_callback()
+    scope._streaming_callback_pointer(1, 256, 64, 0, 7, 1, 0, None)
+    info = scope._streaming_queue.get_nowait()
+    assert info['no of samples'] == 256
+    assert info['triggered at'] == 7
+
+
+def test_streaming_session_rejects_ps4000a():
+    """StreamingSession would silently mis-drive the ps4000a callback path;
+    it must refuse cleanly at construction."""
+    from pypicosdk import StreamingSession, PicoSDKException, TIME_UNIT
+    scope, _ = _scope_with_recorded_calls(ps4000a)
+    with pytest.raises(PicoSDKException):
+        StreamingSession(scope, sample_interval=1, time_units=TIME_UNIT.US,
+                         samples_per_buffer=1000)

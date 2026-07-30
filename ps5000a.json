@@ -99,6 +99,7 @@
         "SetUnscaledDataBuffers",
         "GetValuesAsync",
         "GetValuesOverlappedBulk",
-        "GetScalingValues"
+        "GetScalingValues",
+        "GetMaxEtsValues"
     ]
 }

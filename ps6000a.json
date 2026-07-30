@@ -5,7 +5,8 @@
             "SetChannelOn",
             "SigGenFilter",
             "SigGenClockManual",
-            "ChannelCombinationsStateless"
+            "ChannelCombinationsStateless",
+            "GetScopeState"
         ],
         "base.py": [
             "OpenUnit",
@@ -98,6 +99,7 @@
     },
     "not_included": [
         "GetValuesAsync",
-        "GetScalingValues"
+        "GetScalingValues",
+        "GetAutoTriggerStatus"
     ]
 }

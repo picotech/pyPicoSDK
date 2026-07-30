@@ -2108,8 +2108,8 @@ class PicoScopeBase:
             auto_stop: Whether the driver should stop when the buffer is full. Defaults to 0.
             ratio: Down sampling ratio. Defaults to 0.
             ratio_mode: Down sampling mode. Defaults to RATIO_MODE.RAW.
-            overview_buffer_size: Size of the overview buffer. Only applicable for ps5000a.
-                Defaults to None.
+            overview_buffer_size: Size of the overview buffer. Only applicable to the
+                ps5000a and ps4000a drivers. Defaults to None.
         Returns:
             float: The actual sample interval configured by the driver.
         """
@@ -2139,6 +2139,10 @@ class PicoScopeBase:
             # survives, e.g. 3.2 ns -> 3200 ps. Stop descending if the
             # rescaled value would no longer fit in uint32 - rounding at the
             # current unit is then the closest representable request.
+            if sample_interval < 0:
+                raise PicoSDKException(
+                    f"sample_interval of {sample_interval} is negative - it "
+                    "would wrap modulo 2^32 in this driver's uint32 argument")
             unit_steps = 0
             while (abs(sample_interval - round(sample_interval))
                    > 1e-9 * max(1.0, abs(sample_interval))

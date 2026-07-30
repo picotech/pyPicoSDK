@@ -207,6 +207,28 @@ class Sharedps5000aPs4000a:
         )
         return max_downsample_ratio.value
 
+    def is_trigger_or_pulse_width_qualifier_enabled(self) -> dict:
+        """
+        This function returns the status of the trigger and pulse width qualifier.
+
+        Returns:
+            dict: A dictionary with the status of the trigger and pulse width qualifier.
+            trigger_enabled: The status of the trigger.
+            pulse_width_qualifier_enabled: The status of the pulse width qualifier.
+        """
+        trigger_enabled = ctypes.c_int16()
+        pulse_width_qualifier_enabled = ctypes.c_int16()
+        self._call_attr_function(
+            "IsTriggerOrPulseWidthQualifierEnabled",
+            self.handle,
+            ctypes.byref(trigger_enabled),
+            ctypes.byref(pulse_width_qualifier_enabled),
+        )
+        return {
+            "trigger_enabled": trigger_enabled.value,
+            "pulse_width_qualifier_enabled": pulse_width_qualifier_enabled.value,
+        }
+
     def get_max_segments(self) -> int:
         """
         Get the maximum number of memory segments this device supports.

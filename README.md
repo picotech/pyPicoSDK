@@ -63,6 +63,7 @@ Current PicoScope support:
 - PicoScope 3000E (psospa drivers)
 - PicoScope 5000E (psospa drivers)
 - PicoScope 5000D (ps5000a drivers)
+- PicoScope 4000A (ps4000a drivers)
 
 [More info here](https://picotech.github.io/pyPicoSDK/dev/current/)
 

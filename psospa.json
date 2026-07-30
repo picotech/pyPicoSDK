@@ -92,6 +92,11 @@
     },
     "not_included": [
         "GetValuesAsync",
-        "GetAnalogueOffsetLimits"
+        "GetAnalogueOffsetLimits",
+        "CommitCurrentAdjustmentSettingsToDevice",
+        "GetAdjustmentSettingDetails",
+        "ResetAdjustmentSettings",
+        "RunAutomaticOffsetAdjustment",
+        "SetAdjustmentSettingDetails"
     ]
 }

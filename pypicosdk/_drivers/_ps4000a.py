@@ -34,6 +34,7 @@ class ps4000a(PicoScopeBase, Sharedps5000aPs6000a, Sharedps5000aPs4000a,
     def __init__(self, *args, **kwargs):
         self.ac_adaptor = True
         self._streaming_queue = queue.Queue()
+        self._streaming_callback_pointer = None
         super().__init__("ps4000a", *args, **kwargs)
 
     @override
@@ -952,6 +953,10 @@ class ps4000a(PicoScopeBase, Sharedps5000aPs6000a, Sharedps5000aPs4000a,
         if len(args) > 0 or len(kwargs) > 0:
             warn("ps4000a get_streaming_latest_values() takes no arguments",
                  NoArgumentsNeededWarning)
+        if self._streaming_callback_pointer is None:
+            raise PicoSDKException(
+                "No streaming callback registered - call run_streaming() "
+                "before polling get_streaming_latest_values()")
         status = self._call_attr_function(
             "GetStreamingLatestValues",
             self.handle,
