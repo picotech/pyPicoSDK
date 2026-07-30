@@ -291,7 +291,7 @@ class PicoScopeBase:
             int: Number of samples available in each segment.
         """
 
-        if self._unit_prefix_n in ['ps5000a']:
+        if self._unit_prefix_n in ['ps5000a', 'ps4000a']:
             max_samples = ctypes.c_uint32()
         else:
             max_samples = ctypes.c_uint64()

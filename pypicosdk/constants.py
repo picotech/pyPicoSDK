@@ -328,6 +328,9 @@ class RANGE(IntEnum):
     V5 = 8
     V10 = 9
     V20 = 10
+    #: PS4000A_50V - only reachable on the PicoScope 4824A; other drivers
+    #: reject index 11 with an invalid-voltage-range status.
+    V50 = 11
 
 RANGE_LIST = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000,
               100_000, 200_000, 500_000, 1_000_000]
@@ -344,6 +347,7 @@ range_literal = Literal[
     '5V',
     '10V',
     '20V',
+    '50V',
 ]
 
 range_map = {
@@ -358,6 +362,7 @@ range_map = {
     '5V': 8,
     '10V': 9,
     '20V': 10,
+    '50V': 11,
 }
 
 RangeMapRev = {
@@ -372,6 +377,7 @@ RangeMapRev = {
     8: '5V',
     9: '10V',
     10: '20V',
+    11: '50V',
 }
 
 ProbeScale_L = Literal['x1', 'x2', 'x5', 'x10', 'x20', 'x50', 'x100', 'x200', 'x500', 'x1000']
