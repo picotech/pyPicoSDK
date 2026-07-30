@@ -1,0 +1,34 @@
+ps4000a Potential Issues:
+- Open unit
+    - 4444
+        - Uses DC power management (same as ps5000a)
+        - Resolution is optional useing OpenUnitWithResolution
+- Inc. in ps5000a
+    - IsLedFlashing
+    - SetChannel
+    - SetBandwidthFilter
+    - GetTimebase2
+    - SetSigGenArbitrary
+    - SetSigGenBuiltIn
+    - SetSigGenBuiltInV2
+    - SetSigGenPropertiesArbitrary
+    - SetSigGenPropertiesBuiltIn
+    - SigGenFrequencyToPhase
+    - SigGenArbitraryMinMaxValues
+    - SigGenSoftwareControl
+    - SetEts
+    - IsTriggerOrPulseWidthQualifierEnabled
+    - SetEtsTimeBuffer
+    - SetEtsTimeBuffers
+    - GetMaxDownSampleRatio
+    - GetChannelInformation
+    - MaximumValue
+    - MinimumValue
+    - GetMaxSegments
+    - ChangePowerSource
+    - CurrentPowerSource
+- Inc. in ps5000a/ps6000a
+    - FlashLed
+    - GetAnalogueOffset
+
+    
