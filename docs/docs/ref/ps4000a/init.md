@@ -30,3 +30,10 @@ scope.close_unit()
    restricted feature set. pyPicoSDK acknowledges this automatically and
    raises a `PowerSourceWarning`; connect the supplied power adapter for
    full functionality.
+ - Bandwidth-limiter availability depends on the input configuration: on a
+   PicoScope 4444 with the D9-to-BNC adaptor, 100 kHz and 1 MHz limiters
+   are accepted but the 20 kHz limiter returns `PICO_INVALID_BANDWIDTH`
+   (it is intended for current-clamp inputs).
+ - `get_minimum_timebase_stateless()` returns
+   `PICO_NOT_SUPPORTED_BY_THIS_DEVICE` on the PicoScope 4444; use
+   `get_nearest_sampling_interval()` instead.

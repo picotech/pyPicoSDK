@@ -1,5 +1,5 @@
 <!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
-# Functions available pyPicoSDK v1.7.0
+# Functions available pyPicoSDK v1.8.0
 <table>
   <tr>
     <td>
