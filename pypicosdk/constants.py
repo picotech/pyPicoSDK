@@ -571,9 +571,11 @@ class POWER_SOURCE:
 
 
 PwrSrc_L = Literal['AC PSU', 'USB', '2-channel']
+# Keys are lowercase because _get_literal lowercases string input before the
+# lookup - mixed-case keys made 'AC PSU'/'USB' unreachable.
 PwrSrc_M = {
-    'AC PSU': POWER_SOURCE.SUPPLY_CONNECTED,
-    'USB': POWER_SOURCE.SUPPLY_NOT_CONNECTED,
+    'ac psu': POWER_SOURCE.SUPPLY_CONNECTED,
+    'usb': POWER_SOURCE.SUPPLY_NOT_CONNECTED,
     '2-channel': POWER_SOURCE.USB3_0_DEVICE_NON_USB3_0_PORT,
 }
 PwrSrcMapRev = {

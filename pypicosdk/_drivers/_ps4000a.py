@@ -557,6 +557,21 @@ class ps4000a(PicoScopeBase, Sharedps5000aPs6000a, Sharedps5000aPs4000a,
             return cst.PS4000A_TRIGGER_AUX_HW_CHANNEL
         return channel
 
+    @staticmethod
+    def _ext_mv_to_adc(mv: float) -> int:
+        """Scale a millivolt threshold against the EXT port's fixed +/-5 V
+        range. Values beyond the range would silently wrap the driver's
+        int16 threshold (sign flip), so they raise instead.
+
+        Raises:
+            PicoSDKException: If ``mv`` is outside the +/-5 V EXT range.
+        """
+        if abs(mv) > cst.PS4000A_EXT_RANGE_MV:
+            raise PicoSDKException(
+                f"EXT trigger threshold of {mv} mV is outside the port's "
+                f"fixed range of +/-{cst.PS4000A_EXT_RANGE_MV} mV")
+        return int((mv / cst.PS4000A_EXT_RANGE_MV) * cst.PS4000A_EXT_MAX_VALUE)
+
     def _auto_trigger_us_to_ms(self, auto_trigger_us: int, limit_ms: int = 32767) -> int:
         """Convert the cross-driver microsecond auto-trigger argument to the
         millisecond value the ps4000a C calls take.
@@ -602,8 +617,7 @@ class ps4000a(PicoScopeBase, Sharedps5000aPs6000a, Sharedps5000aPs4000a,
             # using the EXT port's fixed +/-5 V range before base sees it.
             if threshold_unit in ('mv', 'v'):
                 threshold_mv = threshold * 1000 if threshold_unit == 'v' else threshold
-                threshold = int(
-                    (threshold_mv / cst.PS4000A_EXT_RANGE_MV) * cst.PS4000A_EXT_MAX_VALUE)
+                threshold = self._ext_mv_to_adc(threshold_mv)
                 threshold_unit = 'adc'
             channel = self._remap_trigger_channel(channel)
         return super().set_simple_trigger(
@@ -616,21 +630,44 @@ class ps4000a(PicoScopeBase, Sharedps5000aPs6000a, Sharedps5000aPs4000a,
                              hysteresis_upper_mv=0.0, hysteresis_lower_mv=0.0,
                              aux_output_enable=0, auto_trigger_ms=0,
                              action=cst.ACTION.CLEAR_ALL | cst.ACTION.ADD):
+        """Configure an advanced trigger in a single call. Arguments as base.
+
+        On the ps4000a, LEVEL/WINDOW selection is carried by the trigger
+        properties struct (``PS4000A_DIRECTION`` has no thresholdMode field),
+        so this override drives the three sub-calls itself to route
+        ``threshold_mode`` into the properties call - base only passes it to
+        the directions call, which would silently drop WINDOW.
+        """
         channel = _get_literal(channel, cst.channel_map)
         if channel in (cst.CHANNEL.EXTERNAL, cst.CHANNEL.TRIGGER_AUX):
             # EXT/AUX are not in channel_db; convert mV using the EXT port's
             # fixed +/-5 V range. The channel value itself is remapped inside
             # each sub-call.
-            def _mv_to_adc(mv):
-                return int((mv / cst.PS4000A_EXT_RANGE_MV) * cst.PS4000A_EXT_MAX_VALUE)
-            threshold_upper_mv = _mv_to_adc(threshold_upper_mv)
-            threshold_lower_mv = _mv_to_adc(threshold_lower_mv)
-            hysteresis_upper_mv = _mv_to_adc(hysteresis_upper_mv)
-            hysteresis_lower_mv = _mv_to_adc(hysteresis_lower_mv)
-        super().set_advanced_trigger(channel, state, direction, threshold_mode,
-                                     threshold_upper_mv, threshold_lower_mv,
-                                     hysteresis_upper_mv, hysteresis_lower_mv,
-                                     aux_output_enable, auto_trigger_ms, action)
+            threshold_upper_mv = self._ext_mv_to_adc(threshold_upper_mv)
+            threshold_lower_mv = self._ext_mv_to_adc(threshold_lower_mv)
+            hysteresis_upper_mv = self._ext_mv_to_adc(hysteresis_upper_mv)
+            hysteresis_lower_mv = self._ext_mv_to_adc(hysteresis_lower_mv)
+
+        upper_adc, lower_adc, hyst_upper_adc, hyst_lower_adc = self._thr_hyst_mv_to_adc(
+            channel,
+            threshold_upper_mv,
+            threshold_lower_mv,
+            hysteresis_upper_mv,
+            hysteresis_lower_mv
+        )
+
+        self.set_trigger_channel_conditions([(channel, state)], action)
+        self.set_trigger_channel_directions(channel, direction, threshold_mode)
+        self.set_trigger_channel_properties(
+            upper_adc,
+            hyst_upper_adc,
+            lower_adc,
+            hyst_lower_adc,
+            channel,
+            aux_output_enable,
+            auto_trigger_ms * 1000,
+            threshold_mode=threshold_mode,
+        )
 
     @override
     def set_trigger_channel_conditions(
@@ -704,10 +741,12 @@ class ps4000a(PicoScopeBase, Sharedps5000aPs6000a, Sharedps5000aPs4000a,
         Specify the trigger direction for ``channel``. If multiple directions
         are needed, channel and direction can be given as lists.
 
-        ``PS4000A_DIRECTION`` has no thresholdMode field - window semantics
-        are encoded in the direction value itself (INSIDE/OUTSIDE/ENTER/EXIT
-        aliases) - so ``threshold_mode`` is accepted for cross-driver
-        compatibility and ignored.
+        ``PS4000A_DIRECTION`` has no thresholdMode field, so
+        ``threshold_mode`` is accepted for cross-driver compatibility and
+        ignored here. On this driver LEVEL/WINDOW selection is carried by
+        ``set_trigger_channel_properties(threshold_mode=...)`` instead (the
+        INSIDE/OUTSIDE/ENTER/EXIT direction aliases are numerically identical
+        to their level counterparts and carry no mode information).
         """
         if isinstance(channel, list):
             dir_len = len(channel)
@@ -806,6 +845,15 @@ class ps4000a(PicoScopeBase, Sharedps5000aPs6000a, Sharedps5000aPs4000a,
             raise PicoSDKException(
                 'No time_upper or time_lower bounds specified for Pulse Width Trigger')
 
+        channel = _get_literal(channel, cst.channel_map)
+        if channel in (cst.CHANNEL.EXTERNAL, cst.CHANNEL.TRIGGER_AUX):
+            # EXT/AUX are not in channel_db; convert mV using the EXT port's
+            # fixed +/-5 V range (as the simple/advanced trigger paths do).
+            threshold_upper_mv = self._ext_mv_to_adc(threshold_upper_mv)
+            threshold_lower_mv = self._ext_mv_to_adc(threshold_lower_mv)
+            hysteresis_upper_mv = self._ext_mv_to_adc(hysteresis_upper_mv)
+            hysteresis_lower_mv = self._ext_mv_to_adc(hysteresis_lower_mv)
+
         self.set_trigger_channel_conditions(
             conditions=[
                 (channel, cst.TRIGGER_STATE.TRUE),
@@ -872,6 +920,19 @@ class ps4000a(PicoScopeBase, Sharedps5000aPs6000a, Sharedps5000aPs4000a,
             "ps4000a has no GetTriggerInfo/GetTriggerInfoBulk call - use "
             "get_trigger_time_offset() or "
             "get_values_trigger_time_offset_bulk() instead."
+        )
+
+    @override
+    def set_trigger_delay(self, delay: int) -> None:
+        """Delay the trigger by ``delay`` samples.
+
+        ``ps4000aSetTriggerDelay`` takes a uint32, not the uint64 the base
+        class passes.
+        """
+        self._call_attr_function(
+            "SetTriggerDelay",
+            self.handle,
+            ctypes.c_uint32(delay),
         )
 
     # Streaming (callback-based, like the ps5000a)

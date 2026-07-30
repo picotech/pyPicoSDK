@@ -1123,7 +1123,10 @@ class PicoScopeBase:
             resolution,
         )
         self.resolution = resolution
-        self.get_adc_limits()
+        # A resolution change moves the ADC full-scale count; store the new
+        # limits (drivers whose get_adc_limits sets the attributes itself
+        # are simply re-assigned the same values).
+        self.min_adc_value, self.max_adc_value = self.get_adc_limits()
 
     def _set_channel_on(self, channel, range, probe_scale):
         # Constrain probe scale

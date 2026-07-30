@@ -34,6 +34,10 @@ class shared_4000a_6000a:
         # equivalent of this 3-argument call is OpenUnitAsyncWithResolution.
         if self._unit_prefix_n == 'ps4000a':
             call = "OpenUnitAsyncWithResolution"
+            if resolution == 0:
+                # Match open_unit's 12-bit default - no current 4000A
+                # hardware runs at the enum's 8-bit value.
+                resolution = RESOLUTION.BIT_12
         else:
             call = "OpenUnitAsync"
 

@@ -129,6 +129,25 @@ def test_open_unit_async_uses_withresolution():
     assert args[2] == RESOLUTION.BIT_12
 
 
+def test_open_unit_async_default_matches_sync_12bit():
+    """The shared default of 0 (8-bit) is invalid on 4000A hardware."""
+    scope, calls = _scope_with_recorded_calls(ps4000a)
+    scope.open_unit_async()
+    (name, args), = calls
+    assert args[2] == RESOLUTION.BIT_12
+
+
+def test_change_power_source_string_literals():
+    """The documented 'USB'/'AC PSU' literals must resolve (case-insensitive)."""
+    from pypicosdk.constants import POWER_SOURCE
+    scope, calls = _scope_with_recorded_calls(ps4000a)
+    scope.change_power_source('USB')
+    scope.change_power_source('AC PSU')
+    assert [args[1] for _, args in calls] == \
+        [POWER_SOURCE.SUPPLY_NOT_CONNECTED, POWER_SOURCE.SUPPLY_CONNECTED]
+    assert scope.ac_adaptor is True
+
+
 # --- block path -----------------------------------------------------------------
 
 def test_get_timebase_uses_gettimebase2():
@@ -361,6 +380,57 @@ def test_advanced_trigger_end_to_end_remap_and_ms():
     assert prop.channel_ == 8
     assert prop.thresholdUpper_ == int((2500 / 5000) * 32767)
     assert calls[2][1][4].value == 100
+
+
+def test_advanced_trigger_window_mode_reaches_struct():
+    """WINDOW must land in the properties struct's thresholdMode - the only
+    carrier of level/window on ps4000a (PS4000A_DIRECTION has no field and
+    the INSIDE/OUTSIDE aliases are numerically identical to ABOVE/BELOW)."""
+    from pypicosdk.constants import (
+        THRESHOLD_DIRECTION, THRESHOLD_MODE, TRIGGER_STATE)
+    scope, calls = _scope_with_recorded_calls(ps4000a)
+    scope.set_advanced_trigger(
+        CHANNEL.A, TRIGGER_STATE.TRUE, THRESHOLD_DIRECTION.INSIDE,
+        THRESHOLD_MODE.WINDOW, threshold_upper_mv=100, threshold_lower_mv=-100)
+    prop = [args for name, args in calls
+            if name == 'SetTriggerChannelProperties'][0][1]._obj
+    assert prop.thresholdMode_ == THRESHOLD_MODE.WINDOW
+
+
+def test_pulse_width_trigger_external_scales_threshold():
+    """PWT on EXTERNAL must apply the same +/-5 V scaling as the simple and
+    advanced trigger paths."""
+    from pypicosdk.constants import THRESHOLD_DIRECTION, PULSE_WIDTH_TYPE
+    scope, calls = _scope_with_recorded_calls(ps4000a)
+    # get_timebase feeds the sample-interval maths; give it a real interval
+    scope.get_timebase = lambda timebase, samples, segment=0: {'Interval(ns)': 8.0}
+    scope.set_pulse_width_trigger(
+        CHANNEL.EXTERNAL, timebase=8, samples=1000,
+        direction=THRESHOLD_DIRECTION.RISING,
+        pulse_width_type=PULSE_WIDTH_TYPE.GREATER_THAN,
+        time_lower=1, threshold_upper_mv=2500)
+    prop = [args for name, args in calls
+            if name == 'SetTriggerChannelProperties'][0][1]._obj
+    assert prop.thresholdUpper_ == int((2500 / 5000) * 32767)
+    assert prop.channel_ == 8
+
+
+def test_ext_threshold_beyond_range_raises():
+    """> +/-5 V would wrap the driver's int16 threshold (sign flip)."""
+    from pypicosdk import PicoSDKException
+    scope, _ = _scope_with_recorded_calls(ps4000a)
+    with pytest.raises(PicoSDKException):
+        scope.set_simple_trigger(CHANNEL.EXTERNAL, threshold=6000,
+                                 threshold_unit='mv')
+
+
+def test_set_trigger_delay_uint32():
+    """ps4000aSetTriggerDelay takes uint32, not base's uint64."""
+    scope, calls = _scope_with_recorded_calls(ps4000a)
+    scope.set_trigger_delay(1000)
+    (name, args), = calls
+    assert name == 'SetTriggerDelay'
+    assert isinstance(args[1], ctypes.c_uint32)
 
 
 # --- streaming --------------------------------------------------------------------
