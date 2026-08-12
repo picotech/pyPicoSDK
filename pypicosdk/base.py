@@ -1236,37 +1236,28 @@ class PicoScopeBase:
 
     def set_trigger_channel_properties(
         self,
-        threshold_upper: int,
-        hysteresis_upper: int,
-        threshold_lower: int,
-        hysteresis_lower: int,
-        channel: int,
+        properties: list[tuple[int, int, int, int, int | CHANNEL]],
         aux_output_enable: int = 0,
         auto_trigger_us: int = 0,
     ) -> None:
-        """Configure trigger thresholds for ``channel``. All threshold and hysteresis values are
-        specified in ADC counts.
-        Be aware if using raw ADC values, threshold is always scaled to a 16-bit ADC value,
-        (Even when using 8-bit resolution).
+        """Configure trigger thresholds for multiple channels. All threshold and
+        hysteresis values are specified in ADC counts.
+        Be aware if using raw ADC values, threshold is always scaled to a 16-bit ADC
+        value, even when using 8-bit resolution.
 
         Args:
-            threshold_upper (int): Upper trigger level.
-            hysteresis_upper (int): Hysteresis for ``threshold_upper``.
-            threshold_lower (int): Lower trigger level.
-            hysteresis_lower (int): Hysteresis for ``threshold_lower``.
-            channel (int): Target channel as a :class:`CHANNEL` value.
+            properties (list[tuple[int, int, int, int, int | CHANNEL]]): A list of
+                tuples describing trigger parameters for a specific channel. Parameters
+                are ordered as follow: upper trigger level, upper trigger hysteresis,
+                lower trigger level, lower trigger hysteresis, channel.
             aux_output_enable (int, optional): Auxiliary output flag.
             auto_trigger_us (int, optional): Auto-trigger timeout in
                 microseconds. ``0`` waits indefinitely.
         """
-
-        prop = PICO_TRIGGER_CHANNEL_PROPERTIES(
-            threshold_upper,
-            hysteresis_upper,
-            threshold_lower,
-            hysteresis_lower,
-            channel,
-        )
+        prop_len = len(properties)
+        prop_array = (PICO_TRIGGER_CHANNEL_PROPERTIES * prop_len)()
+        for i, args in enumerate(properties):
+            prop_array[i] = PICO_TRIGGER_CHANNEL_PROPERTIES(*args)
 
         if self._unit_prefix_n == "ps5000a":
             call_function = "SetTriggerChannelPropertiesV2"
@@ -1276,7 +1267,7 @@ class PicoScopeBase:
         self._call_attr_function(
             call_function,
             self.handle,
-            ctypes.byref(prop),
+            ctypes.byref(prop_array),
             ctypes.c_int16(1),
             ctypes.c_int16(aux_output_enable),
             ctypes.c_uint32(auto_trigger_us),
