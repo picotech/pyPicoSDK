@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../../img/favicon.ico" />
+    <title>Memory / Buffer Management - pyPicoSDK</title>
+    <link rel="stylesheet" href="../../../css/theme.css" />
+    <link rel="stylesheet" href="../../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../../assets/_mkdocstrings.css" rel="stylesheet" />
+        <link href="../../../css/mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Memory / Buffer Management";
+        var mkdocs_page_input_path = "ref/psospa/buffers.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../../.." class="icon icon-home"> pyPicoSDK
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../../introduction/">Introduction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >PicoScope 6000E (ps6000a) Functions</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/init/">Initializing ps6000a</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/setup/">Setup / Initialization</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/firmware/">Firmware / Updates</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/channel/">Channel Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/digital/">Digital Port Control</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/trigger/">Trigger Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/siggen/">Signal Generator</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/buffers/">Memory / Buffer Management</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/conversions/">Built-in Conversions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps6000a/retrieval/">Data Retrieval</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" >PicoScope 3000E (psospa) Functions</a>
+    <ul class="current">
+                <li class="toctree-l2"><a class="reference internal" href="../init/">Initializing psospa</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../setup/">Setup / Initialization</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../firmware/">Firmware / Updates</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../channel/">Channel Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../digital/">Digital Port Control</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../trigger/">Trigger Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../siggen/">Signal Generator</a>
+                </li>
+                <li class="toctree-l2 current"><a class="reference internal current" href="#">Memory / Buffer Management</a>
+    <ul class="current">
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.get_maximum_available_memory">get_maximum_available_memory</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.memory_segments">memory_segments</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.memory_segments_by_samples">memory_segments_by_samples</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.set_data_buffer">set_data_buffer</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.set_data_buffer_for_enabled_channels">set_data_buffer_for_enabled_channels</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.set_data_buffer_rapid_capture">set_data_buffer_rapid_capture</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#pypicosdk.pypicosdk.psospa.set_data_buffers">set_data_buffers</a>
+    </li>
+    </ul>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../conversions/">Built-in Conversions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../retrieval/">Data Retrieval</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../led/">LED Control</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" >PicoScope 5000D (ps5000a) Functions</a>
+    <ul>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/init/">Initializing ps5000a</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/setup/">Setup / Initialization</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/channel/">Channel Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/trigger/">Trigger Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/siggen/">Signal Generator</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/buffers/">Memory / Buffer Management</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/conversions/">Built-in Conversions</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/captures/">Capture Configuration</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/run/">Data Acquisition: Block &amp; Streaming</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/retrieval/">Data Retrieval</a>
+                </li>
+                <li class="toctree-l2"><a class="reference internal" href="../../ps5000a/ets/">ETS Setup</a>
+                </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../general/">General Functions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../constants/">Constants/Enums</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../configuration/">Config/Overrides</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Development</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/issues/">Issues</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/changelog/">Changelog</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/current/">Current Support</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../../dev/roadmap/">Upcoming Roadmap</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../..">pyPicoSDK</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Reference</li>
+          <li class="breadcrumb-item">PicoScope 3000E (psospa) Functions</li>
+      <li class="breadcrumb-item active">Memory / Buffer Management</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="memory-buffer-management">Memory / Buffer Management</h1>
+<!-- Copyright (C) 2025-2025 Pico Technology Ltd. See LICENSE file for terms. -->
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pypicosdk.base.PicoScopeBase">PicoScopeBase</span></code>, <code><span title="pypicosdk.shared.ps6000a_psospa.shared_ps6000a_psospa">shared_ps6000a_psospa</span></code></p>
+
+
+
+        <p>PicoScope OSP (A) API specific functions</p>
+
+
+
+
+
+
+
+
+
+
+
+<p><span class="doc-section-title">Methods:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="get_maximum_available_memory() (pypicosdk.pypicosdk.psospa.get_maximum_available_memory)" href="#pypicosdk.pypicosdk.psospa.get_maximum_available_memory">get_maximum_available_memory</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Return the maximum sample depth for the current resolution.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="memory_segments(n_segments) (pypicosdk.pypicosdk.psospa.memory_segments)" href="#pypicosdk.pypicosdk.psospa.memory_segments">memory_segments</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Configure the number of memory segments that the PicoScope will use.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="memory_segments_by_samples(n_samples) (pypicosdk.pypicosdk.psospa.memory_segments_by_samples)" href="#pypicosdk.pypicosdk.psospa.memory_segments_by_samples">memory_segments_by_samples</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Set the samples per memory segment.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="set_data_buffer(channel, samples, segment=0, datatype=DATA_TYPE.INT16_T, ratio_mode=RATIO_MODE.RAW, action=ACTION.CLEAR_ALL | ACTION.ADD, buffer=None) (pypicosdk.pypicosdk.psospa.set_data_buffer)" href="#pypicosdk.pypicosdk.psospa.set_data_buffer">set_data_buffer</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Allocates and assigns a data buffer for a specified channel on the 6000A series.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="set_data_buffer_for_enabled_channels(samples, segment=0, datatype=DATA_TYPE.INT16_T, ratio_mode=RATIO_MODE.RAW, clear_buffer=True, captures=0) (pypicosdk.pypicosdk.psospa.set_data_buffer_for_enabled_channels)" href="#pypicosdk.pypicosdk.psospa.set_data_buffer_for_enabled_channels">set_data_buffer_for_enabled_channels</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Sets data buffers for enabled channels set by picosdk.set_channel()</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="set_data_buffer_rapid_capture(channel, samples, captures, segment=0, datatype=DATA_TYPE.INT16_T, ratio_mode=RATIO_MODE.RAW, action=ACTION.CLEAR_ALL | ACTION.ADD) (pypicosdk.pypicosdk.psospa.set_data_buffer_rapid_capture)" href="#pypicosdk.pypicosdk.psospa.set_data_buffer_rapid_capture">set_data_buffer_rapid_capture</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Allocates and assigns multiple data buffers for rapid block capture on a specified channel.</p>
+                </div>
+              </td>
+            </tr>
+            <tr class="doc-section-item">
+              <td><code><a class="autorefs autorefs-internal" title="set_data_buffers(channel, samples, segment=0, datatype=DATA_TYPE.INT16_T, ratio_mode=RATIO_MODE.AGGREGATE, action=ACTION.CLEAR_ALL | ACTION.ADD, buffers=None) (pypicosdk.pypicosdk.psospa.set_data_buffers)" href="#pypicosdk.pypicosdk.psospa.set_data_buffers">set_data_buffers</a></code></td>
+              <td>
+                <div class="doc-md-description">
+                  <p>Allocate and assign max and min NumPy-backed data buffers.</p>
+                </div>
+              </td>
+            </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.get_maximum_available_memory" class="doc doc-heading">
+            <code class="highlight language-python">get_maximum_available_memory()</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the maximum sample depth for the current resolution.
+Wraps <code>ps6000aGetMaximumAvailableMemory</code> to query how many samples
+can be captured at <code>self.resolution</code>.
+Returns:
+    int: Maximum number of samples supported.
+Raises:
+    PicoSDKException: If the device has not been opened.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.memory_segments" class="doc doc-heading">
+            <code class="highlight language-python">memory_segments(n_segments)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Configure the number of memory segments that the PicoScope will use.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>n_segments</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Desired number of memory segments.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>int</code></b>(                  <code><span title="int">int</span></code>
+)              –
+              <div class="doc-md-description">
+                <p>Number of samples available in each segment.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.memory_segments_by_samples" class="doc doc-heading">
+            <code class="highlight language-python">memory_segments_by_samples(n_samples)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Set the samples per memory segment.</p>
+<p>This wraps <code>ps6000aMemorySegmentsBySamples</code> which divides the
+capture memory so that each segment holds <code>n_samples</code> samples.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>n_samples</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Number of samples per segment.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>int</code></b>(                  <code><span title="int">int</span></code>
+)              –
+              <div class="doc-md-description">
+                <p>Number of segments the memory was divided into.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.set_data_buffer" class="doc doc-heading">
+            <code class="highlight language-python">set_data_buffer(channel, samples, segment=0, datatype=DATA_TYPE.INT16_T, ratio_mode=RATIO_MODE.RAW, action=ACTION.CLEAR_ALL | ACTION.ADD, buffer=None)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Allocates and assigns a data buffer for a specified channel on the 6000A series.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>channel</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The channel to associate the buffer with (e.g., CHANNEL.A).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>samples</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Number of samples to allocate in the buffer.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>segment</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Memory segment to use.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>datatype</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="DATA_TYPE (pypicosdk.constants.DATA_TYPE)" href="../../constants/#pypicosdk.constants.DATA_TYPE">DATA_TYPE</a></code>, default:
+                      <code><span title="pypicosdk.constants.DATA_TYPE.INT16_T">INT16_T</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>C data type for the buffer (e.g., INT16_T).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>ratio_mode</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="RATIO_MODE (pypicosdk.constants.RATIO_MODE)" href="../../constants/#pypicosdk.constants.RATIO_MODE">RATIO_MODE</a></code>, default:
+                      <code><span title="pypicosdk.constants.RATIO_MODE.RAW">RAW</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Downsampling mode.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>action</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="ACTION (pypicosdk.constants.ACTION)" href="../../constants/#pypicosdk.constants.ACTION">ACTION</a></code>, default:
+                      <code><span title="pypicosdk.constants.ACTION.CLEAR_ALL">CLEAR_ALL</span> | <span title="pypicosdk.constants.ACTION.ADD">ADD</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Action to apply to the data buffer (e.g., CLEAR_ALL | ADD).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>buffer</code></b>
+                  (<code><span title="numpy.ndarray">ndarray</span> | None</code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Send a preallocated  numpy buffer to be populated.
+If left as None, this function creates its own buffer.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="numpy.ndarray">ndarray</span> | None</code>
+              –
+              <div class="doc-md-description">
+                <p>np.array | None: The allocated buffer or <code>None</code> when clearing existing buffers.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Raises:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="pypicosdk.common.PicoSDKException">PicoSDKException</span></code>
+              –
+              <div class="doc-md-description">
+                <p>If an unsupported data type is provided.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.set_data_buffer_for_enabled_channels" class="doc doc-heading">
+            <code class="highlight language-python">set_data_buffer_for_enabled_channels(samples, segment=0, datatype=DATA_TYPE.INT16_T, ratio_mode=RATIO_MODE.RAW, clear_buffer=True, captures=0)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Sets data buffers for enabled channels set by picosdk.set_channel()</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>samples</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The sample buffer or size to allocate.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>segment</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>The memory segment index.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>datatype</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="DATA_TYPE (pypicosdk.constants.DATA_TYPE)" href="../../constants/#pypicosdk.constants.DATA_TYPE">DATA_TYPE</a></code>, default:
+                      <code><span title="pypicosdk.constants.DATA_TYPE.INT16_T">INT16_T</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>The data type used for the buffer.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>ratio_mode</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="RATIO_MODE (pypicosdk.constants.RATIO_MODE)" href="../../constants/#pypicosdk.constants.RATIO_MODE">RATIO_MODE</a></code>, default:
+                      <code><span title="pypicosdk.constants.RATIO_MODE.RAW">RAW</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>The ratio mode (e.g., RAW, AVERAGE).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>clear_buffer</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>True</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>If True, clear the buffer first</p>
+              </div>
+            </li>
+            <li>
+              <b><code>captures</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>If larger than 0, it will create multiple buffers for RAPID mode.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>dict</code></b>(                  <code><span title="dict">dict</span></code>
+)              –
+              <div class="doc-md-description">
+                <p>A dictionary mapping each channel to its associated data buffer.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.set_data_buffer_rapid_capture" class="doc doc-heading">
+            <code class="highlight language-python">set_data_buffer_rapid_capture(channel, samples, captures, segment=0, datatype=DATA_TYPE.INT16_T, ratio_mode=RATIO_MODE.RAW, action=ACTION.CLEAR_ALL | ACTION.ADD)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Allocates and assigns multiple data buffers for rapid block capture on a specified channel.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>channel</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The channel to associate the buffer with (e.g., CHANNEL.A).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>samples</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Number of samples to allocate in the buffer.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>captures</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Number of rapid block captures</p>
+              </div>
+            </li>
+            <li>
+              <b><code>segment</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Memory segment to start at.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>datatype</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="DATA_TYPE (pypicosdk.constants.DATA_TYPE)" href="../../constants/#pypicosdk.constants.DATA_TYPE">DATA_TYPE</a></code>, default:
+                      <code><span title="pypicosdk.constants.DATA_TYPE.INT16_T">INT16_T</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>C data type for the buffer (e.g., INT16_T).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>ratio_mode</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="RATIO_MODE (pypicosdk.constants.RATIO_MODE)" href="../../constants/#pypicosdk.constants.RATIO_MODE">RATIO_MODE</a></code>, default:
+                      <code><span title="pypicosdk.constants.RATIO_MODE.RAW">RAW</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Downsampling mode.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>action</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="ACTION (pypicosdk.constants.ACTION)" href="../../constants/#pypicosdk.constants.ACTION">ACTION</a></code>, default:
+                      <code><span title="pypicosdk.constants.ACTION.CLEAR_ALL">CLEAR_ALL</span> | <span title="pypicosdk.constants.ACTION.ADD">ADD</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Action to apply to the data buffer (e.g., CLEAR_ALL | ADD).</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="numpy.ndarray">ndarray</span> | None</code>
+              –
+              <div class="doc-md-description">
+                <p>np.array | None: The allocated buffer or <code>None</code> when clearing existing buffers.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Raises:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="pypicosdk.common.PicoSDKException">PicoSDKException</span></code>
+              –
+              <div class="doc-md-description">
+                <p>If an unsupported data type is provided.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="pypicosdk.pypicosdk.psospa.set_data_buffers" class="doc doc-heading">
+            <code class="highlight language-python">set_data_buffers(channel, samples, segment=0, datatype=DATA_TYPE.INT16_T, ratio_mode=RATIO_MODE.AGGREGATE, action=ACTION.CLEAR_ALL | ACTION.ADD, buffers=None)</code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Allocate and assign max and min NumPy-backed data buffers.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>channel</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The channel to associate the buffers with.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>samples</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Number of samples to allocate.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>segment</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Memory segment to use.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>datatype</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="DATA_TYPE (pypicosdk.constants.DATA_TYPE)" href="../../constants/#pypicosdk.constants.DATA_TYPE">DATA_TYPE</a></code>, default:
+                      <code><span title="pypicosdk.constants.DATA_TYPE.INT16_T">INT16_T</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>C data type for the buffer (e.g., INT16_T).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>ratio_mode</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="RATIO_MODE (pypicosdk.constants.RATIO_MODE)" href="../../constants/#pypicosdk.constants.RATIO_MODE">RATIO_MODE</a></code>, default:
+                      <code><span title="pypicosdk.constants.RATIO_MODE.AGGREGATE">AGGREGATE</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Downsampling mode.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>action</code></b>
+                  (<code><a class="autorefs autorefs-internal" title="ACTION (pypicosdk.constants.ACTION)" href="../../constants/#pypicosdk.constants.ACTION">ACTION</a></code>, default:
+                      <code><span title="pypicosdk.constants.ACTION.CLEAR_ALL">CLEAR_ALL</span> | <span title="pypicosdk.constants.ACTION.ADD">ADD</span></code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Action to apply to the data buffer.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>buffers</code></b>
+                  (<code><span title="numpy.ndarray">ndarray</span> | None</code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Send preallocated 2D numpy buffers to be populated.
+Min buffer first, followed by max buffer. If left as None, this function
+creates its own buffers.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+              –
+              <div class="doc-md-description">
+                <p>np.ndarray: NumPy array of buffers.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Raises:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="pypicosdk.common.PicoSDKException">PicoSDKException</span></code>
+              –
+              <div class="doc-md-description">
+                <p>If an unsupported data type is provided.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../siggen/" class="btn btn-neutral float-left" title="Signal Generator"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../conversions/" class="btn btn-neutral float-right" title="Built-in Conversions">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../siggen/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../conversions/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../../..";</script>
+    <script src="../../../js/theme_extra.js"></script>
+    <script src="../../../js/theme.js"></script>
+      <script src="../../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
