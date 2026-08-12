@@ -877,8 +877,8 @@ class PICO_USB_POWER_DELIVERY(ctypes.Structure):
             Indicates if a partner device is connected (non-zero if connected).
         ccPolarity_ (ctypes.c_uint8):
             The polarity of the CC (Configuration Channel) line.
-        attachedDevice_ (ctypes.c_uint8):
-            The type of device attached (corresponds to PICO_USB_POWER_DELIVERY_DEVICE_TYPE).
+        attachedDevice_ (ctypes.c_uint32):
+            The type of device attached (PICO_USB_POWER_DELIVERY_DEVICE_TYPE, a 4-byte enum).
         contractExists_ (ctypes.c_uint8):
             Indicates whether a power contract exists (non-zero if yes).
         currentPdo_ (ctypes.c_uint32):
@@ -894,7 +894,7 @@ class PICO_USB_POWER_DELIVERY(ctypes.Structure):
         ("rpCurrentLimitmA_", ctypes.c_uint32),
         ("partnerConnected_", ctypes.c_uint8),
         ("ccPolarity_", ctypes.c_uint8),
-        ("attachedDevice_", ctypes.c_uint8),
+        ("attachedDevice_", ctypes.c_uint32),
         ("contractExists_", ctypes.c_uint8),
         ("currentPdo_", ctypes.c_uint32),
         ("currentRdo_", ctypes.c_uint32),
@@ -905,6 +905,8 @@ class PICO_USB_POWER_DETAILS(ctypes.Structure):
     Structure describing USB power details for a PicoScope device.
 
     Attributes:
+        powerErrorLikely_ (ctypes.c_uint8):
+            Non-zero if the driver considers a USB power problem likely.
         dataPort_ (PICO_USB_POWER_DELIVERY):
             USB power delivery details related to the device's data port.
         powerPort_ (PICO_USB_POWER_DELIVERY):
@@ -913,6 +915,7 @@ class PICO_USB_POWER_DETAILS(ctypes.Structure):
     _pack_ = 1
 
     _fields_ = [
+        ("powerErrorLikely_", ctypes.c_uint8),
         ("dataPort_", PICO_USB_POWER_DELIVERY),
         ("powerPort_", PICO_USB_POWER_DELIVERY),
     ]
