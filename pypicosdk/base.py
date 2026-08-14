@@ -642,9 +642,13 @@ class PicoScopeBase:
         if self._unit_prefix_n in ['ps5000a']:
             call = "GetTriggerInfoBulk"
             array_struct = cst.PICO_TRIGGER_INFO_PS5000A
+            # Older ps5000a takes an inclusive last index
+            last_argument = first_segment_index + to_segment_index - 1
         else:
             call = "GetTriggerInfo"
             array_struct = cst.PICO_TRIGGER_INFO
+            # Newer models take the count of segments, not an inclusive last index
+            last_argument = to_segment_index
 
         info_array = (array_struct * to_segment_index)()
 
@@ -653,7 +657,7 @@ class PicoScopeBase:
             self.handle,
             ctypes.byref(info_array),
             first_segment_index,
-            first_segment_index + to_segment_index - 1,
+            last_argument,
         )
         # Convert struct to dictionary
         return [_struct_to_dict(info, format=True) for info in info_array]
