@@ -1127,7 +1127,7 @@ class PicoScopeBase:
             resolution,
         )
         self.resolution = resolution
-        self.get_adc_limits()
+        self.min_adc_value, self.max_adc_value = self.get_adc_limits()
 
     def _set_channel_on(self, channel, range, probe_scale):
         # Constrain probe scale
