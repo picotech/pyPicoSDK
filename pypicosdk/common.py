@@ -139,9 +139,14 @@ def _get_literal(variable: str | Any, map_dict: dict, type_fail=False) -> int:
     if not isinstance(variable, str) and type_fail is False:
         return variable
     elif isinstance(variable, str):
-        variable = variable.lower()
+        # Exact match first, so maps with case-sensitive keys keep working.
         if variable in map_dict:
             return map_dict[variable]
+        # Fall back to a case-insensitive match, as some maps (i.e. range_map)
+        # are keyed in display case such as '5V' or '100mV'.
+        for key, value in map_dict.items():
+            if isinstance(key, str) and key.lower() == variable.lower():
+                return value
     raise PicoSDKException(f'Variable \'{variable}\' not in {list(map_dict.keys())}')
 
 
