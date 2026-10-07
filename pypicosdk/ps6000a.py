@@ -214,5 +214,60 @@ class ps6000a(PicoScopeBase, shared_ps6000a_psospa, shared_4000a_6000a, Sharedps
         elif output_type == 'string':
             return cst.ScopeStateList[int_state.value]
 
+    def set_external_reference_interaction_callback(self, callback) -> None:
+        """Register a callback for external 10 MHz reference clock lock changes.
+
+        Wraps ``ps6000aSetExternalReferenceInteractionCallback``. The 6000E
+        detects a signal on its rear REF IN connector by itself; this callback
+        is the only way the driver reports which clock the scope is running
+        from. The driver calls it once, a few hundred milliseconds after
+        registration, with the current state, and again whenever the state
+        changes (reference plugged in, lost, or re-locked).
+
+        The callback runs on a driver thread, not the thread that registered
+        it, so keep it short and hand the value to your own code with a
+        thread-safe container. Exceptions raised inside it are printed and
+        swallowed by ctypes.
+
+        Args:
+            callback: Callable ``(handle, status, reference)`` where
+                ``reference`` is a :class:`~pypicosdk.constants.CLOCK_REFERENCE`
+                (``INTERNAL_REF`` or ``EXTERNAL_REF``) and ``status`` is the
+                driver :class:`PICO_STATUS` for the event. Pass ``None`` to
+                unregister.
+
+        Examples:
+            >>> def on_reference(handle, status, reference):
+            ...     print("clock:", reference.name)
+            >>> scope.set_external_reference_interaction_callback(on_reference)
+        """
+        if callback is None:
+            self._call_attr_function(
+                "SetExternalReferenceInteractionCallback",
+                self.handle,
+                None,
+            )
+            self._external_reference_cb = None
+            return
+
+        ext_ref_callback = ctypes.CFUNCTYPE(
+            None,
+            ctypes.c_int16,
+            ctypes.c_uint32,
+            ctypes.c_int32,
+        )
+
+        def _trampoline(handle, status, reference):
+            callback(handle, status, cst.CLOCK_REFERENCE(reference))
+
+        # The driver keeps calling this pointer for the life of the handle, so
+        # the ctypes object must outlive the registration call.
+        self._external_reference_cb = ext_ref_callback(_trampoline)
+        self._call_attr_function(
+            "SetExternalReferenceInteractionCallback",
+            self.handle,
+            self._external_reference_cb,
+        )
+
 
 __all__ = ['ps6000a']

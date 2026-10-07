@@ -11,6 +11,14 @@ from .psospa import psospa
 from ._drivers._ps5000a import ps5000a
 from .base import PicoScopeBase
 from .streaming import StreamingSession, StreamingChunk
+from .multiscope import (
+    MultiScope,
+    MultiScopeError,
+    MultiScopeWarning,
+    Calibration,
+    FollowerCalibration,
+    AlignmentInfo,
+)
 from .common import (
     PicoSDKException,
     PicoSDKNotFoundException,
@@ -148,5 +156,11 @@ __all__ = list(_constants.__all__) + [
     'ps5000a',
     'StreamingSession',
     'StreamingChunk',
+    'MultiScope',
+    'MultiScopeError',
+    'MultiScopeWarning',
+    'Calibration',
+    'FollowerCalibration',
+    'AlignmentInfo',
     '__version__',
 ]

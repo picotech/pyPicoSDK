@@ -2051,6 +2051,7 @@ class PicoScopeBase:
             samples: int,
             pre_trig_percent: float | None = None,
             segment: int = 0,
+            pre_trig_samples: int | None = None,
         ) -> int:
         """
         Runs a block capture using the specified timebase and number of samples.
@@ -2065,16 +2066,28 @@ class PicoScopeBase:
                 Percentage of samples to capture before the trigger. If None, defaults to
                 last called pre_trig_percent or 50.
             segment (int, optional): Memory segment index to use.
+            pre_trig_samples (int | None, optional): Exact number of pre-trigger samples.
+                Overrides ``pre_trig_percent`` when given, for callers that need
+                sample-accurate placement of the trigger point (for example when
+                compensating a known trigger latency between devices).
 
         Returns:
             int: Estimated time (in milliseconds) the device will be busy capturing data.
         """
-        # Check and add pre-trig to base dataclass
-        if pre_trig_percent is None:
-            pre_trig_percent = self.base_dataclass.last_pre_trig
-        self.base_dataclass.last_pre_trig = pre_trig_percent
-
-        pre_samples = int((samples * pre_trig_percent) / 100)
+        if pre_trig_samples is not None:
+            if not 0 <= pre_trig_samples <= samples:
+                raise PicoSDKException(
+                    f"pre_trig_samples must be between 0 and samples ({samples}), "
+                    f"got {pre_trig_samples}")
+            pre_samples = int(pre_trig_samples)
+            # Keep the percentage bookkeeping consistent for get_time_axis()
+            self.base_dataclass.last_pre_trig = pre_samples * 100 / samples
+        else:
+            # Check and add pre-trig to base dataclass
+            if pre_trig_percent is None:
+                pre_trig_percent = self.base_dataclass.last_pre_trig
+            self.base_dataclass.last_pre_trig = pre_trig_percent
+            pre_samples = int((samples * pre_trig_percent) / 100)
         post_samples = int(samples - pre_samples)
         time_indisposed_ms = ctypes.c_int32()
         self._call_attr_function(

@@ -47,6 +47,7 @@ nav:
       - ref/ps5000a/run.md
       - ref/ps5000a/retrieval.md
       - ref/ps5000a/ets.md
+    - Multi-scope (6000E): ref/multiscope.md
     - ref/general.md
     - ref/constants.md
     - Config/Overrides: ref/configuration.md

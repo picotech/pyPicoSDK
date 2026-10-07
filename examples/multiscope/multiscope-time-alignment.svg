@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 636" width="1040" height="636" role="img" aria-labelledby="t d" font-family="Roboto,'Segoe UI',system-ui,Arial,sans-serif">
+  <title id="t">How MultiScope aligns time between two PicoScope 6000E units</title>
+  <desc id="d">A 10 MHz reference locks both sample clocks. The master triggers on the shared edge and its AUX pulse triggers the follower about 452 nanoseconds later with a 15 nanosecond jitter. Each unit stamps its trigger with its own sample counter. Calibration measures the mean lag, the jitter margin and the constant offset between the counters; each capture arms the follower with extra pre-trigger samples, derives the exact lag from the two time stamps and cuts the follower record to the master's window. Result on the bench at 5 GS/s: 461 nanoseconds of skew before, 0.02 nanoseconds after.</desc>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#003057"/>
+      <stop offset="1" stop-color="#0067A0"/>
+    </linearGradient>
+    <marker id="fa" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#ffffff"/>
+    </marker>
+    <marker id="fs" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#A4C8E1"/>
+    </marker>
+  </defs>
+  <style>
+    .nd{fill:#ffffff;fill-opacity:.10;stroke:#ffffff;stroke-width:1.5}
+    .pico{fill:#7BAFD4;fill-opacity:.34;stroke:#A4C8E1;stroke-width:1.5}
+    .start{fill:#005EB8;stroke:#ffffff;stroke-opacity:.45;stroke-width:1}
+    .end{fill:#ffffff}
+    .lab{font-size:16px;font-weight:600;fill:#ffffff}
+    .lab-dark{font-size:16px;font-weight:600;fill:#003057}
+    .lab-arc{font-size:13px;font-weight:600;fill:#ffffff}
+    .sub{font-size:11px;fill:#A4C8E1}
+    .sub-dark{font-size:11px;fill:#4b6b85}
+    .side{font-size:12px;font-weight:600;fill:#ffffff}
+    .mono{font-family:ui-monospace,Consolas,Menlo,monospace;font-size:11.5px;fill:#ffffff}
+    .wire{stroke:#ffffff;stroke-width:2;fill:none}
+    .wire-sky{stroke:#A4C8E1;stroke-width:2;fill:none}
+    .bar-m{fill:#ffffff;fill-opacity:.16;stroke:#ffffff;stroke-width:1.5}
+    .bar-f{fill:#7BAFD4;fill-opacity:.30;stroke:#A4C8E1;stroke-width:1.5}
+    .ghost{fill:none;stroke:#A4C8E1;stroke-opacity:.5;stroke-width:1.5;stroke-dasharray:4 4}
+    .keep{fill:#ffffff;fill-opacity:.24}
+    .tick{stroke:#ffffff;stroke-width:2}
+    .cut{stroke:#A4C8E1;stroke-width:1.5;stroke-dasharray:5 4;fill:none}
+  </style>
+  <rect id="bg" width="1040" height="636" fill="url(#g)"/>
+  <g id="figure" transform="translate(40,40)">
+
+    <!-- Row 0: the reference, feeding both units on sky wires -->
+    <rect class="start" x="395" y="6" width="170" height="50" rx="12"/>
+    <text class="lab" x="480" y="27" text-anchor="middle" font-size="15">10 MHz reference</text>
+    <text class="sub" x="480" y="44" text-anchor="middle">one source into every REF IN</text>
+    <path class="wire-sky" d="M430,56 V80 H280 V100" marker-end="url(#fs)"/>
+    <path class="wire-sky" d="M530,56 V80 H680 V100" marker-end="url(#fs)"/>
+    <text class="sub" x="480" y="96" text-anchor="middle">locks both sample clocks to the same frequency, not to the same phase</text>
+
+    <!-- Row 1: master and follower, joined by the AUX pulse -->
+    <rect class="nd" x="150" y="104" width="260" height="62" rx="12"/>
+    <text class="lab" x="280" y="129" text-anchor="middle">Master · 6426E</text>
+    <text class="sub" x="280" y="148" text-anchor="middle">triggers on Ch A · AUX set to TRIGGER_OUT</text>
+    <rect class="nd" x="550" y="104" width="260" height="62" rx="12"/>
+    <text class="lab" x="680" y="129" text-anchor="middle">Follower · 6428E-D</text>
+    <text class="sub" x="680" y="148" text-anchor="middle">triggers on its AUX input</text>
+    <line class="wire" x1="410" y1="135" x2="546" y2="135" marker-end="url(#fa)"/>
+    <text class="lab-arc" x="478" y="126" text-anchor="middle">AUX pulse</text>
+    <text class="sub" x="478" y="153" text-anchor="middle">+452 ns ±15 ns</text>
+
+    <!-- Row 2: the two records on one time axis; x is absolute time -->
+    <text class="side" x="20" y="223">Master record</text>
+    <text class="sub" x="20" y="238">N samples</text>
+    <rect class="bar-m" x="200" y="206" width="560" height="26" rx="4"/>
+    <text class="sub" x="480" y="192" text-anchor="middle">shared edge = master trigger</text>
+    <line class="wire-sky" x1="790" y1="219" x2="860" y2="219" marker-end="url(#fs)"/>
+    <text class="sub" x="825" y="236" text-anchor="middle">time</text>
+    <line class="tick" x1="480" y1="198" x2="480" y2="240"/>
+    <path class="wire" d="M462,226 H478 V212 H498"/>
+    <text class="mono" x="480" y="250" text-anchor="middle">time stamp ts_m</text>
+
+    <line class="wire" x1="480" y1="264" x2="590" y2="264" marker-end="url(#fa)"/>
+    <text class="mono" x="505" y="282" text-anchor="middle">lag = ts_f − ts_m − K</text>
+
+    <text class="side" x="20" y="319">Follower record</text>
+    <text class="sub" x="20" y="334">N + 2M samples</text>
+    <rect class="bar-f" x="150" y="302" width="660" height="26" rx="4"/>
+    <rect class="keep" x="200" y="302" width="560" height="26"/>
+    <text x="330" y="319" text-anchor="middle" font-size="11" fill="#ffffff">kept: N samples from index s</text>
+    <path class="wire" d="M462,322 H478 V308 H498"/>
+    <text x="506" y="319" font-size="11" fill="#ffffff">same edge</text>
+    <line class="tick" x1="590" y1="294" x2="590" y2="336"/>
+    <text class="mono" x="582" y="298" text-anchor="end">follower trigger · time stamp ts_f</text>
+    <line class="cut" x1="200" y1="196" x2="200" y2="340"/>
+    <line class="cut" x1="760" y1="196" x2="760" y2="340"/>
+    <line class="wire-sky" x1="150" y1="343" x2="200" y2="343" marker-start="url(#fs)" marker-end="url(#fs)"/>
+    <text class="sub" x="175" y="357" text-anchor="middle">margin M</text>
+    <line class="wire-sky" x1="760" y1="343" x2="810" y2="343" marker-start="url(#fs)" marker-end="url(#fs)"/>
+    <text class="sub" x="785" y="357" text-anchor="middle">margin M</text>
+    <line class="wire-sky" x1="562" y1="343" x2="618" y2="343" marker-start="url(#fs)" marker-end="url(#fs)"/>
+    <text class="sub" x="590" y="357" text-anchor="middle">jitter ±15 ns</text>
+    <text class="sub" x="480" y="371" text-anchor="middle">time stamp: the unit's own sample counter, read at its trigger · K: the fixed offset between the two counters</text>
+    <text class="sub" x="480" y="386" text-anchor="middle">margin M: the pre-trigger allows for the average lag L; M covers the ±15 ns around it, later than average uses the left margin, earlier the right</text>
+
+    <!-- Row 3: the method, in the three steps the example runs -->
+    <rect class="pico" x="0" y="396" width="290" height="70" rx="11"/>
+    <text class="lab" x="145" y="420" text-anchor="middle" font-size="14">1 · Calibrate once</text>
+    <text class="sub" x="145" y="439" text-anchor="middle">64 rapid-block captures of a shared edge give</text>
+    <text class="sub" x="145" y="455" text-anchor="middle">mean lag L, jitter margin M, counter offset K</text>
+    <line class="wire" x1="290" y1="431" x2="331" y2="431" marker-end="url(#fa)"/>
+    <rect class="pico" x="335" y="396" width="290" height="70" rx="11"/>
+    <text class="lab" x="480" y="420" text-anchor="middle" font-size="14">2 · Capture</text>
+    <text class="sub" x="480" y="439" text-anchor="middle">followers armed first with pre-trigger + L + M</text>
+    <text class="sub" x="480" y="455" text-anchor="middle">and N + 2M samples, then the master</text>
+    <line class="wire" x1="625" y1="431" x2="666" y2="431" marker-end="url(#fa)"/>
+    <rect class="pico" x="670" y="396" width="290" height="70" rx="11"/>
+    <text class="lab" x="815" y="420" text-anchor="middle" font-size="14">3 · Cut from the time stamps</text>
+    <text class="sub" x="815" y="439" text-anchor="middle">this capture's lag from the two stamps, then</text>
+    <text class="sub" x="815" y="455" text-anchor="middle">keep N samples from index s = L + M − lag</text>
+
+    <!-- Row 4: the endpoint, white like the hero's Deploy box -->
+    <rect class="end" x="255" y="490" width="450" height="52" rx="13"/>
+    <text class="lab-dark" x="480" y="511" text-anchor="middle">461 ns of skew before · 0.02 ns std after</text>
+    <text class="sub-dark" x="480" y="529" text-anchor="middle">6426E + 6428E-D at 5 GS/s, 0.2 ns samples, 10 captures</text>
+  </g>
+</svg>

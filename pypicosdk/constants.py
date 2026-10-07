@@ -832,6 +832,16 @@ class AUXIO_MODE(IntEnum):
     #: Logic high pulse during the post-trigger acquisition time.
     TRIGGER_OUT = 3
 
+class CLOCK_REFERENCE(IntEnum):
+    """Which clock the scope is running from, as reported by the external
+    reference callback (``PICO_CLOCK_REFERENCE``)."""
+
+    #: Internal crystal oscillator.
+    INTERNAL_REF = 0
+
+    #: Locked to the 10 MHz signal on the rear REF IN connector.
+    EXTERNAL_REF = 1
+
 class PICO_CHANNEL_OVERVOLTAGE_TRIPPED(ctypes.Structure):
     """Status flag indicating whether a channel's input protection tripped.
     Attributes:
@@ -1334,6 +1344,7 @@ __all__ = [
     'PICO_SCALING_FACTORS_VALUES',
     'PICO_SCALING_FACTORS_FOR_RANGE_TYPES_VALUES',
     'AUXIO_MODE',
+    'CLOCK_REFERENCE',
     'PICO_CHANNEL_OVERVOLTAGE_TRIPPED',
     'TRIGGER_STATE',
     'PICO_USB_POWER_DELIVERY',

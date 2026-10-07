@@ -5,6 +5,7 @@
 
 ## WIP
 - Streaming examples (inc. downsampling)
+- Multi-scope synchronisation for PicoScope 6000E (`MultiScope`: 10 MHz reference, AUX trigger, time-stamp alignment)
 
 ## To-do:
 - ps4000a API - PicoScope 4000A Series
