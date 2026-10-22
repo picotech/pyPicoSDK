@@ -13,7 +13,7 @@ class shared_4000a_6000a:
     def open_unit_async(
         self,
         serial_number: str | None = None,
-        resolution: RESOLUTION = 0,
+        resolution: RESOLUTION = RESOLUTION._8BIT,
     ) -> int:
         """Open a unit without blocking the calling thread.
         Wraps ``ps6000aOpenUnitAsync`` which begins the open operation and

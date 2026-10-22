@@ -23,7 +23,7 @@ class ps6000a(PicoScopeBase, shared_ps6000a_psospa, shared_4000a_6000a, Sharedps
         super().__init__("ps6000a", *args, **kwargs)
 
     @override
-    def open_unit(self, serial_number:str=None, resolution:RESOLUTION | resolution_literal=0) -> None:
+    def open_unit(self, serial_number:str=None, resolution:RESOLUTION | resolution_literal=RESOLUTION._8BIT) -> None:
         # If using Literals, convert to int
         if resolution in resolution_map:
             resolution = resolution_map[resolution]

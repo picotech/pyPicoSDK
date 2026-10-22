@@ -6,7 +6,7 @@ from socket import SO_RCVLOWAT
 from typing import Literal
 import numpy as np
 
-class UNIT_INFO:
+class UNIT_INFO(IntEnum):
     """
     Unit information identifiers for querying PicoScope device details.
 
@@ -40,7 +40,7 @@ class UNIT_INFO:
     PICO_FIRMWARE_VERSION_1 = 9
     PICO_FIRMWARE_VERSION_2 = 10
 
-class RESOLUTION:
+class RESOLUTION(IntEnum):
     """
     Resolution constants for PicoScope devices.
 
@@ -74,7 +74,7 @@ class RESOLUTION:
 resolution_literal = Literal['8bit', '10bit', '12bit', '14bit', '15bit', '16bit']
 resolution_map = {'8bit':0, '10bit':10, '12bit':1, '14bit':2, '15bit':3, '16bit':4}
 
-class TRIGGER_DIR:
+class TRIGGER_DIR(IntEnum):
     """
     Trigger direction constants for configuring PicoScope triggers.
 
@@ -456,7 +456,7 @@ ScopeStateList = ['idle', 'pre_trigger', 'waiting_for_trigger', 'capturing', 're
 
 ScopeStateReturnType_L = Literal['string', 'int', 'enum']
 
-class DATA_TYPE:
+class DATA_TYPE(IntEnum):
     """
     Class for different data types.
 
@@ -491,7 +491,7 @@ DataTypeScaleMap = {
 }
 
 
-class ACTION:
+class ACTION(IntEnum):
     """
     Action codes used to manage and clear data buffers.
 
@@ -511,7 +511,7 @@ class ACTION:
     CLEAR_WAVEFORM_DATA_BUFFERS = 0x00002000
     CLEAR_WAVEFORM_READ_DATA_BUFFERS = 0x00004000
 
-class RATIO_MODE:
+class RATIO_MODE(IntEnum):
     """
     Defines various ratio modes for signal processing.
 
@@ -540,7 +540,7 @@ class RATIO_MODE:
     TRIGGER = 0x40000000
     RAW = 0x80000000
 
-class POWER_SOURCE:
+class POWER_SOURCE(IntEnum):
     """
     Defines different power source connection statuses.
 
