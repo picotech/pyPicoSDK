@@ -75,6 +75,8 @@ class PicoScopeBase:
         self.max_adc_value = None
         self.min_adc_value = None
         self.over_range = 0
+        self._overlapped_buffers = None
+        self._overlapped_reported = False
         self._actual_interval = 0
         self.last_used_volt_unit: str = 'adc'
 
@@ -217,6 +219,9 @@ class PicoScopeBase:
         Continuously calls the PicoSDK `IsReady` function in a loop, checking if
         the device is prepared to proceed with data acquisition.
 
+        If a :meth:`get_values_overlapped` request is pending, a warning is
+        logged here once the capture has completed if any channel went over range.
+
         Returns:
                 None
         """
@@ -230,6 +235,8 @@ class PicoScopeBase:
             )
             if ready.value != 0:
                 break
+
+        self._report_overlapped_over_range()
 
     def ping_unit(self) -> bool:
         """Check that the device is still connected.
@@ -784,8 +791,8 @@ class PicoScopeBase:
         down_sample_ratio_mode: int,
         from_segment_index: int,
         to_segment_index: int,
-        overflow: ctypes.c_int16,
-        wait_for_ready: bool = True,
+        overflow: np.ndarray | ctypes.c_int16 | None = None,
+        wait_for_ready: bool = False,
     ) -> int:
         """Retrieve overlapped data from multiple segments for block or rapid block mode.
 
@@ -804,30 +811,84 @@ class PicoScopeBase:
             down_sample_ratio: Downsampling ratio to apply.
             down_sample_ratio_mode: Downsampling mode from :class:`RATIO_MODE`.
             from_segment_index: First segment index to read.
-            to_segment_index: Last segment index to read.
-            overflow: ``ctypes.c_int16`` instance that receives any overflow
-                flags.
-            wait_for_ready (bool, optional): Whether to wait for the device to be ready.
+            to_segment_index: Last segment index to read. Must not be lower than
+                ``from_segment_index``.
+            overflow: Receives the overflow flags, one ``int16`` per segment, when
+                :meth:`run_block_capture` executes the request. Pass an ``int16``
+                NumPy array with at least ``to_segment_index - from_segment_index + 1``
+                entries and read it once the capture has completed. A
+                ``ctypes.c_int16`` is accepted for a single segment. If ``None``
+                the flags are written to an internal buffer. In every case a
+                warning is logged if any channel went over range, when
+                :meth:`is_ready` reports the capture complete or, if you did not
+                call it, when :meth:`stop_using_get_values_overlapped` is called.
+            wait_for_ready (bool, optional): Whether to wait for an earlier capture to
+                finish before queuing the request. Defaults to ``False`` because the
+                request is queued before :meth:`run_block_capture`, and the wait never
+                returns if no capture has been started yet. The driver refuses a request
+                queued while a capture is running, so pass ``True`` to queue straight
+                after starting one.
 
         Returns:
-            int: Actual number of samples copied from each segment.
+            int: ``no_of_samples``, as requested. The driver only copies the data
+            when :meth:`run_block_capture` runs the request.
+
+        Raises:
+            PicoSDKException: If ``to_segment_index`` is lower than
+                ``from_segment_index``, or ``overflow`` is too small or the wrong type.
 
         Examples:
-            >>> samples = scope.get_values_overlapped(
+            >>> flags = np.zeros(4, dtype=np.int16)
+            >>> scope.get_values_overlapped(
             ...     start_index=0,              # read from start of buffer
             ...     no_of_samples=1024,         # copy 1024 samples
             ...     down_sample_ratio=1,        # no downsampling
             ...     down_sample_ratio_mode=RATIO_MODE.RAW,
-            ...     from_segment_index=0,       # first segment only
-            ...     to_segment_index=0,
+            ...     from_segment_index=0,       # four segments
+            ...     to_segment_index=3,
+            ...     overflow=flags,             # the request runs in run_block_capture
             ... )
-            >>> scope.run_block_capture(timebase=1, samples=1024)
-            >>> data = scope.get_values(samples=1024)
-            >>> samples, scope.over_range
-            (1024, 0)
+            1024
+            >>> scope.run_block_capture(timebase=3, samples=1024)
+            >>> scope.is_ready()
+            >>> scope.stop_using_get_values_overlapped()
+            >>> flags.tolist()
+            [0, 0, 0, 0]
         """
 
-        # If wait_for_ready is True, wait for the device to be ready before getting values
+        n_segments = to_segment_index - from_segment_index + 1
+        if n_segments < 1:
+            raise PicoSDKException(
+                "to_segment_index must not be lower than from_segment_index; "
+                "wrapping past the last segment is not supported"
+            )
+
+        # The driver writes one int16 per segment into the overflow buffer
+        if overflow is None:
+            overflow = np.zeros(n_segments, dtype=np.int16)
+
+        if isinstance(overflow, ctypes.c_int16):
+            if n_segments != 1:
+                raise PicoSDKException(
+                    f"A ctypes.c_int16 holds the flags for one segment but {n_segments} "
+                    f"were requested; pass an int16 NumPy array with {n_segments} entries"
+                )
+            overflow_arg = ctypes.byref(overflow)
+        elif (
+            isinstance(overflow, np.ndarray)
+            and overflow.dtype == np.int16
+            and overflow.size >= n_segments
+            and overflow.flags.c_contiguous
+            and overflow.flags.writeable
+        ):
+            overflow_arg = npc.as_ctypes(overflow)
+        else:
+            raise PicoSDKException(
+                f"overflow must be a writeable, C-contiguous int16 NumPy array with at least "
+                f"{n_segments} entries, or a ctypes.c_int16 for a single segment"
+            )
+
+        # If wait_for_ready is True, wait for an earlier capture to finish before queuing
         if wait_for_ready:
             self.is_ready()
 
@@ -841,11 +902,34 @@ class PicoScopeBase:
             down_sample_ratio_mode,
             ctypes.c_uint64(from_segment_index),
             ctypes.c_uint64(to_segment_index),
-            ctypes.byref(overflow),
+            overflow_arg,
         )
-        self.over_range = overflow.value
+
+        # The request runs in run_block_capture, after this call has returned,
+        # so the driver can write through these pointers later and they must
+        # outlive this call. Released by stop_using_get_values_overlapped.
+        self._overlapped_buffers = (overflow, c_samples, n_segments)
+        self._overlapped_reported = False
+        return no_of_samples
+
+    def _report_overlapped_over_range(self) -> None:
+        """Warn once about over-range flags written for a pending get_values_overlapped request.
+
+        The driver writes every segment's flag at the moment the capture completes
+        (when ``IsReady`` goes true), so this is only meaningful from that point on.
+        """
+
+        if self._overlapped_buffers is None or self._overlapped_reported:
+            return
+        overflow, _, n_segments = self._overlapped_buffers
+        self._overlapped_reported = True
+
+        if isinstance(overflow, ctypes.c_int16):
+            self.over_range = overflow.value
+        else:
+            # Channels that went over range in any of the requested segments
+            self.over_range = int(np.bitwise_or.reduce(overflow[:n_segments]))
         self.is_over_range()
-        return c_samples.value
 
     def get_device_resolution(self) -> RESOLUTION:
         """Return the currently configured resolution.
@@ -2405,8 +2489,9 @@ class PicoScopeBase:
         Logs and prints a warning if any channel has been over range.
 
         The :attr:`over_range` attribute stores a bit mask updated by data
-        retrieval methods like :meth:`get_values` and
-        :meth:`get_values_overlapped`. Calling this method logs a warning if
+        retrieval methods like :meth:`get_values` and :meth:`get_values_bulk`, and
+        by :meth:`is_ready` for a pending :meth:`get_values_overlapped` request.
+        Calling this method logs a warning if
         any channel went over range and returns a list of the affected
         channel names.
 
