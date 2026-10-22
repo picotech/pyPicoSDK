@@ -121,13 +121,23 @@ class shared_ps6000a_psospa(_ProtocolBase):
         """Terminate overlapped capture mode.
 
         Call this when overlapped captures are complete to release any
-        resources allocated by :meth:`get_values_overlapped`.
+        resources allocated by :meth:`get_values_overlapped`. If :meth:`is_ready`
+        has not already reported it, the over-range flags the driver wrote are
+        checked here and a warning is logged if any channel went over range in
+        any segment. The flags are only final once the capture has completed.
         """
 
         self._call_attr_function(
             "StopUsingGetValuesOverlapped",
             self.handle,
         )
+
+        # The driver is finished with the buffers queued by get_values_overlapped:
+        # report any over-range flags not yet reported, then release them
+        try:
+            self._report_overlapped_over_range()
+        finally:
+            self._overlapped_buffers = None
 
     def set_trigger_holdoff_counter_by_samples(self, samples: int) -> None:
         """Set the trigger holdoff period in sample intervals.
