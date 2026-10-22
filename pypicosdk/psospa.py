@@ -30,7 +30,7 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
         super().__init__("psospa", *args, **kwargs)
 
     @override
-    def open_unit(self, serial_number:str=None, resolution:RESOLUTION | resolution_literal=0) -> PICO_USB_POWER_DETAILS:
+    def open_unit(self, serial_number:str=None, resolution:RESOLUTION | resolution_literal=RESOLUTION._8BIT) -> PICO_USB_POWER_DETAILS:
         """
         Opens a connection to a PicoScope unit and retrieves USB power details.
 
@@ -40,7 +40,7 @@ class psospa(PicoScopeBase, shared_ps6000a_psospa):
                 If None, the first available unit is opened.
             resolution (RESOLUTION | resolution_literal, optional):
                 The desired device resolution. Can be a RESOLUTION enum or literal integer.
-                Defaults to 0.
+                Defaults to RESOLUTION._8BIT.
 
         Returns:
             A structure containing USB power information of the opened device.

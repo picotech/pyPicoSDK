@@ -42,7 +42,7 @@ class shared_ps6000a_psospa(_ProtocolBase):
 
     def get_adc_limits(
         self,
-        datatype: cst.DATA_TYPE = None,
+        datatype: cst.DATA_TYPE | None = None,
     ) -> tuple:
         """
         Gets the ADC limits for specified devices.
