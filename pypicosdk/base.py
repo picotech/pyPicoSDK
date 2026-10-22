@@ -2036,7 +2036,7 @@ class PicoScopeBase:
             samples: int,
             pre_trig_percent: float | None = None,
             segment: int = 0,
-        ) -> int:
+        ) -> float:
         """
         Runs a block capture using the specified timebase and number of samples.
 
@@ -2052,7 +2052,8 @@ class PicoScopeBase:
             segment (int, optional): Memory segment index to use.
 
         Returns:
-            int: Estimated time (in milliseconds) the device will be busy capturing data.
+            float: Estimated time (in milliseconds) the device will be busy capturing data.
+            ``ps6000a`` and ``psospa`` report a fractional value, other drivers a whole number.
         """
         # Check and add pre-trig to base dataclass
         if pre_trig_percent is None:
@@ -2061,7 +2062,14 @@ class PicoScopeBase:
 
         pre_samples = int((samples * pre_trig_percent) / 100)
         post_samples = int(samples - pre_samples)
-        time_indisposed_ms = ctypes.c_int32()
+
+        # ps6000a and psospa write timeIndisposedMs as a double, the other
+        # drivers as an int32. A narrower receiver gets the double's low
+        # 32 bits back, which is not the estimate.
+        if self._unit_prefix_n in ['ps6000a', 'psospa']:
+            time_indisposed_ms = ctypes.c_double()
+        else:
+            time_indisposed_ms = ctypes.c_int32()
         self._call_attr_function(
             'RunBlock',
             self.handle,
