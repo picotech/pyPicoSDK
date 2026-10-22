@@ -1747,7 +1747,7 @@ class PicoScopeBase:
             buf_ptr = npc.as_ctypes(buffer)
         else:
             # Map to NumPy dtype and update ADC limits
-            self.get_adc_limits(datatype)
+            self.min_adc_value, self.max_adc_value = self.get_adc_limits(datatype)
             np_dtype = cst.DataTypeNPMap.get(datatype, None)
             if np_dtype is None:
                 raise PicoSDKException("Invalid datatype selected for buffer")
@@ -1803,7 +1803,7 @@ class PicoScopeBase:
             buf_ptr = None
         else:
             # Map to NumPy dtype and update ADC limits
-            self.get_adc_limits(datatype)
+            self.min_adc_value, self.max_adc_value = self.get_adc_limits(datatype)
             np_dtype = cst.DataTypeNPMap.get(datatype, None)
             if np_dtype is None:
                 raise PicoSDKException("Invalid datatype selected for buffer")
@@ -1861,7 +1861,7 @@ class PicoScopeBase:
             self._validate_buffer(buffers[1], samples, datatype)
         else:
             # Map to NumPy dtype and update ADC limits
-            self.get_adc_limits(datatype)
+            self.min_adc_value, self.max_adc_value = self.get_adc_limits(datatype)
             np_dtype = cst.DataTypeNPMap.get(datatype, None)
             if np_dtype is None:
                 raise PicoSDKException("Invalid datatype selected for buffer")
