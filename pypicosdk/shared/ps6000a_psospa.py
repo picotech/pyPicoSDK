@@ -74,9 +74,8 @@ class shared_ps6000a_psospa(_ProtocolBase):
             self.base_dataclass.last_datatype = datatype
         datatype_scale = cst.DataTypeScaleMap.get(self.base_dataclass.last_datatype, 1)
 
-        self.min_adc_value = int(min_value.value / datatype_scale)
-        self.max_adc_value = int(max_value.value / datatype_scale)
-        return self.min_adc_value, self.max_adc_value
+        return (int(min_value.value / datatype_scale),
+                int(max_value.value / datatype_scale))
 
     def get_values_bulk_async(
         self,
